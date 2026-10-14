@@ -1,0 +1,11 @@
+{
+  "ferramenta": "Linktree",
+  "url": "https://linktr.ee/claraleme",
+  "titulo": "Clara Leme",
+  "links": [
+    { "titulo": "Consulta de imagem", "url": "https://claraleme.exemplo/consulta" },
+    { "titulo": "Curso Guarda-roupa", "url": "https://claraleme.exemplo/curso" },
+    { "titulo": "Diário do espelho", "url": "https://claraleme.exemplo/blog" },
+    { "titulo": "Instagram", "url": "https://instagram.com/claraleme.exemplo" }
+  ]
+}

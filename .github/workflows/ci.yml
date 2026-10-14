@@ -1,0 +1,47 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npm run check
+      # a bio de cada pessoa tem outras ofertas (ou nenhuma): os testes e o check têm de passar com ela também
+      - name: check como outra pessoa (bio sem oferta)
+        if: github.event.repository.name == 'linkbio-template'
+        run: |
+          npx tsx scripts/config-outra-pessoa.ts > /tmp/outra.config.ts
+          cp linkbio.config.ts /tmp/exemplo.config.ts
+          cp /tmp/outra.config.ts linkbio.config.ts
+          npx tsc --noEmit && npx vitest run && npx tsx scripts/check.ts
+          cp /tmp/exemplo.config.ts linkbio.config.ts
+      # testes de navegador esperam o visual do exemplo: rodam no template (ou onde LINKBIO_E2E=true),
+      # para a bio de quem trocou o visual não receber "falhou" a cada envio
+      - run: npx playwright install --with-deps chromium firefox webkit
+        if: github.event.repository.name == 'linkbio-template' || vars.LINKBIO_E2E == 'true'
+      - run: npx playwright test
+        if: github.event.repository.name == 'linkbio-template' || vars.LINKBIO_E2E == 'true'
+      - name: gate do zip
+        # só no repo do template: a instância carrega marca e número reais de propósito
+        if: github.event.repository.name == 'linkbio-template'
+        run: |
+          if [[ "${GITHUB_REF}" == refs/tags/v* ]]; then
+            REF="${GITHUB_REF#refs/tags/}"
+          else
+            REF="HEAD"
+          fi
+          git archive --format=zip --prefix=linkbio/ -o /tmp/linkbio-ci.zip "$REF"
+          rm -rf /tmp/linkbio-ci && mkdir -p /tmp/linkbio-ci
+          unzip -q /tmp/linkbio-ci.zip -d /tmp/linkbio-ci
+          bash scripts/zip-gate.sh /tmp/linkbio-ci/linkbio

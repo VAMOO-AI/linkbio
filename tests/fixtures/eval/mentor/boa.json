@@ -1,0 +1,41 @@
+{
+  "site": {
+    "url": "https://heitor-vales.vercel.app",
+    "locale": "pt-BR",
+    "tz": "America/Sao_Paulo"
+  },
+  "theme": { "preset": "noite", "accent": "#c4a574", "font": "serif" },
+  "profile": {
+    "name": "Heitor Vales",
+    "handle": "@heitorvales.exemplo",
+    "avatar": "/favicon.svg",
+    "bio": "A página em branco não é o inimigo: escrever todo dia cabe na vida.",
+    "tags": ["Escrita"],
+    "socials": [
+      { "icone": "instagram", "rotulo": "Instagram", "url": "https://instagram.com/heitorvales.exemplo" },
+      { "icone": "youtube", "rotulo": "YouTube", "url": "https://youtube.com/@heitorvales.exemplo" },
+      { "icone": "site", "rotulo": "Site", "url": "https://heitorvales.exemplo" }
+    ]
+  },
+  "contact": { "whatsapp": "5511987654321" },
+  "offers": [
+    {
+      "id": "mentoria-pagina-em-branco",
+      "title": "Mentoria Página em Branco",
+      "why": "A página em branco não é o inimigo. Doze semanas para escrever todo dia.",
+      "price_cents": 120000,
+      "url": "https://heitorvales.exemplo/mentoria",
+      "wa": "Oi! Quero a Mentoria Página em Branco."
+    }
+  ],
+  "blocks": [
+    { "type": "profile" },
+    {
+      "type": "cta",
+      "id": "whatsapp",
+      "label": "Chamar no WhatsApp",
+      "action": { "wa": "Oi! Vim pela bio e quero escrever todo dia." }
+    },
+    { "type": "cards", "id": "oferta", "items": ["mentoria-pagina-em-branco"] }
+  ]
+}

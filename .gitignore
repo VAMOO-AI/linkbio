@@ -1,0 +1,21 @@
+# segredos locais
+.env.local
+.env
+# deps e build
+node_modules/
+.next/
+# zips gerados pelo package-template.sh
+linkbio-*.zip
+# planejamento interno (nunca entra no zip)
+.context/
+mockups/
+# artefatos de teste e tsc incremental
+test-results/
+playwright-report/
+*.tsbuildinfo
+# pasta local da CLI do Supabase (link do projeto)
+supabase/.temp/
+# dados do onboarding (Instagram, site): locais, nunca vão para o git nem para o zip
+analise/
+# SQL gerado (npm run sql:instalar); o zip monta de novo a partir das migrations
+supabase/instalar.sql

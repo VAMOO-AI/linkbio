@@ -1,0 +1,48 @@
+{
+  "url": "https://heitorvales.exemplo",
+  "titulo": "Heitor Vales — escrita",
+  "descricao": "Mentoria Página em Branco. Escrever todo dia, doze semanas.",
+  "ogTitulo": "Mentoria Página em Branco",
+  "ogDescricao": "A página em branco não é o inimigo.",
+  "ogImagem": null,
+  "corTema": "#c4a574",
+  "icones": [],
+  "logos": [],
+  "titulos": ["Mentoria Página em Branco"],
+  "textos": [
+    "A Mentoria Página em Branco custa R$ 1200 e dura doze semanas.",
+    "A página em branco não é o inimigo. Escrever todo dia cabe na vida."
+  ],
+  "links": [
+    { "texto": "Mentoria Página em Branco", "url": "https://heitorvales.exemplo/mentoria" }
+  ],
+  "folhas": [],
+  "fontesGoogle": ["Instrument Serif"],
+  "precisaNavegador": false,
+  "css": {
+    "cores": [
+      { "valor": "#141210", "vezes": 10 },
+      { "valor": "#c4a574", "vezes": 7 },
+      { "valor": "#f3efe6", "vezes": 4 }
+    ],
+    "variaveis": {
+      "--bg": "#141210",
+      "--primary": "#c4a574",
+      "--text": "#f3efe6"
+    },
+    "fontes": [{ "valor": "Instrument Serif", "vezes": 3 }]
+  },
+  "renderizado": {
+    "fundo": "#141210",
+    "texto": "#f3efe6",
+    "fonteTexto": "Instrument Serif, serif",
+    "fonteTitulo": "Instrument Serif, serif",
+    "corTitulo": "#f3efe6",
+    "botaoFundo": "#c4a574",
+    "botaoTexto": "#141210",
+    "botaoCanto": "4px",
+    "botaoDegrade": "",
+    "botaoRotulo": "Quero a mentoria"
+  },
+  "arquivos": { "logo": null, "capa": null }
+}

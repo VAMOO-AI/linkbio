@@ -1,0 +1,89 @@
+{
+  "site": {
+    "url": "https://clara-leme.vercel.app",
+    "locale": "pt-BR",
+    "tz": "America/Sao_Paulo",
+    "share": {
+      "title": "Clara Leme",
+      "description": "Roupa que te veste, sem regra de revista."
+    }
+  },
+  "theme": { "preset": "editorial", "accent": "#b4532a", "font": "lora" },
+  "profile": {
+    "name": "Clara Leme",
+    "handle": "@claraleme.exemplo",
+    "avatar": "/favicon.svg",
+    "bio": "Roupa que te veste, sem regra de revista. Espelho amigo do seu guarda-roupa.",
+    "tags": ["Imagem"],
+    "socials": [
+      { "icone": "instagram", "rotulo": "Instagram", "url": "https://instagram.com/claraleme.exemplo" }
+    ]
+  },
+  "contact": { "whatsapp": "5511987654321" },
+  "offers": [
+    {
+      "id": "consulta-de-imagem",
+      "title": "Consulta de imagem",
+      "why": "A consulta começa no espelho, na roupa que te veste.",
+      "price_cents": 28000,
+      "url": "https://claraleme.exemplo/consulta",
+      "wa": "Oi! Quero agendar a consulta de imagem."
+    },
+    {
+      "id": "curso-guarda-roupa",
+      "title": "Curso Guarda-roupa",
+      "why": "Escolher o guarda-roupa sem regra de revista.",
+      "price_cents": 9700,
+      "url": "https://claraleme.exemplo/curso",
+      "wa": "Oi! Quero o curso do guarda-roupa."
+    }
+  ],
+  "blocks": [
+    { "type": "profile" },
+    {
+      "type": "cta",
+      "id": "whatsapp",
+      "label": "Chamar no WhatsApp",
+      "action": { "wa": "Oi! Vim pela bio da Clara." }
+    },
+    {
+      "type": "cards",
+      "id": "ofertas",
+      "items": ["consulta-de-imagem", "curso-guarda-roupa"]
+    },
+    {
+      "type": "concierge",
+      "id": "caminho",
+      "title": "Por onde começar?",
+      "intro": "Me conta o que você quer resolver no guarda-roupa.",
+      "mode": "roteiro",
+      "flow": [
+        {
+          "id": "caminho",
+          "question": "O que você quer resolver?",
+          "options": [
+            {
+              "id": "consulta",
+              "label": "Uma consulta",
+              "offer": "consulta-de-imagem",
+              "reason": "A consulta acha a roupa que te veste."
+            },
+            {
+              "id": "curso",
+              "label": "O curso",
+              "offer": "curso-guarda-roupa",
+              "reason": "O curso organiza o guarda-roupa sem regra de revista."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "links",
+      "id": "mais",
+      "items": [
+        { "title": "Diário do espelho", "url": "https://claraleme.exemplo/blog" }
+      ]
+    }
+  ]
+}

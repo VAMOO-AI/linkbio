@@ -1,0 +1,45 @@
+{
+  "name": "linkbio-template",
+  "version": "0.6.1",
+  "private": true,
+  "description": "Template de link-in-bio single-tenant (Next.js + config validada com zod).",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint .",
+    "check": "tsc --noEmit && eslint . && vitest run && tsx scripts/check.ts",
+    "readme": "tsx scripts/readme-opcoes.ts",
+    "admin:usuario": "tsx scripts/admin-usuario.ts",
+    "admin:segredo": "tsx scripts/admin-segredo.ts",
+    "analisar": "tsx scripts/analisar.ts",
+    "chave": "tsx scripts/chave.ts",
+    "foto": "tsx scripts/foto.ts",
+    "eval:setup": "tsx scripts/eval-setup.ts",
+    "sql:instalar": "bash scripts/sql-instalar.sh supabase/instalar.sql"
+  },
+  "dependencies": {
+    "next": "16.3.6",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "server-only": "^0.0.1",
+    "sharp": "^0.35.5",
+    "uqr": "^0.1.3",
+    "zod": "4.6.5"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.63.0",
+    "@types/node": "^22",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "^16.3.6",
+    "tsx": "^4",
+    "typescript": "^5",
+    "typescript-eslint": "^8.70.1",
+    "vitest": "^5.0.1"
+  },
+  "engines": {
+    "node": "^22.12.0 || ^24 || >=26"
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "titulo": "Poucas legendas e sem site",
+  "ofertas": [],
+  "maxOfertas": 0,
+  "maxCatalogo": 0,
+  "concierge": "proibido",
+  "links": [
+    { "url": "https://instagram.com/naraluz.exemplo" },
+    { "titulo": "Pin", "url": "https://pin.exemplo/naraluz" }
+  ],
+  "whatsapp": "5511987654321",
+  "voz": {
+    "frases": ["plantas e janelas", "luz de fim de tarde"],
+    "palavras": ["janelas", "quieta"]
+  },
+  "proibido": {
+    "depoimento": true,
+    "frases": ["resultado garantido"]
+  },
+  "precosPermitidos": [],
+  "visual": {
+    "presets": ["neutro", "editorial"],
+    "accent": "#3d6b4f",
+    "distanciaMax": 40
+  }
+}

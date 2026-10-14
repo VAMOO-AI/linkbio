@@ -1,0 +1,51 @@
+{
+  "url": "https://claraleme.exemplo",
+  "titulo": "Clara Leme — imagem",
+  "descricao": "Consulta de imagem e curso de guarda-roupa. Roupa que te veste, sem regra de revista.",
+  "ogTitulo": "Clara Leme",
+  "ogDescricao": "Espelho amigo do seu guarda-roupa.",
+  "ogImagem": null,
+  "corTema": "#b4532a",
+  "icones": [],
+  "logos": [],
+  "titulos": ["Consulta de imagem", "Curso Guarda-roupa", "Diário do espelho"],
+  "textos": [
+    "A consulta de imagem custa R$ 280 e acontece no seu guarda-roupa.",
+    "O curso Guarda-roupa custa R$ 97 e ensina a escolher sem regra de revista.",
+    "Roupa que te veste, no seu jeito."
+  ],
+  "links": [
+    { "texto": "Consulta de imagem", "url": "https://claraleme.exemplo/consulta" },
+    { "texto": "Curso Guarda-roupa", "url": "https://claraleme.exemplo/curso" },
+    { "texto": "Diário do espelho", "url": "https://claraleme.exemplo/blog" }
+  ],
+  "folhas": [],
+  "fontesGoogle": ["Lora"],
+  "precisaNavegador": false,
+  "css": {
+    "cores": [
+      { "valor": "#f7f1ea", "vezes": 12 },
+      { "valor": "#b4532a", "vezes": 8 },
+      { "valor": "#1c1a17", "vezes": 6 }
+    ],
+    "variaveis": {
+      "--bg": "#f7f1ea",
+      "--primary": "#b4532a",
+      "--text": "#1c1a17"
+    },
+    "fontes": [{ "valor": "Lora", "vezes": 4 }]
+  },
+  "renderizado": {
+    "fundo": "#f7f1ea",
+    "texto": "#1c1a17",
+    "fonteTexto": "Lora, serif",
+    "fonteTitulo": "Lora, serif",
+    "corTitulo": "#1c1a17",
+    "botaoFundo": "#b4532a",
+    "botaoTexto": "#fff8f3",
+    "botaoCanto": "2px",
+    "botaoDegrade": "",
+    "botaoRotulo": "Agendar consulta"
+  },
+  "arquivos": { "logo": null, "capa": null }
+}

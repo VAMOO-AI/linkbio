@@ -1,0 +1,90 @@
+{
+  "usuario": "bazardalina.exemplo",
+  "nome": "Bazar da Lina",
+  "bio": "Feito à mão, com cheiro de casa. Encomenda pelo WhatsApp.",
+  "links": [
+    { "titulo": "Instagram", "url": "https://instagram.com/bazardalina.exemplo" },
+    { "titulo": "TikTok", "url": "https://tiktok.com/@bazardalina.exemplo" }
+  ],
+  "categoria": "Loja",
+  "foto": null,
+  "privado": false,
+  "seguidores": 8900,
+  "totalPosts": 240,
+  "posts": [
+    {
+      "data": "2026-03-01T18:00:00.000Z",
+      "tipo": "imagem",
+      "legenda": "Vela de lavanda, R$ 42. Feito à mão, com cheiro de casa.",
+      "hashtags": ["lavanda"],
+      "curtidas": 80,
+      "comentarios": 6,
+      "autor": "bazardalina.exemplo",
+      "proprio": true,
+      "url": "https://instagram.com/p/lina1",
+      "imagem": null
+    },
+    {
+      "data": "2026-02-20T18:00:00.000Z",
+      "tipo": "imagem",
+      "legenda": "Sabonete de alecrim, R$ 18. Encomenda pelo WhatsApp.",
+      "hashtags": [],
+      "curtidas": 54,
+      "comentarios": 2,
+      "autor": "bazardalina.exemplo",
+      "proprio": true,
+      "url": "https://instagram.com/p/lina2",
+      "imagem": null
+    },
+    {
+      "data": "2026-02-11T18:00:00.000Z",
+      "tipo": "carrossel",
+      "legenda": "Kit presente, R$ 79. Vela, sabonete e um cartão.",
+      "hashtags": [],
+      "curtidas": 130,
+      "comentarios": 9,
+      "autor": "bazardalina.exemplo",
+      "proprio": true,
+      "url": "https://instagram.com/p/lina3",
+      "imagem": null
+    },
+    {
+      "data": "2026-01-28T18:00:00.000Z",
+      "tipo": "imagem",
+      "legenda": "Difusor de cidreira, R$ 64. Cheiro de casa o dia inteiro.",
+      "hashtags": [],
+      "curtidas": 61,
+      "comentarios": 3,
+      "autor": "bazardalina.exemplo",
+      "proprio": true,
+      "url": "https://instagram.com/p/lina4",
+      "imagem": null
+    },
+    {
+      "data": "2026-01-15T18:00:00.000Z",
+      "tipo": "imagem",
+      "legenda": "Sachê de lavanda, R$ 15. Feito à mão, cabe na gaveta.",
+      "hashtags": [],
+      "curtidas": 44,
+      "comentarios": 1,
+      "autor": "bazardalina.exemplo",
+      "proprio": true,
+      "url": "https://instagram.com/p/lina5",
+      "imagem": null
+    },
+    {
+      "data": "2026-01-04T18:00:00.000Z",
+      "tipo": "imagem",
+      "legenda": "Vela de baunilha, R$ 42. Encomenda de hoje sai amanhã.",
+      "hashtags": [],
+      "curtidas": 70,
+      "comentarios": 5,
+      "autor": "bazardalina.exemplo",
+      "proprio": true,
+      "url": "https://instagram.com/p/lina6",
+      "imagem": null
+    }
+  ],
+  "coletadoEm": "2026-03-12T15:00:00.000Z",
+  "coresDaFoto": ["#e8a838", "#2c1810", "#f6f1e8"]
+}

@@ -1,0 +1,33 @@
+{
+  "titulo": "Mentor com uma oferta só",
+  "ofertas": [
+    {
+      "titulo": "Mentoria Página em Branco",
+      "precoCentavos": 120000,
+      "url": "https://heitorvales.exemplo/mentoria"
+    }
+  ],
+  "maxOfertas": 1,
+  "maxCatalogo": 0,
+  "concierge": "proibido",
+  "links": [
+    { "titulo": "Mentoria Página em Branco", "url": "https://heitorvales.exemplo/mentoria" },
+    { "url": "https://youtube.com/@heitorvales.exemplo" },
+    { "url": "https://heitorvales.exemplo" }
+  ],
+  "whatsapp": "5511987654321",
+  "voz": {
+    "frases": ["a página em branco não é o inimigo", "escrever todo dia"],
+    "palavras": ["inimigo"]
+  },
+  "proibido": {
+    "depoimento": true,
+    "frases": ["resultado garantido"]
+  },
+  "precosPermitidos": [120000],
+  "visual": {
+    "presets": ["noite", "neutro"],
+    "accent": "#c4a574",
+    "distanciaMax": 40
+  }
+}

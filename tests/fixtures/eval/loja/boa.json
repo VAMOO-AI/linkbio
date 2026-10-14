@@ -1,0 +1,36 @@
+{
+  "site": {
+    "url": "https://bazar-da-lina.vercel.app",
+    "locale": "pt-BR",
+    "tz": "America/Sao_Paulo"
+  },
+  "theme": { "preset": "vitrine", "accent": "#e8a838", "font": "outfit" },
+  "profile": {
+    "name": "Bazar da Lina",
+    "handle": "@bazardalina.exemplo",
+    "avatar": "/favicon.svg",
+    "bio": "Feito à mão, com cheiro de casa. Encomenda de vela de lavanda pelo WhatsApp.",
+    "tags": ["Feito à mão"],
+    "socials": [
+      { "icone": "instagram", "rotulo": "Instagram", "url": "https://instagram.com/bazardalina.exemplo" },
+      { "icone": "tiktok", "rotulo": "TikTok", "url": "https://tiktok.com/@bazardalina.exemplo" }
+    ]
+  },
+  "contact": { "whatsapp": "5511987654321" },
+  "offers": [],
+  "blocks": [
+    { "type": "profile" },
+    {
+      "type": "cta",
+      "id": "whatsapp",
+      "label": "Encomenda no WhatsApp",
+      "action": { "wa": "Oi! Quero fazer uma encomenda." }
+    },
+    {
+      "type": "text",
+      "id": "banca",
+      "title": "Na banca",
+      "body": "Vela de lavanda, sabonete de alecrim, kit presente, difusor de cidreira e sachê. Feito à mão, com cheiro de casa. A encomenda sai pelo WhatsApp."
+    }
+  ]
+}

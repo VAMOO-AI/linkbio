@@ -1,0 +1,42 @@
+{
+  "usuario": "naraluz.exemplo",
+  "nome": "Nara Luz",
+  "bio": "Fotografo plantas e janelas.",
+  "links": [
+    { "titulo": "Instagram", "url": "https://instagram.com/naraluz.exemplo" },
+    { "titulo": "Pin", "url": "https://pin.exemplo/naraluz" }
+  ],
+  "categoria": null,
+  "foto": null,
+  "privado": false,
+  "seguidores": 320,
+  "totalPosts": 4,
+  "posts": [
+    {
+      "data": "2026-02-14T16:00:00.000Z",
+      "tipo": "imagem",
+      "legenda": "Luz de fim de tarde.",
+      "hashtags": [],
+      "curtidas": 12,
+      "comentarios": 0,
+      "autor": "naraluz.exemplo",
+      "proprio": true,
+      "url": "https://instagram.com/p/nara1",
+      "imagem": null
+    },
+    {
+      "data": "2026-01-30T16:00:00.000Z",
+      "tipo": "imagem",
+      "legenda": "Janela aberta, planta quieta.",
+      "hashtags": [],
+      "curtidas": 9,
+      "comentarios": 1,
+      "autor": "naraluz.exemplo",
+      "proprio": true,
+      "url": "https://instagram.com/p/nara2",
+      "imagem": null
+    }
+  ],
+  "coletadoEm": "2026-03-12T15:00:00.000Z",
+  "coresDaFoto": ["#3d6b4f", "#efe8d8", "#1e2a22"]
+}

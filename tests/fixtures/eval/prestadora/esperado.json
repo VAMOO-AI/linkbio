@@ -1,0 +1,31 @@
+{
+  "titulo": "Prestadora com site e Linktree",
+  "ofertas": [
+    { "titulo": "Consulta de imagem", "precoCentavos": 28000, "url": "https://claraleme.exemplo/consulta" },
+    { "titulo": "Curso Guarda-roupa", "precoCentavos": 9700, "url": "https://claraleme.exemplo/curso" }
+  ],
+  "maxOfertas": 2,
+  "maxCatalogo": 0,
+  "concierge": "obrigatorio",
+  "links": [
+    { "titulo": "Consulta de imagem", "url": "https://claraleme.exemplo/consulta" },
+    { "titulo": "Curso Guarda-roupa", "url": "https://claraleme.exemplo/curso" },
+    { "titulo": "Diário do espelho", "url": "https://claraleme.exemplo/blog" },
+    { "url": "https://instagram.com/claraleme.exemplo" }
+  ],
+  "whatsapp": "5511987654321",
+  "voz": {
+    "frases": ["roupa que te veste", "sem regra de revista"],
+    "palavras": ["espelho", "guarda-roupa"]
+  },
+  "proibido": {
+    "depoimento": true,
+    "frases": ["resultado garantido"]
+  },
+  "precosPermitidos": [28000, 9700],
+  "visual": {
+    "presets": ["editorial", "neutro"],
+    "accent": "#b4532a",
+    "distanciaMax": 40
+  }
+}

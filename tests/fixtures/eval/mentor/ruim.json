@@ -1,0 +1,63 @@
+{
+  "site": { "url": "https://exemplo.com", "locale": "pt-BR", "tz": "America/Sao_Paulo" },
+  "theme": { "preset": "brutal", "accent": "#007dff", "font": "jakarta", "radius": 6 },
+  "profile": {
+    "name": "Marina Duarte",
+    "handle": "@marina.exemplo",
+    "avatar": "/nao-existe.jpg",
+    "bio": "Organize a semana com produtividade e foco total.",
+    "tags": ["Rotina"]
+  },
+  "contact": { "whatsapp": "12345678" },
+  "offers": [
+    {
+      "id": "mentoria-rotina",
+      "title": "Mentoria Rotina Leve",
+      "why": "Um plano genérico para render mais no trabalho.",
+      "price_cents": 99900,
+      "url": "https://exemplo.com/mentoria",
+      "wa": "Oi! Quero a mentoria."
+    },
+    {
+      "id": "guia-solto",
+      "title": "Guia avulso",
+      "why": "Material genérico sem relação com a coleta.",
+      "price_cents": 99900,
+      "url": "https://exemplo.com/guia"
+    }
+  ],
+  "catalog": [
+    { "id": "produto-inventado", "title": "Planner inventado", "url": "https://exemplo.com/planner", "price_cents": 99900 }
+  ],
+  "blocks": [
+    { "type": "profile" },
+    {
+      "type": "cta",
+      "id": "falar",
+      "label": "Falar no WhatsApp",
+      "action": { "wa": "Oi!" },
+      "note": "Respondo pessoalmente, em dias úteis"
+    },
+    { "type": "cards", "id": "ofertas", "items": ["mentoria-rotina", "guia-solto"] },
+    {
+      "type": "concierge",
+      "id": "triagem",
+      "mode": "roteiro",
+      "flow": [
+        {
+          "id": "caminho",
+          "question": "Por onde você quer começar?",
+          "options": [
+            { "id": "um", "label": "A mentoria", "offer": "mentoria-rotina", "reason": "Este caminho foi inventado." },
+            { "id": "dois", "label": "O guia", "offer": "guia-solto", "reason": "Segunda oferta inventada." }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "testimonials",
+      "id": "clientes",
+      "items": [{ "quote": "Resultado garantido em uma semana, mudou tudo.", "name": "Cliente Inventado" }]
+    }
+  ]
+}

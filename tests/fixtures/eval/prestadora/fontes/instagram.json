@@ -1,0 +1,78 @@
+{
+  "usuario": "claraleme.exemplo",
+  "nome": "Clara Leme",
+  "bio": "Roupa que te veste, sem regra de revista. Espelho amigo do seu guarda-roupa.",
+  "links": [
+    { "titulo": "Site", "url": "https://claraleme.exemplo" },
+    { "titulo": "Links", "url": "https://linktr.ee/claraleme" }
+  ],
+  "categoria": "Consultora de imagem",
+  "foto": null,
+  "privado": false,
+  "seguidores": 2400,
+  "totalPosts": 86,
+  "posts": [
+    {
+      "data": "2026-03-02T15:00:00.000Z",
+      "tipo": "imagem",
+      "legenda": "A consulta de imagem começa no espelho, sem regra de revista.",
+      "hashtags": ["imagem"],
+      "curtidas": 120,
+      "comentarios": 8,
+      "autor": "claraleme.exemplo",
+      "proprio": true,
+      "url": "https://instagram.com/p/clara1",
+      "imagem": null
+    },
+    {
+      "data": "2026-02-18T15:00:00.000Z",
+      "tipo": "carrossel",
+      "legenda": "Guarda-roupa que te veste: menos peça, mais o seu jeito.",
+      "hashtags": [],
+      "curtidas": 98,
+      "comentarios": 4,
+      "autor": "claraleme.exemplo",
+      "proprio": true,
+      "url": "https://instagram.com/p/clara2",
+      "imagem": null
+    },
+    {
+      "data": "2026-02-04T15:00:00.000Z",
+      "tipo": "imagem",
+      "legenda": "Três combinações para a semana, escolhidas no espelho amigo.",
+      "hashtags": [],
+      "curtidas": 76,
+      "comentarios": 3,
+      "autor": "claraleme.exemplo",
+      "proprio": true,
+      "url": "https://instagram.com/p/clara3",
+      "imagem": null
+    },
+    {
+      "data": "2026-01-20T15:00:00.000Z",
+      "tipo": "imagem",
+      "legenda": "O curso do guarda-roupa abre vaga nova. Link na bio.",
+      "hashtags": [],
+      "curtidas": 140,
+      "comentarios": 11,
+      "autor": "claraleme.exemplo",
+      "proprio": true,
+      "url": "https://instagram.com/p/clara4",
+      "imagem": null
+    },
+    {
+      "data": "2026-01-08T15:00:00.000Z",
+      "tipo": "video",
+      "legenda": "Roupa que te veste não pede permissão de revista.",
+      "hashtags": [],
+      "curtidas": 210,
+      "comentarios": 16,
+      "autor": "claraleme.exemplo",
+      "proprio": true,
+      "url": "https://instagram.com/p/clara5",
+      "imagem": null
+    }
+  ],
+  "coletadoEm": "2026-03-12T15:00:00.000Z",
+  "coresDaFoto": ["#b4532a", "#f7f1ea", "#1c1a17"]
+}

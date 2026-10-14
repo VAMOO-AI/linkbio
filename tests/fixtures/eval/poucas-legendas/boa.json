@@ -1,0 +1,34 @@
+{
+  "site": {
+    "url": "https://nara-luz.vercel.app",
+    "locale": "pt-BR",
+    "tz": "America/Sao_Paulo"
+  },
+  "theme": { "preset": "neutro", "accent": "#3d6b4f", "font": "albert" },
+  "profile": {
+    "name": "Nara Luz",
+    "handle": "@naraluz.exemplo",
+    "avatar": "/favicon.svg",
+    "bio": "Fotografo plantas e janelas. Luz de fim de tarde, planta quieta.",
+    "tags": ["Plantas"],
+    "socials": [
+      { "icone": "instagram", "rotulo": "Instagram", "url": "https://instagram.com/naraluz.exemplo" }
+    ]
+  },
+  "contact": { "whatsapp": "5511987654321" },
+  "offers": [],
+  "blocks": [
+    { "type": "profile" },
+    {
+      "type": "cta",
+      "id": "whatsapp",
+      "label": "Chamar no WhatsApp",
+      "action": { "wa": "Oi! Vim pela bio." }
+    },
+    {
+      "type": "links",
+      "id": "pin",
+      "items": [{ "title": "Pin", "url": "https://pin.exemplo/naraluz" }]
+    }
+  ]
+}

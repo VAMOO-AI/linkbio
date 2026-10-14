@@ -1,0 +1,61 @@
+/* Prévia do /admin: sem animações de entrada, para editar e ver o resultado não piscar. */
+.previa *,
+.previa *::before,
+.previa *::after {
+  animation: none !important;
+  transition: none !important;
+}
+
+/* Invólucro de cada bloco na prévia (ver ao-vivo.tsx): some do layout, os blocos ficam como na bio. */
+.previa-bloco {
+  display: contents;
+}
+
+.previa-fora {
+  align-self: flex-start;
+  width: fit-content;
+  margin: 0;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #fff4d6;
+  color: #7a4e00;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/*
+ * "A prévia segue a edição": contorno por cima do que está sendo editado, na cor do painel, por um
+ * instante. Fica fora do bloco (não muda o visual dele) e não recebe clique. O !important vence o
+ * "sem animações" da prévia, acima; com movimento reduzido, aparece e some sem animar.
+ */
+.previa .previa-realce {
+  position: absolute;
+  z-index: 50;
+  pointer-events: none;
+  box-sizing: border-box;
+  border: 2px solid #2563eb;
+  border-radius: 14px;
+  box-shadow: 0 0 0 4px rgb(37 99 235 / 0.18);
+  opacity: 0;
+  animation: previa-realce 1.6s ease-out both !important;
+}
+
+@keyframes previa-realce {
+  0% {
+    opacity: 0;
+  }
+  12%,
+  70% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .previa .previa-realce {
+    opacity: 1;
+    animation: none !important;
+  }
+}

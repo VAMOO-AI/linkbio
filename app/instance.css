@@ -1,0 +1,6 @@
+/*
+ * CSS da instância: carregado antes de globals.css e vazio no template.
+ * Use para plugar um design system próprio sem mexer em app/layout.tsx,
+ * o que mantém o merge do upstream sem conflito. Ex.:
+ *   @import "../public/ds/index.css";
+ */

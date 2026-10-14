@@ -1,0 +1,26 @@
+{
+  "titulo": "Loja sem site, com muitos produtos",
+  "ofertas": [],
+  "maxOfertas": 0,
+  "maxCatalogo": 0,
+  "concierge": "proibido",
+  "links": [
+    { "url": "https://instagram.com/bazardalina.exemplo" },
+    { "url": "https://tiktok.com/@bazardalina.exemplo" }
+  ],
+  "whatsapp": "5511987654321",
+  "voz": {
+    "frases": ["feito à mão", "cheiro de casa"],
+    "palavras": ["encomenda", "lavanda"]
+  },
+  "proibido": {
+    "depoimento": true,
+    "frases": ["resultado garantido"]
+  },
+  "precosPermitidos": [4200, 1800, 7900, 6400, 1500],
+  "visual": {
+    "presets": ["vitrine", "neutro"],
+    "accent": "#e8a838",
+    "distanciaMax": 40
+  }
+}

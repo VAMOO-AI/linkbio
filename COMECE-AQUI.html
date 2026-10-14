@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Comece aqui · Sua bio</title>
+<style>
+  :root {
+    --fundo: #f7f6f3; --cartao: #ffffff; --texto: #1c1b19; --suave: #5f5c56;
+    --borda: #e4e1da; --destaque: #2d5bd7; --destaque-texto: #ffffff; --codigo: #f0eee9;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --fundo: #141413; --cartao: #1e1d1b; --texto: #f2f0eb; --suave: #a9a59c;
+      --borda: #33312d; --destaque: #7c9cff; --destaque-texto: #10131c; --codigo: #262522;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--fundo); color: var(--texto);
+    font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+  main { max-width: 720px; margin: 0 auto; padding: 40px 16px 64px; }
+  h1 { font-size: 30px; line-height: 1.2; margin: 0 0 8px; }
+  h2 { font-size: 20px; margin: 40px 0 12px; }
+  p { margin: 0 0 12px; }
+  .lead { color: var(--suave); font-size: 17px; }
+  ol.passos { list-style: none; padding: 0; margin: 0; counter-reset: passo; }
+  ol.passos > li {
+    counter-increment: passo; position: relative; background: var(--cartao);
+    border: 1px solid var(--borda); border-radius: 14px; padding: 18px 18px 14px 60px; margin: 0 0 12px;
+  }
+  ol.passos > li::before {
+    content: counter(passo); position: absolute; left: 18px; top: 16px; width: 28px; height: 28px;
+    border-radius: 50%; background: var(--destaque); color: var(--destaque-texto);
+    font-weight: 700; font-size: 14px; display: grid; place-items: center;
+  }
+  li h3 { font-size: 17px; margin: 0 0 6px; }
+  .suave { color: var(--suave); font-size: 15px; }
+  .mensagem {
+    display: flex; gap: 10px; align-items: flex-start; background: var(--codigo);
+    border-radius: 10px; padding: 12px; margin: 8px 0 6px;
+  }
+  .mensagem span { flex: 1; font-weight: 600; }
+  button {
+    font: inherit; font-size: 14px; border: 0; border-radius: 8px; padding: 6px 12px; cursor: pointer;
+    background: var(--destaque); color: var(--destaque-texto); white-space: nowrap;
+  }
+  table { width: 100%; border-collapse: collapse; font-size: 15px; }
+  td { border-top: 1px solid var(--borda); padding: 10px 8px 10px 0; vertical-align: top; }
+  td:first-child { width: 38%; font-weight: 600; }
+  .aviso { border-left: 3px solid var(--destaque); padding: 4px 0 4px 14px; margin: 12px 0; }
+  code { background: var(--codigo); border-radius: 4px; padding: 1px 5px; font-size: 14px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Sua bio, montada pelo Claude</h1>
+  <p class="lead">Você não precisa abrir terminal nem escrever código. O Claude lê o seu Instagram e o
+  seu site, escreve a bio no seu jeito de falar e coloca no ar. Você só conversa e clica.</p>
+
+  <h2>Primeira vez (uns 15 minutos)</h2>
+  <ol class="passos">
+    <li>
+      <h3>Instale o app do Claude</h3>
+      <p>Baixe em claude.ai/download, instale e entre na sua conta. O modo Code pede plano pago (Pro ou Max).</p>
+    </li>
+    <li>
+      <h3>Guarde esta pasta num lugar seguro</h3>
+      <p>A pasta onde está este arquivo se chama <code>linkbio</code>. Mova a pasta inteira para a sua pasta pessoal:
+      no Mac fica <code>~/linkbio</code> (Finder &gt; Ir &gt; Pasta Pessoal); no Windows, <code>C:\Users\(seu nome)\linkbio</code>.</p>
+      <p class="suave">Evite Documentos (costuma sincronizar com iCloud ou OneDrive), Downloads e pastas de nuvem: a sincronização atrapalha e Downloads costuma ser limpa.</p>
+      <p class="suave">No Windows, o "Extrair tudo" às vezes cria uma pasta dentro de outra com nome parecido.
+      A certa é a de dentro, a que tem o arquivo <code>package.json</code>.</p>
+    </li>
+    <li>
+      <h3>Abra a pasta no Claude</h3>
+      <p>No app do Claude, vá na aba <strong>Code</strong>, escolha a pasta <code>linkbio</code> e comece uma conversa nova.</p>
+      <p class="suave">Se o app perguntar se você confia nesta pasta, clique em confiar.</p>
+    </li>
+    <li>
+      <h3>Mande esta mensagem</h3>
+      <div class="mensagem"><span id="m-entrada">Monta a minha bio. Eu não uso terminal: faça tudo por mim e me diga só onde clicar.</span>
+      <button type="button" data-copiar="m-entrada">Copiar</button></div>
+    </li>
+    <li>
+      <h3>Durante o setup, só clique</h3>
+      <p>A pasta já vem no modo aceitar edições: o Claude grava os arquivos e roda os comandos do dia a dia
+      sem perguntar. Ainda aparece <strong>Permitir</strong> para instalar programas e para o que pode apagar
+      algo ou mexer em chave: leia e clique. Janelas do próprio computador também podem aparecer:</p>
+      <p class="suave"><strong>Mac:</strong> instalador do Node: clique em Continuar até o fim e digite a senha do Mac.<br>
+      <strong>Windows:</strong> "Deseja permitir que este aplicativo faça alterações?": clique em Sim. Se faltar o Git
+      (o Claude precisa dele para rodar os comandos), ele mesmo instala.</p>
+      <p class="suave">Se o Claude pedir para fechar e abrir o app, abra a mesma pasta e escreva: <strong>continua</strong>.</p>
+    </li>
+  </ol>
+
+  <div class="aviso">
+    <p><strong>Chave nunca vai no chat.</strong> Para ler o seu Instagram, o Claude precisa do token da sua
+    conta Apify (ele mostra onde pegar). Na hora, ele abre um arquivo de texto e você cola lá, salva e fecha.
+    Se ele pedir a chave no chat, responda: "abra o arquivo para eu colar".</p>
+    <p class="suave">Sem conta na Apify? Tudo bem: você manda algumas legendas suas e a bio sai do mesmo jeito.</p>
+  </div>
+
+  <h2>Depois, é só pedir</h2>
+  <table>
+    <tr><td>Colocar no ar</td><td><div class="mensagem"><span id="m-publicar">Coloca a minha bio no ar.</span><button type="button" data-copiar="m-publicar">Copiar</button></div>
+      <span class="suave">Usa duas contas grátis, GitHub e Vercel. O login no GitHub é no navegador: o Claude abre a página e você confirma um código.</span></td></tr>
+    <tr><td>Mudar algo</td><td>"Muda o preço da consulta para 250." ou "Troca minha foto."</td></tr>
+    <tr><td>Editar pelo celular</td><td><div class="mensagem"><span id="m-painel">Quero editar a bio pelo celular.</span><button type="button" data-copiar="m-painel">Copiar</button></div>
+      <span class="suave">As chaves do Supabase vão no arquivo de texto e a senha do painel aparece num arquivo para você guardar, nunca na conversa.</span></td></tr>
+    <tr><td>Usar o seu domínio</td><td>"Quero usar o meu domínio."</td></tr>
+    <tr><td>Versão nova do template</td><td>"Chegou versão nova do template. O zip está em Downloads."</td></tr>
+  </table>
+
+  <h2>Bom saber</h2>
+  <p>Nada vai ao ar sem você dizer "sim". Senha do banco, do painel e do GitHub nunca vão no chat.</p>
+</main>
+<script>
+  document.querySelectorAll("button[data-copiar]").forEach(function (botao) {
+    botao.addEventListener("click", function () {
+      var texto = document.getElementById(botao.dataset.copiar).textContent;
+      var ok = function () { botao.textContent = "Copiado"; setTimeout(function () { botao.textContent = "Copiar"; }, 1500); };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(texto).then(ok, function () { window.prompt("Copie a mensagem:", texto); });
+      } else {
+        window.prompt("Copie a mensagem:", texto);
+      }
+    });
+  });
+</script>
+</body>
+</html>
