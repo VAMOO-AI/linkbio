@@ -59,13 +59,16 @@ test("com pixel, nada carrega antes do aceite e o clique no WhatsApp vira contat
       true,
     );
   });
-  await page.getByRole("link", { name: "WhatsApp" }).click();
+  await page.getByRole("link", { name: "WhatsApp", exact: true }).click();
+  await page.getByRole("link", { name: "WhatsApp pelo atalho" }).click();
   const eventos = await page.evaluate(() => ({
     fb: [...(window.fbq?.queue ?? [])].map((item) => Array.from(item as ArrayLike<unknown>)),
     dl: [...(window.dataLayer ?? [])].map((item) => Array.from(item as ArrayLike<unknown>)),
   }));
-  expect(JSON.stringify(eventos.fb)).toContain("Contact");
-  expect(JSON.stringify(eventos.dl)).toContain("generate_lead");
+  const fb = JSON.stringify(eventos.fb);
+  const dl = JSON.stringify(eventos.dl);
+  expect(fb.split("Contact").length - 1).toBe(2);
+  expect(dl.split("generate_lead").length - 1).toBe(2);
 });
 
 test("recusar o pixel fica gravado e, ao recarregar, nada carrega", async ({ page }) => {

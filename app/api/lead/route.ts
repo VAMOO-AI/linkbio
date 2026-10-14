@@ -1,6 +1,7 @@
 import "server-only";
 import { obterConfig } from "@/lib/config-fonte";
 import { supabaseConfigurado } from "@/lib/supabase";
+import { lerSupabase } from "@/lib/supabase-chave";
 import {
   MENSAGEM_CEDO,
   MENSAGEM_FALHA,
@@ -100,7 +101,7 @@ export async function POST(request: Request): Promise<Response> {
     blocos: blocosDaPagina(config),
     supabase: supabaseConfigurado(),
     ip: ipDoPedido(request),
-    sal: process.env.ADMIN_SESSION_SECRET || process.env.SUPABASE_URL || "linkbio-lead",
+    sal: process.env.ADMIN_SESSION_SECRET || lerSupabase(process.env)?.url || "linkbio-lead",
     contar: contarLeadsRecentes,
     gravar: gravarLead,
     avisar: (aviso) =>

@@ -6,6 +6,7 @@ export default function PaginaPixel() {
   return (
     <>
       <a href="https://wa.me/5511987654321">WhatsApp</a>
+      <a href="/r/cta.falar?wa=1">WhatsApp pelo atalho</a>
       {script && <script dangerouslySetInnerHTML={{ __html: script }} />}
     </>
   );

@@ -37,6 +37,13 @@ describe("href do clique", () => {
     expect(hrefDoClique(alvoCta("falar-whatsapp"), DIRETO)).toBe("/r/cta.falar-whatsapp");
     expect(hrefConcierge("concierge", ["perdida", "pouco"])).toBe("/r/concierge.concierge?r=perdida.pouco");
   });
+
+  test("atalho de WhatsApp marca wa=1 para o pixel enxergar o clique", () => {
+    const wa = "https://wa.me/5511987654321?text=Oi"; // ficticio
+    expect(hrefDoClique(alvoCta("falar"), wa)).toBe("/r/cta.falar?wa=1");
+    expect(hrefConcierge("concierge", ["a"], wa)).toBe("/r/concierge.concierge?r=a&wa=1");
+    expect(hrefDoClique(null, wa)).toBe(wa);
+  });
 });
 
 describe("alvo estável", () => {

@@ -5,7 +5,7 @@ import type { AddressInfo } from "node:net";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterAll, describe, expect, test } from "vitest";
-import { mensagemVersaoNova } from "../scripts/versao-remota";
+import { mensagemVersaoNova, urlDaVersaoPublicada } from "../scripts/versao-remota";
 
 const temps: string[] = [];
 const servidores: Server[] = [];
@@ -41,6 +41,15 @@ function ouvir(responder: (url: string) => { status: number; corpo: string } | "
 }
 
 describe("aviso de versão nova", () => {
+  test("o endereço de distribuição vira o JSON da branch main", () => {
+    const dono = "vam" + "oo-ai";
+    expect(urlDaVersaoPublicada(`https://github.com/${dono}/linkbio.git`)).toBe(
+      `https://raw.githubusercontent.com/${dono}/linkbio/main/versao.json`,
+    );
+    expect(urlDaVersaoPublicada("")).toBeNull();
+    expect(urlDaVersaoPublicada("git@github.com:alguem/repo.git")).toBeNull();
+  });
+
   test("URL com versão maior avisa e inclui as notas; igual ou menor fica quieto", async () => {
     const url = await ouvir(() => ({ status: 200, corpo: JSON.stringify({ versao: "v9.1.0", notas: "Cabeçalho novo." }) }));
     const msg = await mensagemVersaoNova({ versaoAtual: "0.5.1", versaoUrl: url, root: temp() });

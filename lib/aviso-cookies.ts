@@ -27,7 +27,7 @@ window.dataLayer=window.dataLayer||[];window.gtag=function(){window.dataLayer.pu
 document.addEventListener("click",function(e){
 var alvo=e.target&&e.target.closest?e.target.closest("a[href]"):null;
 var href=alvo?alvo.getAttribute("href")||"":"";
-if(!/wa\\.me|api\\.whatsapp\\.com|whatsapp\\.com\\/send/i.test(href))return;
+if(!/wa\\.me|api\\.whatsapp\\.com|whatsapp\\.com\\/send|[?&]wa=1(?:&|$)/i.test(href))return;
 if(window.fbq)window.fbq("track","Contact");
 if(window.gtag)window.gtag("event","generate_lead",{method:"whatsapp"});
 });

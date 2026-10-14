@@ -6,6 +6,7 @@ import type { LinkbioConfig } from "@/config/schema";
 import { segundosAteProximaFronteira } from "./janela";
 import { resolverOrigem } from "./origem-config";
 import { resolverTema } from "./resolver";
+import { lerSupabase } from "./supabase-chave";
 
 /** Tag do cache da config publicada. O /admin revalida esta tag ao salvar. */
 export const TAG_CONFIG = "linkbio-config";
@@ -29,9 +30,10 @@ async function segurarPaginaAteAJanela(config: LinkbioConfig): Promise<void> {
  * Sem Supabase, sem versão salva ou com versão inválida, vale o linkbio.config.ts (o template funciona sem banco).
  */
 export const obterConfig = cache(async (): Promise<LinkbioConfig> => {
+  const sb = lerSupabase(process.env);
   const origem = await resolverOrigem({
-    supabaseUrl: process.env.SUPABASE_URL,
-    chave: process.env.SUPABASE_SERVICE_ROLE_KEY,
+    supabaseUrl: sb?.url,
+    chave: sb?.chave,
     arquivo,
     cache: "force-cache",
     next: { tags: [TAG_CONFIG] },

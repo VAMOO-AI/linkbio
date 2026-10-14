@@ -32,6 +32,7 @@ describe("script do aviso", () => {
     expect(js).toContain("linkbio-cookies");
     expect(js).toContain("123456789012345");
     expect(js).toContain("G-AB12CD34");
+    expect(js).toContain("wa=1");
     expect(js).not.toContain("<script");
   });
 });

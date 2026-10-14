@@ -57,6 +57,13 @@ function executar(cmd: string, args: string[], ms: number): Promise<{ code: numb
   });
 }
 
+/** JSON publicado no repositório de distribuição (`main/versao.json`). Endereço vazio ou fora do GitHub: null. */
+export function urlDaVersaoPublicada(distribuicao: string): string | null {
+  const m = distribuicao.trim().match(/^https:\/\/github\.com\/([^/\s]+)\/([^/\s]+?)(?:\.git)?\/?$/i);
+  if (!m?.[1] || !m?.[2]) return null;
+  return `https://raw.githubusercontent.com/${m[1]}/${m[2]}/main/versao.json`;
+}
+
 function maiorTag(saida: string): string | null {
   let melhor: string | null = null;
   for (const linha of saida.split("\n")) {
@@ -78,8 +85,9 @@ async function tagDoUpstream(root: string, ms: number): Promise<string | null> {
 }
 
 /**
- * Aviso (nunca erro) se existir versão mais nova. URL vazia não consulta a rede;
- * nesse caso, se houver remote `upstream`, vale a tag mais alta. Sem rede: null.
+ * Aviso (nunca erro) se existir versão mais nova. URL preenchida lê o JSON;
+ * se ela falhar, ou se estiver vazia, vale a tag mais alta do remote `upstream`.
+ * Sem rede: null.
  */
 export async function mensagemVersaoNova(o: OpcoesVersao): Promise<string | null> {
   const ms = o.timeoutMs ?? TIMEOUT_MS;
@@ -87,17 +95,25 @@ export async function mensagemVersaoNova(o: OpcoesVersao): Promise<string | null
   try {
     let candidata: string | null = null;
     let notas: string | undefined;
+    let urlFalhou = !url;
     if (url) {
-      const buscar = o.fetch ?? fetch;
-      const resp = await buscar(url, { signal: AbortSignal.timeout(ms) });
-      if (!resp.ok) return null;
-      const dados = (await resp.json()) as { versao?: unknown; notas?: unknown };
-      if (typeof dados.versao !== "string") return null;
-      candidata = dados.versao;
-      if (typeof dados.notas === "string") notas = dados.notas;
-    } else {
-      candidata = await tagDoUpstream(o.root, ms);
+      try {
+        const buscar = o.fetch ?? fetch;
+        const resp = await buscar(url, { signal: AbortSignal.timeout(ms) });
+        if (!resp.ok) urlFalhou = true;
+        else {
+          const dados = (await resp.json()) as { versao?: unknown; notas?: unknown };
+          if (typeof dados.versao !== "string") urlFalhou = true;
+          else {
+            candidata = dados.versao;
+            if (typeof dados.notas === "string") notas = dados.notas;
+          }
+        }
+      } catch {
+        urlFalhou = true;
+      }
     }
+    if (!candidata && urlFalhou) candidata = await tagDoUpstream(o.root, ms);
     if (!candidata || !versaoMaior(candidata, o.versaoAtual)) return null;
     return texto(candidata, o.versaoAtual, notas);
   } catch {

@@ -26,7 +26,7 @@ const VALIDADE = 7 * 24 * 3600;
 /** O /admin só funciona com banco e segredo de sessão configurados. Devolve o que falta, em PT-BR. */
 export function faltaParaOAdmin(): string[] {
   const falta: string[] = [];
-  if (!supabaseConfigurado()) falta.push("SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY");
+  if (!supabaseConfigurado()) falta.push("endereço e chave secreta do Supabase");
   if ((process.env.ADMIN_SESSION_SECRET ?? "").length < 32) falta.push("ADMIN_SESSION_SECRET (32 caracteres ou mais)");
   return falta;
 }

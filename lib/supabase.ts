@@ -12,7 +12,7 @@ export function supabaseConfigurado(): boolean {
 
 function base(): { url: string; chave: string } {
   const c = lerSupabase(process.env);
-  if (!c) throw new Error("Supabase não configurado: defina SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY.");
+  if (!c) throw new Error("Supabase não configurado: defina o endereço e a chave secreta.");
   return c;
 }
 

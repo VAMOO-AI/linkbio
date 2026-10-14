@@ -1,3 +1,5 @@
+import { ehLinkWhatsapp } from "./whatsapp";
+
 /**
  * Contagem de cliques da bio, sem cookie e sem ferramenta de fora.
  *
@@ -11,12 +13,14 @@
  */
 
 export function hrefDoClique(alvo: string | null | undefined, direto: string): string {
-  return alvo ? `/r/${alvo}` : direto;
+  if (!alvo) return direto;
+  return ehLinkWhatsapp(direto) ? `/r/${alvo}?wa=1` : `/r/${alvo}`;
 }
 
 /** Botão final do concierge: as respostas vão no `r` (ids da config, não um endereço livre). */
-export function hrefConcierge(chave: string, opcoes: readonly string[]): string {
-  return `/r/concierge.${chave}?r=${opcoes.join(".")}`;
+export function hrefConcierge(chave: string, opcoes: readonly string[], direto?: string): string {
+  const base = `/r/concierge.${chave}?r=${opcoes.join(".")}`;
+  return direto && ehLinkWhatsapp(direto) ? `${base}&wa=1` : base;
 }
 
 export function alvoCta(chave: string): string {

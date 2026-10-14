@@ -24,7 +24,18 @@ function rodaCheck(blocos: unknown[], extra: Record<string, unknown> = {}, envEx
     ...extra,
   };
   writeFileSync(arq, `export default ${JSON.stringify(config)};`);
-  const r = spawnSync("npx", ["tsx", "scripts/check.ts", arq], { encoding: "utf8", env: { ...process.env, SUPABASE_URL: "", LINKBIO_ROOT: process.cwd(), ...envExtra } });
+  const r = spawnSync("npx", ["tsx", "scripts/check.ts", arq], {
+    encoding: "utf8",
+    env: {
+      ...process.env,
+      SUPABASE_URL: "",
+      NEXT_PUBLIC_SUPABASE_URL: "",
+      SUPABASE_SECRET_KEY: "",
+      LINKBIO_SEM_VERSAO: "1",
+      LINKBIO_ROOT: process.cwd(),
+      ...envExtra,
+    },
+  });
   return { status: r.status, saida: `${r.stdout}${r.stderr}` };
 }
 

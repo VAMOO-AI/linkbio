@@ -114,7 +114,7 @@ export function ConciergeIa({
       respostas,
       oferta: oferta ? { title: oferta.title, url: oferta.url, wa: oferta.wa } : undefined,
     });
-    const href = chave ? hrefConcierge(chave, respostas.map((r) => r.id)) : direto;
+    const href = chave ? hrefConcierge(chave, respostas.map((r) => r.id), direto) : direto;
     const mais = oferta?.more_url ? hrefDoClique(chave ? alvoConciergeMais(chave, oferta.id) : null, oferta.more_url) : undefined;
     conteudo = (
       <>

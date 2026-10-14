@@ -3,7 +3,20 @@
 ## Não lançado
 
 ### Para quem usa
-- Nada novo desde a v0.6.1.
+- Nada novo desde a v0.6.2.
+
+## v0.6.2 (2026-10-13)
+
+### Para quem usa
+- O check avisa sozinho quando sai uma versão nova do template.
+- A bio também liga com a chave nova do Supabase, a que a Vercel grava sozinha.
+- Com a contagem de cliques ligada, o pixel continua marcando o toque no WhatsApp.
+
+### Na bio e no painel
+- O aviso de versão lê o `versao.json` do repositório de distribuição. Se esse endereço não responder, vale a tag do remote `upstream`. `LINKBIO_VERSAO_URL` continua ganhando, se estiver preenchida.
+- Keepalive, saúde, capa e a página passam a aceitar `NEXT_PUBLIC_SUPABASE_URL` e `SUPABASE_SECRET_KEY`, os nomes da integração da Vercel.
+- O atalho `/r/` de um botão de WhatsApp leva `?wa=1`. O aviso de cookies usa isso para disparar o evento, porque o href que a pessoa clica já não é o `wa.me`.
+- `POST /api/frota` guarda o ping diário (site, versão, origem da config) quando `FROTA_RECEPCAO=1`. Nas bios o ping continua desligado até `LINKBIO_PING_URL` apontar para esse hub.
 
 ## v0.6.1 (2026-10-13)
 

@@ -359,17 +359,22 @@ Sem o painel ligado, tudo continua funcionando pelo `linkbio.config.ts`.
 
 **Como ligar (uma vez):**
 
-1. Crie um projeto no Supabase e rode, em ordem, os arquivos de
-   `supabase/migrations/` (tabelas do painel, rascunho e pasta de imagens;
-   nada fica aberto ao público).
-2. Preencha no `.env.local` e na Vercel: `SUPABASE_URL`,
-   `SUPABASE_SERVICE_ROLE_KEY` e `ADMIN_SESSION_SECRET` (o Claude gera o segredo
-   com `npm run admin:segredo` e abre o `.env.local` no seu editor de texto para
-   você colar as chaves do Supabase; elas não passam pelo chat).
-3. Cadastre quem pode entrar: o Claude roda `npm run admin:usuario -- voce@email.com`
-   (sem senha no comando, uma senha forte é gerada) e abre a senha num arquivo de
-   texto para você guardar; ela não aparece na conversa. O mesmo comando troca a senha.
-4. Publique. Entre em `/admin/login`.
+1. Crie um projeto no Supabase. No SQL Editor, rode `supabase/instalar.sql`
+   (ele junta painel, rascunho, keepalive, cliques, contatos, código de e-mail,
+   concierge e o ping da frota). Nada fica aberto ao público.
+2. Preencha no `.env.local` e na Vercel o endereço e a chave secreta. Os nomes
+   daqui são `SUPABASE_URL` e `SUPABASE_SERVICE_ROLE_KEY`. A integração da Vercel
+   grava `NEXT_PUBLIC_SUPABASE_URL` e `SUPABASE_SECRET_KEY`; a bio aceita os dois.
+   Projeto novo: Secret key (`sb_secret_...`). Projeto antigo: a chave service_role
+   (começa com `eyJ`). E `ADMIN_SESSION_SECRET` (o Claude gera com
+   `npm run admin:segredo` e abre o arquivo no seu editor; a chave não passa pelo chat).
+3. Para o código de 6 dígitos no e-mail, preencha `RESEND_API_KEY` (resend.com).
+   Sem um domínio verificado, o remetente padrão só entrega no e-mail da própria
+   conta Resend: use esse e-mail no painel.
+4. Cadastre quem entra: `npm run admin:usuario -- voce@email.com`. Sem senha no
+   comando, uma senha forte é gerada e aberta num arquivo. O caminho normal é o
+   código no e-mail; quem já tem senha continua podendo usá-la.
+5. Publique. Entre em `/admin/login`.
 
 **Regras do painel:**
 

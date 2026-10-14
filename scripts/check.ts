@@ -206,11 +206,13 @@ for (const o of offers) {
 // next/image só carrega imagem externa do Storage do Supabase deste projeto (next.config.ts). Imagem de
 // qualquer outro host passa no schema, mas quebra a página no ar ("hostname is not configured").
 const PUBLICO_STORAGE = "/storage/v1/object/public/";
+const urlSupabase = (env("SUPABASE_URL") || env("NEXT_PUBLIC_SUPABASE_URL")).trim();
+const chaveSupabase = (env("SUPABASE_SERVICE_ROLE_KEY") || env("SUPABASE_SECRET_KEY")).trim();
 let hostSupabase = "";
 try {
-  hostSupabase = has("SUPABASE_URL") ? new URL(env("SUPABASE_URL")).hostname : "";
+  hostSupabase = urlSupabase ? new URL(urlSupabase).hostname : "";
 } catch {
-  // SUPABASE_URL inválida: sem host liberado (o next.config.ts também não libera nenhum).
+  // Endereço inválido: sem host liberado (o next.config.ts também não libera nenhum).
 }
 function imagemExternaOk(v: string): boolean {
   let u: URL;
@@ -378,7 +380,8 @@ if (doExemplo.length) {
 }
 
 // --- config × env (nomes seguem .env.example) ---
-const supabaseUrlOk = has("SUPABASE_URL");
+const supabaseUrlOk = urlSupabase.length > 0;
+const supabaseChaveOk = chaveSupabase.length > 0;
 const leadsOn = config?.features?.leads === true;
 const analyticsOn = config?.features?.analytics === true;
 // O bloco lead ligado já é a captura. features.leads continua valendo para config antiga.
@@ -388,7 +391,7 @@ if (capturaOn && !supabaseUrlOk) {
     `Supabase ligado na config (${[leadsOn && "features.leads", temLead && "bloco lead"].filter(Boolean).join(", ")}) mas SUPABASE_URL não está no env`,
   );
 }
-if (capturaOn && !has("SUPABASE_SERVICE_ROLE_KEY")) {
+if (capturaOn && !supabaseChaveOk) {
   erro(
     "Supabase ligado na config mas SUPABASE_SERVICE_ROLE_KEY não está no env" + (temLead ? " (bloco lead)" : ""),
   );
@@ -424,7 +427,7 @@ if (blocks.length > 0 && !blocks.some(apareceHoje)) {
 
 // --- cliques (features.analytics) ---
 // Aviso, não erro: sem o banco a bio continua no ar, só não conta os toques.
-if (analyticsOn && (!supabaseUrlOk || !has("SUPABASE_SERVICE_ROLE_KEY"))) {
+if (analyticsOn && (!supabaseUrlOk || !supabaseChaveOk)) {
   aviso(
     "features.analytics ligado sem Supabase (SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY): a contagem de cliques não grava e os botões continuam diretos",
   );
@@ -457,19 +460,25 @@ if (!config) {
 
 await conferir(config);
 
-// Versão nova do template: só aviso. Sem URL e sem remote upstream, não consulta.
-// Timeout curto; falha de rede fica em silêncio (não trava quem está offline).
-try {
-  const { mensagemVersaoNova } = await import("./versao-remota");
-  const versaoAtual = JSON.parse(readFileSync(join(root, "package.json"), "utf8")).version ?? "";
-  const msgVersao = await mensagemVersaoNova({
-    versaoAtual: String(versaoAtual),
-    versaoUrl: env("LINKBIO_VERSAO_URL"),
-    root,
-  });
-  if (msgVersao) aviso(msgVersao);
-} catch {
-  // offline ou sem o remote: o check segue
+// Versão nova do template: só aviso. URL explícita ganha. Sem ela, consulta o versao.json
+// do repositório de distribuição e, se ele não responder, a tag do remote upstream.
+// LINKBIO_SEM_VERSAO=1 existe para a suíte não depender de rede. Timeout curto; falha fica em silêncio.
+if (process.env.LINKBIO_SEM_VERSAO !== "1") {
+  try {
+    const { mensagemVersaoNova, urlDaVersaoPublicada } = await import("./versao-remota");
+    const { URL_DISTRIBUICAO } = await import("../config/distribuicao");
+    const versaoAtual = JSON.parse(readFileSync(join(root, "package.json"), "utf8")).version ?? "";
+    const explicita = env("LINKBIO_VERSAO_URL").trim();
+    const versaoUrl = explicita || urlDaVersaoPublicada(URL_DISTRIBUICAO) || "";
+    const msgVersao = await mensagemVersaoNova({
+      versaoAtual: String(versaoAtual),
+      versaoUrl,
+      root,
+    });
+    if (msgVersao) aviso(msgVersao);
+  } catch {
+    // offline ou sem o remote: o check segue
+  }
 }
 
 resumo();

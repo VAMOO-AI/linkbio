@@ -18,6 +18,7 @@ import {
   type Encaixe,
 } from "./compartilhar";
 import { resolverTema, type TemaResolvido } from "./resolver";
+import { lerSupabase } from "./supabase-chave";
 import { accentFill, accentTexto } from "./theme";
 
 /**
@@ -88,7 +89,7 @@ export async function lerImagem(src: string): Promise<Buffer | null> {
       if (!caminho.startsWith(publico + sep)) return null;
       return await readFile(caminho);
     }
-    if (!podeBaixar(src, process.env.SUPABASE_URL)) return null;
+    if (!podeBaixar(src, lerSupabase(process.env)?.url)) return null;
     const r = await fetch(src, { signal: AbortSignal.timeout(5000), cache: "no-store" });
     if (!r.ok) return null;
     const corpo = Buffer.from(await r.arrayBuffer());

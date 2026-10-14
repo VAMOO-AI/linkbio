@@ -1,7 +1,9 @@
 import type { NextConfig } from "next";
+import { lerSupabase } from "./lib/supabase-chave";
 
 /** Imagens enviadas pelo /admin ficam no Storage do Supabase: libera só esse host no next/image. */
-const supabase = process.env.SUPABASE_URL ? new URL(process.env.SUPABASE_URL) : null;
+const supabaseUrl = lerSupabase(process.env)?.url;
+const supabase = supabaseUrl ? new URL(supabaseUrl) : null;
 
 const nextConfig: NextConfig = {
   experimental: {

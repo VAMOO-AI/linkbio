@@ -96,7 +96,7 @@ export function ConciergeBlock({
         oferta: oferta ? { url: oferta.url, wa: oferta.wa, title: oferta.title } : undefined,
         waSemOferta: decisiva.wa,
       });
-      const destino = chave ? hrefConcierge(chave, respostas.map((r) => r.id)) : direto;
+      const destino = chave ? hrefConcierge(chave, respostas.map((r) => r.id), direto) : direto;
       const mais = oferta?.more_url ? hrefDoClique(chave ? alvoConciergeMais(chave, oferta.id) : null, oferta.more_url) : undefined;
       conteudo = (
         <>
