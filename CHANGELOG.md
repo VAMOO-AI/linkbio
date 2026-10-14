@@ -3,7 +3,15 @@
 ## Não lançado
 
 ### Para quem usa
-- Nada novo desde a v0.6.2.
+- Nada novo desde a v0.6.3.
+
+## v0.6.3 (2026-10-13)
+
+### Para quem usa
+- Uma vez por dia, a bio avisa qual versão do template está no ar.
+
+### Na bio e no painel
+- O ping diário vai para o hub. Para desligar, `LINKBIO_PING_URL=off`. Outro endereço, se preenchido, substitui o hub.
 
 ## v0.6.2 (2026-10-13)
 

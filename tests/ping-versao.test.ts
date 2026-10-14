@@ -2,11 +2,20 @@ import { createServer } from "node:http";
 import type { AddressInfo } from "node:net";
 import { describe, expect, test, vi } from "vitest";
 import exemplo from "./fixtures/config-exemplo";
-import { enviarPingVersao, pingAposKeepalive } from "@/lib/ping-versao";
+import { URL_PING } from "@/config/distribuicao";
+import { enviarPingVersao, pingAposKeepalive, urlDoPing } from "@/lib/ping-versao";
 
 const CORPO = { site: "https://link.exemplo.com", versao: "0.5.1", fonte: "arquivo" as const, motivo: "sem-supabase" as const };
 
 describe("ping de versão", () => {
+  test("vazio usa o hub; off desliga; um endereço explícito ganha", () => {
+    expect(urlDoPing(undefined, "https://hub.exemplo/api/frota")).toBe("https://hub.exemplo/api/frota");
+    expect(urlDoPing("  ", "https://hub.exemplo/api/frota")).toBe("https://hub.exemplo/api/frota");
+    expect(urlDoPing("off", "https://hub.exemplo/api/frota")).toBe("");
+    expect(urlDoPing("https://outro.exemplo/ping", "https://hub.exemplo/api/frota")).toBe("https://outro.exemplo/ping");
+    expect(URL_PING).toBe("https://linkbio-frota.vercel.app/api/frota");
+  });
+
   test("URL vazia: não chama a rede", async () => {
     const buscar = vi.fn();
     await enviarPingVersao({ pingUrl: "  ", corpo: CORPO, fetch: buscar as unknown as typeof fetch });

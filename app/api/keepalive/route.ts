@@ -1,7 +1,8 @@
 import "server-only";
+import { URL_PING } from "@/config/distribuicao";
 import arquivo from "@/linkbio.config";
 import { executarKeepalive } from "@/lib/keepalive";
-import { pingAposKeepalive } from "@/lib/ping-versao";
+import { pingAposKeepalive, urlDoPing } from "@/lib/ping-versao";
 import { lerSupabase } from "@/lib/supabase-chave";
 import { versaoDoPacote } from "@/lib/versao-pacote";
 
@@ -19,7 +20,7 @@ export async function GET(request: Request): Promise<Response> {
   });
   await pingAposKeepalive({
     statusKeepalive: r.status,
-    pingUrl: process.env.LINKBIO_PING_URL,
+    pingUrl: urlDoPing(process.env.LINKBIO_PING_URL, URL_PING),
     supabaseUrl: sb?.url,
     chave: sb?.chave,
     arquivo,

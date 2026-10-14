@@ -1,6 +1,8 @@
 # segredos locais
 .env.local
 .env
+# vínculo local da CLI da Vercel (não é conteúdo da bio)
+.vercel/
 # deps e build
 node_modules/
 .next/

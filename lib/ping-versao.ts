@@ -17,6 +17,13 @@ function corpoEnxuto(c: CorpoPing): CorpoPing {
   return base;
 }
 
+/** Vazio usa o endereço padrão. `off` desliga. Qualquer outro valor ganha do padrão. */
+export function urlDoPing(envUrl: string | undefined, padrao: string): string {
+  const pedido = envUrl?.trim() ?? "";
+  if (pedido === "off") return "";
+  return pedido || padrao.trim();
+}
+
 /** URL vazia = desligado. Falha de rede não sobe. */
 export async function enviarPingVersao(e: {
   pingUrl?: string;

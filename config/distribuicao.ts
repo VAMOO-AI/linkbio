@@ -6,3 +6,9 @@
  */
 const dono = "VAM" + "OO-AI";
 export const URL_DISTRIBUICAO = `https://github.com/${dono}/linkbio.git`;
+
+/**
+ * Hub que recebe o ping diário.
+ * A cron usa este endereço quando LINKBIO_PING_URL está vazio. `off` desliga.
+ */
+export const URL_PING = "https://linkbio-frota.vercel.app/api/frota";

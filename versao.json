@@ -1,4 +1,4 @@
 {
-  "versao": "0.6.2",
-  "notas": "O check avisa sozinho quando sai versão nova."
+  "versao": "0.6.3",
+  "notas": "Uma vez por dia, a bio avisa qual versão do template está no ar."
 }

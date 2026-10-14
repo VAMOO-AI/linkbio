@@ -39,6 +39,7 @@ export async function POST(request: Request): Promise<Response> {
     ligado: true,
     supabaseUrl: sb?.url,
     chave: sb?.chave,
+    tokenBlob: process.env.BLOB_READ_WRITE_TOKEN,
     ping,
   });
   return new Response(null, { status, headers: { "Cache-Control": "no-store" } });

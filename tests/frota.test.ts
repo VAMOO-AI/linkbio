@@ -1,5 +1,5 @@
 import { describe, expect, test, vi } from "vitest";
-import { estourouPing, gravarPing, lerPing } from "../lib/frota";
+import { caminhoDoPing, estourouPing, gravarPing, lerPing } from "../lib/frota";
 
 const PING = { site: "https://link.exemplo.com", versao: "0.6.2", fonte: "arquivo" as const, motivo: "sem-supabase" as const };
 
@@ -45,5 +45,27 @@ describe("ping da frota", () => {
     expect(endereco).toBe("https://p.supabase.co/rest/v1/frota_ping?on_conflict=site");
     expect(JSON.parse(String(init.body))).toEqual({ ...PING, visto_em: "2026-10-13T12:00:00.000Z" });
     expect(String(init.body)).not.toContain("profile");
+  });
+
+  test("com o token do arquivo, grava por cima do mesmo caminho e não chama o banco", async () => {
+    const buscar = vi.fn();
+    const enviados: string[] = [];
+    const status = await gravarPing({
+      ligado: true,
+      supabaseUrl: "https://p.supabase.co",
+      chave: "sb_secret_x",
+      tokenBlob: "token-teste",
+      ping: PING,
+      agora: new Date("2026-10-13T12:00:00Z"),
+      fetch: buscar as unknown as typeof fetch,
+      enviarBlob: async (caminho, corpo) => {
+        enviados.push(`${caminho}\n${corpo}`);
+      },
+    });
+    expect(status).toBe(204);
+    expect(buscar).not.toHaveBeenCalled();
+    expect(enviados[0]).toContain(caminhoDoPing(PING.site));
+    expect(enviados[0]).toContain(PING.site);
+    expect(caminhoDoPing(PING.site)).toBe(caminhoDoPing(PING.site));
   });
 });

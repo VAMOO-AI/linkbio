@@ -1,6 +1,6 @@
 {
   "name": "linkbio-template",
-  "version": "0.6.2",
+  "version": "0.6.3",
   "private": true,
   "description": "Template de link-in-bio single-tenant (Next.js + config validada com zod).",
   "scripts": {
@@ -19,6 +19,7 @@
     "sql:instalar": "bash scripts/sql-instalar.sh supabase/instalar.sql"
   },
   "dependencies": {
+    "@vercel/blob": "^2.3.3",
     "next": "16.3.6",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",

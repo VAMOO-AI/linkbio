@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { MOTIVOS_ARQUIVO, type MotivoArquivo } from "./origem-config";
 import { cabecalhosDaChave } from "./supabase-chave";
 
@@ -39,16 +40,51 @@ export function estourouPing(balde: Map<string, number[]>, ip: string, agora: nu
   return false;
 }
 
+/** Caminho estável: o mesmo site regrava o mesmo arquivo. */
+export function caminhoDoPing(site: string): string {
+  const id = createHash("sha256").update(site).digest("hex").slice(0, 32);
+  return `frota/${id}.json`;
+}
+
+async function enviarBlobPadrao(caminho: string, corpo: string, token: string): Promise<void> {
+  const { put } = await import("@vercel/blob");
+  await put(caminho, corpo, {
+    access: "private",
+    token,
+    addRandomSuffix: false,
+    allowOverwrite: true,
+    contentType: "application/json",
+  });
+}
+
 /** 404 = este deploy não é o hub. 204 = gravou. 502 = o banco recusou. */
 export async function gravarPing(e: {
   ligado: boolean;
   supabaseUrl?: string;
   chave?: string;
+  tokenBlob?: string;
   ping: PingRecebido;
   agora?: Date;
   fetch?: typeof fetch;
+  enviarBlob?: (caminho: string, corpo: string, token: string) => Promise<void>;
 }): Promise<number> {
   if (!e.ligado) return 404;
+  const tokenBlob = e.tokenBlob?.trim() ?? "";
+  if (tokenBlob) {
+    const corpo = JSON.stringify({
+      site: e.ping.site,
+      versao: e.ping.versao,
+      fonte: e.ping.fonte,
+      motivo: e.ping.motivo ?? null,
+      visto_em: (e.agora ?? new Date()).toISOString(),
+    });
+    try {
+      await (e.enviarBlob ?? enviarBlobPadrao)(caminhoDoPing(e.ping.site), corpo, tokenBlob);
+      return 204;
+    } catch {
+      return 502;
+    }
+  }
   const url = e.supabaseUrl?.trim().replace(/\/$/, "");
   const chave = e.chave?.trim();
   if (!url || !chave) return 503;
