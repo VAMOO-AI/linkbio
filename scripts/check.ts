@@ -380,6 +380,13 @@ if (doExemplo.length) {
 }
 
 // --- config × env (nomes seguem .env.example) ---
+// No CI (GitHub Actions define CI=true) as chaves de produção não existem: elas moram na Vercel.
+// Lá, faltar vira aviso; no computador da pessoa continua erro, para ela não publicar sem a chave.
+const noCI = ["true", "1"].includes((process.env.CI ?? "").trim().toLowerCase());
+const faltaEnv = (msg: string) =>
+  noCI
+    ? aviso(`${msg.replace("não está no env", "não está no env do CI")} (no ar, ela precisa estar na Vercel)`)
+    : erro(msg);
 const supabaseUrlOk = urlSupabase.length > 0;
 const supabaseChaveOk = chaveSupabase.length > 0;
 const leadsOn = config?.features?.leads === true;
@@ -387,18 +394,18 @@ const analyticsOn = config?.features?.analytics === true;
 // O bloco lead ligado já é a captura. features.leads continua valendo para config antiga.
 const capturaOn = leadsOn || temLead;
 if (capturaOn && !supabaseUrlOk) {
-  erro(
+  faltaEnv(
     `Supabase ligado na config (${[leadsOn && "features.leads", temLead && "bloco lead"].filter(Boolean).join(", ")}) mas SUPABASE_URL não está no env`,
   );
 }
 if (capturaOn && !supabaseChaveOk) {
-  erro(
+  faltaEnv(
     "Supabase ligado na config mas SUPABASE_SERVICE_ROLE_KEY não está no env" + (temLead ? " (bloco lead)" : ""),
   );
 }
 if (conciergeIa) {
   if (!has("ANTHROPIC_API_KEY")) {
-    erro("concierge em modo ia mas ANTHROPIC_API_KEY não está no env");
+    faltaEnv("concierge em modo ia mas ANTHROPIC_API_KEY não está no env");
   }
   aviso(AVISO_CUSTO_IA);
 }

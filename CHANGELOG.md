@@ -3,7 +3,17 @@
 ## Não lançado
 
 ### Para quem usa
-- Nada novo desde a v0.6.3.
+- Nada novo desde a v0.6.4.
+
+## v0.6.4 (2026-10-15)
+
+### Para quem usa
+- Ao publicar, eu levo para a Vercel as chaves que a sua bio usa: a da IA do concierge e a do e-mail, quando estiverem ligadas.
+- Os testes automáticos do GitHub deixam de dar "falhou" quando a bio tem formulário de contato ou concierge com IA.
+
+### Na bio e no painel
+- No CI (`CI=true`), faltar `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` ou `ANTHROPIC_API_KEY` vira aviso no `npm run check`: essas chaves moram na Vercel, não no GitHub. No computador continua erro.
+- Skill `publicar`: a lista de variáveis sai da config (painel, bloco lead, concierge IA, e-mail, webhook, pixel). Antes ela mandava não configurar `ANTHROPIC_API_KEY` nem `RESEND_API_KEY`.
 
 ## v0.6.3 (2026-10-13)
 

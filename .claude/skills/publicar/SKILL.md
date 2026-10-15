@@ -56,16 +56,26 @@ cadastro (github.com/signup) e espere o "feito".
      campo estiver vazio, pule: a atualização por git ainda não está ligada.
 3. **Vercel:** em vercel.com, entrar com a conta do GitHub, "Add New Project" e importar o
    repositório. Em **Project Name**, o mesmo `<nome>` (é ele que vira `<nome>.vercel.app`).
-   Framework: Next.js, sem mudar o comando de build. Com o painel ligado, cole as
-   variáveis do passo 4 em Environment Variables, nessa mesma tela, antes de clicar em Deploy.
-4. **Variáveis** (Project Settings > Environment Variables): só com o painel ligado (skill
-   `ligar-painel`), as três `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` e `ADMIN_SESSION_SECRET`.
-   Os valores não passam pelo chat: rode `npm run admin:segredo` antes (se faltar o segredo),
-   depois abra o `.env.local` no editor dela (Mac `open -e .env.local`; Windows
-   `start "" notepad .env.local`). Ela copia cada valor de lá e cola na Vercel, e fecha o arquivo
-   sem mudar nada (se o editor perguntar se quer salvar, "Não salvar"). Sem painel, nenhuma
-   variável. `CRON_SECRET` é opcional (protege a visita diária ao banco); `APIFY_TOKEN` só serve no seu computador
-   (setup); as outras do `.env.example` são de funções futuras: não configure.
+   Framework: Next.js, sem mudar o comando de build. Se o passo 4 pedir alguma variável, cole
+   em Environment Variables, nessa mesma tela, antes de clicar em Deploy.
+4. **Variáveis** (Project Settings > Environment Variables). Leia o `linkbio.config.ts` e monte a
+   lista só com o que a bio usa:
+   - Painel ligado (skill `ligar-painel`) ou bloco `lead` na config: `SUPABASE_URL`,
+     `SUPABASE_SERVICE_ROLE_KEY` e, com painel, `ADMIN_SESSION_SECRET` (rode `npm run admin:segredo`
+     antes, se faltar).
+   - Concierge com `mode: "ia"`: `ANTHROPIC_API_KEY`. Sem ela na Vercel, a bio no ar mostra só as
+     perguntas, mesmo funcionando no computador dela.
+   - Login do painel por código no e-mail, ou aviso de contato novo por e-mail: `RESEND_API_KEY`
+     (mais `LEAD_EMAIL_PARA` para o aviso, e `EMAIL_FROM` se ela verificou um domínio na Resend).
+   - Contato novo indo para n8n, Make ou Zapier: `LEAD_WEBHOOK_URL`.
+   - Pixel: `META_PIXEL_ID` ou `GA4_MEASUREMENT_ID` só se o ID não estiver na config ou no painel.
+   - `CRON_SECRET` é opcional (protege a visita diária ao banco).
+   Não configure `APIFY_TOKEN` (só serve no computador dela, no setup), `LINKBIO_VERSAO_URL`,
+   `LINKBIO_PING_URL` nem `FROTA_RECEPCAO`. Nada da lista acima na config: nenhuma variável.
+   Os valores não passam pelo chat: abra o `.env.local` no editor dela (Mac `open -e .env.local`;
+   Windows `start "" notepad .env.local`). Ela copia cada valor de lá e cola na Vercel, e fecha o
+   arquivo sem mudar nada (se o editor perguntar se quer salvar, "Não salvar"). Valor que falta no
+   `.env.local`: confira por contagem ("Conferir chave" do `AGENTS.md`) e peça para ela colar lá antes.
 5. Deploy e abrir o endereço que a Vercel der.
 6. Se o endereço que a Vercel deu for diferente de `site.url` (nome já usado por outra pessoa: ela
    acrescenta um final, ex.: `ana-nutri-abc123.vercel.app`), ofereça: (a) ficar com esse, ou (b)

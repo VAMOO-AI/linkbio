@@ -21,7 +21,7 @@ import { PixBlock } from "./pix";
 import { AgendaBlock } from "./agenda";
 
 /**
- * type → componente. Bloco novo entra aqui (skill novo-bloco na F5).
+ * type → componente. Bloco novo entra aqui (skill novo-bloco).
  * Recebe a config e o tema de quem chama (a página publicada ou a prévia do /admin); nenhum bloco lê a config sozinho.
  * `ia` vem de quem chama: a página publicada só liga com a chave; a prévia usa o modo do bloco.
  */

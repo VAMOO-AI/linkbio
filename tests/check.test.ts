@@ -33,6 +33,8 @@ function rodaCheck(blocos: unknown[], extra: Record<string, unknown> = {}, envEx
       SUPABASE_SECRET_KEY: "",
       LINKBIO_SEM_VERSAO: "1",
       LINKBIO_ROOT: process.cwd(),
+      // O GitHub Actions roda com CI=true; o teste escolhe o modo, não herda.
+      CI: "",
       ...envExtra,
     },
   });
@@ -358,5 +360,27 @@ describe("check.ts × concierge em modo IA", () => {
     expect(r.saida).not.toMatch(/ANTHROPIC_API_KEY não está no env/);
     expect(r.saida).not.toContain(chave);
     expect(r.status).toBe(0);
+  }, 30_000);
+});
+
+/** No CI as chaves de produção não existem (moram na Vercel): faltar vira aviso, não derruba o check. */
+describe("check.ts × variáveis no CI", () => {
+  const lead = { type: "lead", id: "planner", title: "Planner", label: "Quero", pedir: "whatsapp", sucesso: "Pronto, olhe a mensagem." };
+  const semChaves = { SUPABASE_SERVICE_ROLE_KEY: "", ANTHROPIC_API_KEY: "" };
+
+  test("com CI=true, lead e concierge IA sem as chaves passam com aviso", () => {
+    const r = rodaCheck([lead, fluxoIa], {}, { ...semChaves, CI: "true" });
+    expect(r.saida).toMatch(/\[aviso\].*SUPABASE_URL não está no env do CI/);
+    expect(r.saida).toMatch(/\[aviso\].*SUPABASE_SERVICE_ROLE_KEY não está no env do CI/);
+    expect(r.saida).toMatch(/\[aviso\].*ANTHROPIC_API_KEY não está no env do CI/);
+    expect(r.saida).not.toMatch(/\[erro\].*não está no env/);
+    expect(r.status).toBe(0);
+  }, 30_000);
+
+  test("fora do CI, a mesma config continua dando erro", () => {
+    const r = rodaCheck([lead, fluxoIa], {}, semChaves);
+    expect(r.saida).toMatch(/\[erro\].*SUPABASE_URL não está no env/);
+    expect(r.saida).toMatch(/\[erro\].*ANTHROPIC_API_KEY não está no env/);
+    expect(r.status).not.toBe(0);
   }, 30_000);
 });

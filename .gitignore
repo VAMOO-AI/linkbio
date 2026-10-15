@@ -14,6 +14,7 @@ mockups/
 # artefatos de teste e tsc incremental
 test-results/
 playwright-report/
+.vitest/
 *.tsbuildinfo
 # pasta local da CLI do Supabase (link do projeto)
 supabase/.temp/

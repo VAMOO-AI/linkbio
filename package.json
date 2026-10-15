@@ -1,6 +1,6 @@
 {
   "name": "linkbio-template",
-  "version": "0.6.3",
+  "version": "0.6.4",
   "private": true,
   "description": "Template de link-in-bio single-tenant (Next.js + config validada com zod).",
   "scripts": {
