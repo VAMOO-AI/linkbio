@@ -3,7 +3,16 @@
 ## Não lançado
 
 ### Para quem usa
-- Nada novo desde a v0.6.4.
+- Nada novo desde a v0.6.5.
+
+## v0.6.5 (2026-10-15)
+
+### Para quem usa
+- Correção de segurança do Next.js, a base do site. Vale atualizar.
+
+### Na bio e no painel
+- `next` 16.3.6 → 16.3.8 (SSRF na otimização de imagem, vazamento de conteúdo entre usuários no cache de páginas estáticas e informação exposta em rotas de imagem) e `source-map-js` 1.2.1 → 1.2.2. `npm audit --omit=dev`: 0 vulnerabilidades.
+- Sobram 5 alertas só no lint (`braces` via `eslint-config-next`), sem versão corrigida publicada; não vão para o site.
 
 ## v0.6.4 (2026-10-15)
 

@@ -1,4 +1,4 @@
 {
-  "versao": "0.6.4",
-  "notas": "O concierge com IA e o formulário de contato passam a ser publicados com as chaves certas."
+  "versao": "0.6.5",
+  "notas": "Correção de segurança do Next.js. Vale atualizar."
 }
