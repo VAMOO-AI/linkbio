@@ -1,4 +1,4 @@
 {
-  "versao": "0.6.5",
-  "notas": "Correção de segurança do Next.js. Vale atualizar."
+  "versao": "0.6.6",
+  "notas": "Trocar o endereço da bio no painel passa a valer também para o Google."
 }

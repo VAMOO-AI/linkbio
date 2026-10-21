@@ -3,7 +3,15 @@
 ## Não lançado
 
 ### Para quem usa
-- Nada novo desde a v0.6.5.
+- Nada novo desde a v0.6.6.
+
+## v0.6.6 (2026-10-21)
+
+### Para quem usa
+- Trocou o endereço da bio no painel? Em até 1 hora o Google passa a ver o endereço novo, sem precisar publicar o site de novo.
+
+### Na bio e no painel
+- `app/sitemap.ts` e `app/robots.ts` ganham `revalidate = 3600`, o mesmo prazo da página. Sem ele as duas rotas saíam do build com cache de 1 ano e, na Vercel, o Publicar do `/admin` não as renovava: o `site.url` novo só aparecia depois de um redeploy. No `next start` a tag já renovava as duas na hora.
 
 ## v0.6.5 (2026-10-15)
 

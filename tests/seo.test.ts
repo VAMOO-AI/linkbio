@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { describe, expect, test } from "vitest";
 import { dadosEstruturados, mapaDoSite, regrasDeRobos } from "../lib/seo";
 
@@ -8,7 +9,21 @@ const perfil = {
   socials: [{ url: "https://instagram.com/casaverde" }],
 };
 
+/** `export const revalidate = N` da rota (um literal: a doc do Next não aceita conta aqui). */
+function revalidateDe(arquivo: string): number | null {
+  const m = readFileSync(arquivo, "utf8").match(/^export const revalidate = (\d+);/m);
+  return m ? Number(m[1]) : null;
+}
+
 describe("sitemap e robots", () => {
+  test("se renovam no mesmo prazo da página", () => {
+    // Sem isso as duas rotas saem do build com cache de 1 ano, e na Vercel o Publicar não as alcançava.
+    const pagina = revalidateDe("app/(site)/page.tsx");
+    expect(pagina).toBeGreaterThan(0);
+    expect(revalidateDe("app/sitemap.ts")).toBe(pagina);
+    expect(revalidateDe("app/robots.ts")).toBe(pagina);
+  });
+
   test("usa o endereço de verdade e, no exemplo, o da Vercel", () => {
     expect(mapaDoSite("https://bio.minhamarca.com.br", { VERCEL_PROJECT_PRODUCTION_URL: "x.vercel.app" })).toEqual([
       { url: "https://bio.minhamarca.com.br" },
