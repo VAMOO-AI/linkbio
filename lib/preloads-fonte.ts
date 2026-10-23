@@ -1,5 +1,5 @@
 import { readdirSync, readFileSync, statSync } from "node:fs";
-import { join } from "node:path";
+import { join, relative, sep } from "node:path";
 
 export type ParDeFontes = { display: string; body: string };
 
@@ -61,6 +61,18 @@ export function urlsDasFontes(css: string): Record<string, string[]> {
   return out;
 }
 
+/**
+ * Troca cada url() relativa pelo caminho público, resolvido a partir de onde o CSS é servido.
+ * O Next 16.4 serve CSS em /_next/static/immutable/chunks/ e fonte em .../immutable/media/:
+ * supor /_next/static/media/ dava 404 no preload.
+ */
+export function urlsPublicas(css: string, caminhoDoCss: string): string {
+  return css.replace(/url\(\s*(["']?)([^"')]+)\1\s*\)/g, (inteiro, aspas: string, url: string) => {
+    if (/^(\/|data:|[a-z]+:)/i.test(url)) return inteiro;
+    return `url(${aspas}${new URL(url, `http://x${caminhoDoCss}`).pathname}${aspas})`;
+  });
+}
+
 /** Links de pré-carga das famílias do tema resolvido (título e texto). */
 export function hrefsParaPreload(font: ParDeFontes, css: string): string[] {
   const mapa = urlsDasFontes(css);
@@ -93,8 +105,12 @@ function listarCss(dir: string, acc: string[], profundidade: number) {
 function cssDe(dir: string): string {
   const arquivos: string[] = [];
   // O diretório só existe depois do build. Sem o ignore, o Next inclui o projeto inteiro na função.
-  listarCss(join(/*turbopackIgnore: true*/ process.cwd(), dir), arquivos, 0);
-  return arquivos.map((a) => readFileSync(a, "utf8")).join("\n");
+  const raiz = join(/*turbopackIgnore: true*/ process.cwd(), dir);
+  listarCss(raiz, arquivos, 0);
+  // Build e dev servem o conteúdo da pasta em /_next/static/.
+  return arquivos
+    .map((a) => urlsPublicas(readFileSync(a, "utf8"), `/_next/static/${relative(raiz, a).split(sep).join("/")}`))
+    .join("\n");
 }
 
 /**

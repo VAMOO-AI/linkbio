@@ -31,6 +31,10 @@ test("pré-carrega a fonte do modelo, e dois modelos diferentes não baixam a me
   expect(editorial.length).toBeGreaterThan(brutal.length);
   expect(brutal).not.toEqual(editorial);
   expect(home).toEqual(neutro);
+  // Preload apontando para caminho que não existe dá 404 no console e não adianta nada.
+  for (const href of [...neutro, ...brutal, ...editorial]) {
+    expect((await page.request.get(href)).status(), href).toBe(200);
+  }
 });
 
 test("a foto do perfil pede prioridade e não é lazy", async ({ page }) => {

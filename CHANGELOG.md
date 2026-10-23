@@ -3,7 +3,15 @@
 ## Não lançado
 
 ### Para quem usa
-- Nada novo desde a v0.7.1.
+- Nada novo desde a v0.7.2.
+
+## v0.7.2 (2026-10-23)
+
+### Para quem usa
+- Corrige o pré-carregamento da fonte: o navegador parava de mostrar erro no console e a fonte chega mais cedo.
+
+### Na bio e no painel
+- `lib/preloads-fonte.ts`: cada `url()` do CSS do next/font é resolvida a partir de onde o CSS é servido. No build da Vercel com Next 16.4 a fonte fica em `/_next/static/immutable/media/`, e o caminho fixo `/_next/static/media/` dava 404.
 
 ## v0.7.1 (2026-10-23)
 

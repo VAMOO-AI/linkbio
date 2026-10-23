@@ -1,4 +1,4 @@
 {
-  "versao": "0.7.1",
-  "notas": "Ligar a agenda do Google pelo Claude ficou mais seguro."
+  "versao": "0.7.2",
+  "notas": "Corrige o pré-carregamento da fonte, que dava erro no console do navegador."
 }
