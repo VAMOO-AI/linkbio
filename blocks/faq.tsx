@@ -13,7 +13,7 @@ export function FaqBlock({
       {title && <h2 className="faq-titulo">{title}</h2>}
       <div className="faq-lista">
         {items.map((item, i) => (
-          <details key={item.q} open={openFirst && i === 0}>
+          <details key={`${i}-${item.q}`} open={openFirst && i === 0}>
             <summary>{item.q}</summary>
             <p>{item.a}</p>
           </details>

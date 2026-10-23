@@ -14,7 +14,7 @@ export function LinksBlock({ title, layout, items, chave = null }: Props) {
       {title && <p className="links-titulo">{title}</p>}
       <ul className="links-lista">
         {items.map((item, i) => (
-          <li key={item.url}>
+          <li key={`${i}-${item.url}`}>
             <a href={hrefDoClique(chave ? alvoItemLinks(chave, i) : null, item.url)} target="_blank" rel="noopener">
               <span className="links-icone" aria-hidden="true">
                 <IconeSocial icone={item.icon ?? "site"} />

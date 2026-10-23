@@ -246,6 +246,7 @@ const blocks: any[] = Array.isArray(config?.blocks) ? config.blocks : [];
 let conciergeIa = false;
 let temAgenda = false;
 let temLead = false;
+let temAgendamento = false;
 function visitar(no: any, onde: string) {
   if (Array.isArray(no)) {
     no.forEach((v, i) => visitar(v, `${onde}[${i}]`));
@@ -312,6 +313,7 @@ blocks.forEach((b, i) => {
   }
   if (b?.type === "agenda") temAgenda = true;
   if (b?.type === "lead" && b?.enabled !== false) temLead = true;
+  if (b?.type === "agendamento" && b?.enabled !== false) temAgendamento = true;
   if (b?.type === "agenda" && Array.isArray(b.items) && b.items.length > 0) {
     const tz = typeof config?.site?.tz === "string" ? config.site.tz : "America/Sao_Paulo";
     try {
@@ -423,6 +425,20 @@ if (capturaOn && !has("LEAD_WEBHOOK_URL") && !has("RESEND_API_KEY")) {
       ? "bloco lead ligado sem LEAD_WEBHOOK_URL nem RESEND_API_KEY — os contatos ficam só no banco"
       : "features.leads ligado sem LEAD_WEBHOOK_URL nem RESEND_API_KEY — leads ficam só no Supabase",
   );
+}
+// Agendamento sem banco ou sem Google: a bio continua no ar, o bloco vira botão de WhatsApp.
+if (temAgendamento && (!supabaseUrlOk || !supabaseChaveOk)) {
+  aviso(
+    "bloco agendamento ligado sem Supabase (SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY): a agenda online não abre e o bloco mostra só o botão de WhatsApp",
+  );
+}
+if (temAgendamento && (!has("GOOGLE_CLIENT_ID") || !has("GOOGLE_CLIENT_SECRET"))) {
+  aviso(
+    "bloco agendamento ligado sem GOOGLE_CLIENT_ID e GOOGLE_CLIENT_SECRET: a agenda online não abre até ligar o Google Agenda (skill ligar-agenda); até lá o bloco mostra só o botão de WhatsApp",
+  );
+}
+if (temAgendamento && !has("LEAD_WEBHOOK_URL") && !has("RESEND_API_KEY")) {
+  aviso("bloco agendamento ligado sem LEAD_WEBHOOK_URL nem RESEND_API_KEY — o aviso de horário marcado chega só pelo Google Agenda");
 }
 if (capturaOn && has("RESEND_API_KEY") && !has("LEAD_EMAIL_PARA")) {
   aviso("RESEND_API_KEY preenchida sem LEAD_EMAIL_PARA — o e-mail de contato novo não tem destinatário");

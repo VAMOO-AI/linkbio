@@ -7,8 +7,8 @@ export function TestimonialsBlock({ title, items }: { title?: string; items: Dep
     <section className="bloco-depoimentos" aria-label={title ?? "Depoimentos"}>
       {title && <p className="depoimentos-titulo">{title}</p>}
       <ul className="depoimentos-lista">
-        {items.map((d) => (
-          <li key={`${d.name}-${d.quote.slice(0, 20)}`}>
+        {items.map((d, i) => (
+          <li key={`${i}-${d.name}`}>
             <figure className="depoimento">
               <blockquote>{d.quote}</blockquote>
               <figcaption>

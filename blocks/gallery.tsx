@@ -11,8 +11,8 @@ export function GalleryBlock({
     <section className="bloco-galeria" aria-label={title ?? "Galeria"}>
       {title && <h2 className="galeria-titulo">{title}</h2>}
       <div className="galeria-lista">
-        {images.map((img) => (
-          <figure key={img.src}>
+        {images.map((img, i) => (
+          <figure key={`${i}-${img.src}`}>
             <Image src={img.src} alt={img.alt} width={400} height={300} loading="lazy" />
             <figcaption className="sr-only">{img.alt}</figcaption>
           </figure>

@@ -3,7 +3,20 @@
 ## Não lançado
 
 ### Para quem usa
-- Nada novo desde a v0.6.6.
+- Nada novo desde a v0.7.0.
+
+## v0.7.0 (2026-10-23)
+
+### Para quem usa
+- Correção de segurança do Next.js, a base do site. Vale atualizar.
+- Dois links para o mesmo endereço (ou a mesma foto, pergunta ou rede repetida) aparecem os dois, sem sumir nem duplicar.
+- Bloco novo: agendamento. Quem visita a bio escolhe um horário livre da sua agenda e a reserva cai no seu Google Agenda, com link do Meet. Para ligar, peça: "ligar minha agenda".
+
+### Na bio e no painel
+- Bloco `agendamento` (`servicos`, `dias`, `inicio`, `fim`, `pausas`, `antecedencia`, `janela`, `intervalo`, `passo`, `maxPorDia`, `local`, `pedirEmail`). Horários em `GET /api/agendamento` (regra do bloco menos o ocupado do Google e as reservas; Google fora = nenhum horário) e reserva em `POST /api/agendamento` (confere de novo, grava antes do evento, desfaz se o Google falhar; mesmo `request_id` devolve a mesma reserva; até 3 por IP em 24 h). Migration `0009_agendamentos.sql` (tabelas `agendamentos`, com constraint contra sobreposição, e `agenda_google`). `npm run google:conectar` guarda o acesso à conta no banco; skill `ligar-agenda`. Variáveis novas: `GOOGLE_CLIENT_ID` e `GOOGLE_CLIENT_SECRET`.
+- Links, galeria, perguntas frequentes, depoimentos, redes e tags do perfil usam a posição na chave da lista. Antes, item repetido gerava chave repetida e o React avisava "two children with the same key".
+- `next` 16.3.8 → 16.4.2 (lote de 14/10: GHSA-p3m5-59mp-jv5r, DoS com Server Actions; GHSA-2464-fhr4-w9xw, RCE via sharp na otimização de imagem; GHSA-673q-mjm6-r5xr, RCE em `use cache`). `npm audit --omit=dev`: 0 vulnerabilidades.
+- Ferramentas (não vão para o site): `eslint-config-next` 16.4.2 e `vitest` 5.0.5, que leva o `vite` a 8.3.5. Sobram 5 alertas só no lint (`braces` via `eslint-config-next`), sem versão corrigida publicada.
 
 ## v0.6.6 (2026-10-21)
 

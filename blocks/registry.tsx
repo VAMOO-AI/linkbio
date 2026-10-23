@@ -19,6 +19,8 @@ import { CouponBlock } from "./coupon";
 import { LeadBlock } from "./lead";
 import { PixBlock } from "./pix";
 import { AgendaBlock } from "./agenda";
+import { AgendamentoBlock } from "./agendamento";
+import { idDoBloco } from "@/lib/agendamento/regra";
 
 /**
  * type → componente. Bloco novo entra aqui (skill novo-bloco).
@@ -31,7 +33,7 @@ export function renderBlock(
   config: LinkbioConfig,
   tema: TemaResolvido,
   chave: string | null = null,
-  opcoes?: { captura?: boolean; abertoEm?: number; ia?: boolean; teste?: boolean },
+  opcoes?: { captura?: boolean; abertoEm?: number; ia?: boolean; teste?: boolean; agendamento?: boolean },
 ) {
   const key = `${block.type}-${index}`;
   switch (block.type) {
@@ -198,6 +200,22 @@ export function renderBlock(
           url={block.url}
           items={block.items}
           tz={config.site.tz}
+        />
+      );
+    case "agendamento":
+      return (
+        <AgendamentoBlock
+          key={block.id ?? key}
+          id={idDoBloco(block, config.blocks.indexOf(block))}
+          title={block.title ?? "Marque um horário"}
+          intro={block.intro}
+          servicos={block.servicos}
+          pedirEmail={block.pedirEmail}
+          ativo={opcoes?.agendamento !== false}
+          whatsapp={config.contact.whatsapp}
+          tz={config.site.tz}
+          dono={config.profile.name}
+          abertoEm={opcoes?.abertoEm ?? Date.now()}
         />
       );
   }

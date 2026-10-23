@@ -63,9 +63,10 @@ Peça em linguagem normal; o Claude escolhe a skill certa (ficam em `.claude/ski
 | "rode o setup da minha bio" | `setup-linkbio` |
 | "adiciona o link do...", "muda o preço", "troca minha foto", "muda a cor", "deixa escuro" | `editar-bio` |
 | "quero editar pelo celular", "esqueci a senha do painel" | `ligar-painel` |
+| "quero que marquem horário pela bio", "ligar minha agenda" | `ligar-agenda` |
 | "coloca no ar", "usar meu domínio" | `publicar` |
 | "tem versão nova do template" | `atualizar-template` |
-| "preciso de um bloco que não existe" (quando nenhum dos 19 resolve) | `novo-bloco` |
+| "preciso de um bloco que não existe" (quando nenhum dos 20 resolve) | `novo-bloco` |
 
 ## Onde mexer
 
@@ -119,6 +120,7 @@ duas datas), ver abaixo.
 | `lead` | Formulário de contato (material grátis, lista de espera) | `title`, `label`, `pedir`, `sucesso`, `entrega` |
 | `pix` | QR e código Pix para copiar | `chave`, `nome`, `cidade`, `valor_cents`, `copy` |
 | `agenda` | Próximos encontros, Google Agenda e arquivo `.ics` | `title`, `url`, `items` |
+| `agendamento` | Horários livres do seu Google Agenda: a pessoa marca e o evento já cai na agenda, com Meet | `servicos`, `dias`, `inicio`, `fim`, `pausas`, `local` |
 
 ### Liga e desliga
 
@@ -165,6 +167,18 @@ Eventos futuros, com botão do Google Agenda e arquivo `.ics` em
 `/agenda/<id>.ics`. A página é estática: evento passado some na publicação ou
 na atualização de hora em hora. `url` do bloco é o botão de agendar (Cal.com,
 Calendly).
+
+### Agendamento
+
+Quem visita escolhe o serviço, o dia e um horário livre e deixa nome e WhatsApp
+(e-mail opcional, ou obrigatório com `pedirEmail: true`). A reserva cai no seu
+Google Agenda com link do Meet (ou com o `local` que você escrever). Os
+horários saem da regra do bloco (dias, `inicio`, `fim`, `pausas`, `antecedencia`
+em horas, `janela` em dias, `intervalo` e `maxPorDia`) menos o que já está
+ocupado na sua agenda. Precisa do banco e do Google ligados (skill
+`ligar-agenda`); sem eles, o bloco mostra só o botão de WhatsApp. Se o Google
+não responder, a agenda não mostra horário nenhum, para nunca marcar por cima
+de um compromisso.
 
 ### Contagem de cliques
 
@@ -401,7 +415,8 @@ cp .env.example .env.local
 O `.env.local` nunca vai para o git. Todas as variáveis são opcionais: sem elas,
 a bio funciona estática (links, WhatsApp e concierge em modo roteiro). As do
 painel (`SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `ADMIN_SESSION_SECRET`) estão
-na skill `ligar-painel`. `CRON_SECRET` (opcional) protege `/api/keepalive`.
+na skill `ligar-painel`; as da agenda (`GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`) na skill
+`ligar-agenda`. `CRON_SECRET` (opcional) protege `/api/keepalive`.
 
 ## Capa ao compartilhar
 

@@ -126,6 +126,19 @@ export const CAMPOS: Record<string, string> = {
   time: "Hora",
   duration: "Duração (minutos)",
   place: "Local ou link",
+  servicos: "Serviços",
+  duracao: "Duração (minutos)",
+  dias: "Dias de atendimento",
+  inicio: "Começa às",
+  fim: "Termina às",
+  pausas: "Pausas (ex.: almoço)",
+  antecedencia: "Antecedência mínima (horas)",
+  janela: "Dias à frente na agenda",
+  intervalo: "Respiro entre compromissos (minutos)",
+  passo: "Horários de quantos em quantos minutos",
+  maxPorDia: "Máximo de horários por dia",
+  local: "Local",
+  pedirEmail: "Pedir e-mail",
 };
 
 /** Nome e dica dos campos de uma resposta do concierge, onde os nomes genéricos confundem. */
@@ -269,6 +282,15 @@ export const BLOCOS: Record<string, { nome: string; descricao: string; novo: Nov
       items: [{ id: idLivre("encontro", eventos), title: "Encontro", date: "2099-12-31" }],
     }),
   },
+  agendamento: {
+    nome: "Agendamento",
+    descricao: "Horários livres do seu Google Agenda",
+    novo: () => ({
+      type: "agendamento",
+      title: "Marque um horário",
+      servicos: [{ id: "conversa", title: "Conversa", duracao: 30 }],
+    }),
+  },
 };
 
 /** Resumo de uma linha para a lista de blocos. */
@@ -302,6 +324,13 @@ export const VALORES: Record<string, string> = {
   site: "Site",
   pessoa: "Pessoa",
   empresa: "Empresa",
+  dom: "Domingo",
+  seg: "Segunda",
+  ter: "Terça",
+  qua: "Quarta",
+  qui: "Quinta",
+  sex: "Sexta",
+  sab: "Sábado",
 };
 
 /** Dicas curtas embaixo do campo. */
@@ -340,6 +369,19 @@ export const DICAS: Record<string, string> = {
   place: "Um endereço ou um link https da sala.",
   offer: "No concierge: sem oferta, a resposta leva direto à conversa no WhatsApp (bom para \"Ainda não sei\").",
   radius: "Arredondamento exato dos cards, em pixels. Substitui a opção Cantos.",
+  servicos: "Cada serviço tem nome e duração. Com mais de um, a pessoa escolhe primeiro o serviço.",
+  duracao: "Em minutos, de 5 em 5 (ex.: 30, 45, 60).",
+  dias: "Vazio: segunda a sexta.",
+  inicio: "Hora do primeiro horário, ex.: 09:00. Vazio: 09:00.",
+  fim: "Nenhum horário termina depois desta hora. Vazio: 18:00.",
+  pausas: "Faixas fechadas todo dia, ex.: 12:00 às 13:00.",
+  antecedencia: "Ninguém marca para daqui a menos horas que isto. Vazio: 12.",
+  janela: "Vazio: 14 dias.",
+  intervalo: "Folga antes e depois de cada compromisso da sua agenda. Vazio: 15.",
+  passo: "Vazio: 30 (09:00, 09:30, 10:00...).",
+  maxPorDia: "Vazio: sem limite.",
+  local: "Endereço ou link da sala. Vazio: cada horário ganha um link do Google Meet.",
+  pedirEmail: "Com e-mail, a pessoa recebe o convite do Google Agenda. Sem, pede só nome e WhatsApp.",
 };
 
 /**
@@ -363,4 +405,4 @@ export const GRUPOS: Record<string, { titulo: string; campos: string[]; dica?: s
 };
 
 /** Campos que ficam em "Avançado" (quase ninguém precisa mexer). */
-export const AVANCADO = new Set(["id", "radius", "palette", "locale", "tz", "mode", "more_label", "more_url"]);
+export const AVANCADO = new Set(["id", "radius", "palette", "locale", "tz", "mode", "more_label", "more_url", "passo", "intervalo"]);

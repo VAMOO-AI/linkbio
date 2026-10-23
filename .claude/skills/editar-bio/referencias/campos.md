@@ -75,6 +75,15 @@ Nunca mostre estes nomes à pessoa: use para acertar a config.
   próxima publicação ou na atualização de hora em hora (a página é estática). Se todos passaram,
   o check avisa. `url` opcional do bloco é o botão de agendar (Cal.com, Calendly). Sem `duration`,
   o Google Agenda marca uma hora; o arquivo .ics não inventa duração.
+- Agendamento (horários livres do Google Agenda): `servicos` com `id`, `title` (até 40) e `duracao`
+  em minutos de 5 em 5 (15 a 480); `subtitle` opcional. Regra, tudo opcional: `dias` (`"seg"` a
+  `"dom"`; padrão seg a sex), `inicio` e `fim` em HH:MM (padrão 09:00 e 18:00), `pausas` com
+  `inicio` e `fim` (ex.: almoço), `antecedencia` em horas (padrão 12), `janela` em dias (padrão 14),
+  `intervalo` em minutos antes e depois de cada compromisso (padrão 15), `passo` (padrão 30) e
+  `maxPorDia`. `local` (endereço ou link) troca o Meet; vazio, cada horário ganha um Meet.
+  `pedirEmail: true` pede e-mail e manda o convite. Pergunte durações e horários à pessoa; não
+  invente. Para funcionar precisa do banco e do Google ligados (skill `ligar-agenda`); sem eles, o
+  bloco vira botão de WhatsApp e o check avisa.
 - Vídeo do YouTube: no arquivo, `videoId` é o código depois de `v=` no link (ou depois de
   `youtu.be/`). No painel, cole o link inteiro: ele guarda só o código.
 - Esconder sem apagar: `enabled: false`.

@@ -1,0 +1,17 @@
+# Arquivos que o Claude Code copia do clone principal para todo worktree novo que ele cria
+# (claude --worktree, subagent com isolation: worktree, sessão paralela do app desktop).
+# Sintaxe do .gitignore; só é copiado o que casa com um padrão E é ignorado pelo git, então
+# arquivo versionado (o .env.example, o .env.1password) nunca é duplicado.
+# Doc: https://code.claude.com/docs/en/worktrees.md#copy-gitignored-files-into-worktrees
+#
+# Existe porque o worktree nasce só com o que está commitado: sem o .env.local o dev sobe, o
+# Vite não acha VITE_SUPABASE_URL e o login devolve "Failed to fetch" (17/09/2026). Até
+# 22/10/2026 quem copiava era o hook worktree-seed-env.sh do kit do time, com esta lista.
+#
+# Fora de propósito: node_modules. Rode o install no worktree (bun install / npm ci); o
+# symlink do node_modules do clone quebra os binários de .bin com caminho absoluto.
+.env
+.env.*
+.npmrc
+.bunfig.toml
+bunfig.toml

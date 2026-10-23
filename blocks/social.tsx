@@ -93,7 +93,7 @@ export function SocialBlock({
   return (
     <nav className="bloco-social" aria-label="Redes sociais">
       {items.map((item, i) => (
-        <a key={`${item.icone}-${item.url}`} href={hrefDoClique(chave ? alvoRede(chave, i) : null, item.url)} target="_blank" rel="noopener" aria-label={item.rotulo} title={item.rotulo}>
+        <a key={`${i}-${item.icone}-${item.url}`} href={hrefDoClique(chave ? alvoRede(chave, i) : null, item.url)} target="_blank" rel="noopener" aria-label={item.rotulo} title={item.rotulo}>
           <IconeSocial icone={item.icone} />
         </a>
       ))}

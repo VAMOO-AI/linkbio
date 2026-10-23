@@ -39,8 +39,8 @@ export function ProfileBlock({ header, socials, cover, profile, chave = null }: 
       </div>
       {profile.tags.length > 0 && (
         <ul className="perfil-tags" aria-label="Temas">
-          {profile.tags.map((tag) => (
-            <li key={tag}>{tag}</li>
+          {profile.tags.map((tag, i) => (
+            <li key={`${i}-${tag}`}>{tag}</li>
           ))}
         </ul>
       )}
@@ -49,13 +49,13 @@ export function ProfileBlock({ header, socials, cover, profile, chave = null }: 
           {redes.map((r, i) =>
             socials === "nomes" ? (
               // Nome acessível = texto visível (WCAG 2.5.3).
-              <a key={`${r.icone}-${r.url}`} href={hrefDoClique(chave ? alvoPerfil(i) : null, r.url)} target="_blank" rel="noopener">
+              <a key={`${i}-${r.icone}-${r.url}`} href={hrefDoClique(chave ? alvoPerfil(i) : null, r.url)} target="_blank" rel="noopener">
                 <IconeSocial icone={r.icone} />
                 <span>{r.rotulo}</span>
               </a>
             ) : (
               <a
-                key={`${r.icone}-${r.url}`}
+                key={`${i}-${r.icone}-${r.url}`}
                 href={hrefDoClique(chave ? alvoPerfil(i) : null, r.url)}
                 target="_blank"
                 rel="noopener"

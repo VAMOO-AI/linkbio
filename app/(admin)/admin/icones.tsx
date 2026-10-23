@@ -49,6 +49,7 @@ const P: Record<string, string> = {
   lead: "M4 4h16v16H4zM4 9l8 5 8-5",
   pix: "M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h2v2h-2zM18 14h2v2h-2zM14 18h2v2h-2zM18 18h2v2h-2z",
   agenda: "M8 3v3M16 3v3M4 9h16M6 5h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z",
+  agendamento: "M8 3v3M16 3v3M4 9h16M6 5h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2zM12 12v3l2 1",
 };
 
 export function Icone({ nome, tamanho = 18 }: { nome: string; tamanho?: number }) {

@@ -68,6 +68,9 @@ cadastro (github.com/signup) e espere o "feito".
    - Login do painel por código no e-mail, ou aviso de contato novo por e-mail: `RESEND_API_KEY`
      (mais `LEAD_EMAIL_PARA` para o aviso, e `EMAIL_FROM` se ela verificou um domínio na Resend).
    - Contato novo indo para n8n, Make ou Zapier: `LEAD_WEBHOOK_URL`.
+   - Bloco `agendamento` na config: `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `GOOGLE_CLIENT_ID` e
+     `GOOGLE_CLIENT_SECRET`. A conta Google conectada fica no banco (skill `ligar-agenda`), não na
+     Vercel. Sem essas quatro, o bloco no ar vira só o botão de WhatsApp.
    - Pixel: `META_PIXEL_ID` ou `GA4_MEASUREMENT_ID` só se o ID não estiver na config ou no painel.
    - `CRON_SECRET` é opcional (protege a visita diária ao banco).
    Não configure `APIFY_TOKEN` (só serve no computador dela, no setup), `LINKBIO_VERSAO_URL`,

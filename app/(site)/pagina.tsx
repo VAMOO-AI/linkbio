@@ -3,6 +3,7 @@ import { blocosAtivos } from "@/lib/blocos";
 import { chavesDosBlocos } from "@/lib/cliques";
 import { obterConfig, obterTema } from "@/lib/config-fonte";
 import { supabaseConfigurado } from "@/lib/supabase";
+import { agendamentoNoAmbiente } from "@/lib/agendamento/servidor";
 
 /**
  * Página da bio. `testeIa` só é ligado pela página de teste, quando ANTHROPIC_BASE_URL existe:
@@ -16,6 +17,7 @@ export async function PaginaPublica({ testeIa = false }: { testeIa?: boolean }) 
   const captura = supabaseConfigurado();
   // A chave fica neste módulo de servidor. O registro dos blocos também roda na prévia, no navegador.
   const chaveIa = Boolean(process.env.ANTHROPIC_API_KEY);
+  const agendamento = agendamentoNoAmbiente();
   return (
     <>
       {blocosAtivos(config.blocks, new Date(), config.site.tz).map((block, i) =>
@@ -24,6 +26,7 @@ export async function PaginaPublica({ testeIa = false }: { testeIa?: boolean }) 
           abertoEm: 0,
           ia: block.type === "concierge" && chaveIa && (block.mode === "ia" || testeIa),
           teste: testeIa,
+          agendamento,
         }),
       )}
     </>

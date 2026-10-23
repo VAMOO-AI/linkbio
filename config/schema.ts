@@ -713,6 +713,85 @@ const AgendaBlockSchema = z
   })
   .strict();
 
+const HORA_RE = /^([01]\d|2[0-3]):[0-5]\d$/;
+const horaDoDia = (campo: string) => z.string().regex(HORA_RE, `${campo} deve ser uma hora no formato HH:MM (ex.: "09:00").`);
+const minutosDaHora = (v: string) => Number(v.slice(0, 2)) * 60 + Number(v.slice(3, 5));
+const inteiroEntre = (campo: string, min: number, max: number) =>
+  z
+    .number({ message: `${campo} deve ser um número.` })
+    .int(`${campo} deve ser um número inteiro.`)
+    .min(min, `${campo} deve ser no mínimo ${min}.`)
+    .max(max, `${campo} deve ser no máximo ${max}.`);
+
+const ServicoAgendamentoSchema = z
+  .object({
+    id: slug("bloco agendamento: servicos[].id"),
+    title: textoObrigatorio("bloco agendamento: servicos[].title", 40),
+    /** Em minutos, de 5 em 5. */
+    duracao: inteiroEntre("bloco agendamento: servicos[].duracao", 15, 480).refine((v) => v % 5 === 0, {
+      message: "bloco agendamento: servicos[].duracao deve ser de 5 em 5 minutos (ex.: 30, 45, 60).",
+    }),
+    subtitle: z.string().max(80, "bloco agendamento: servicos[].subtitle deve ter no máximo 80 caracteres.").optional(),
+  })
+  .strict();
+
+const PausaSchema = z
+  .object({ inicio: horaDoDia("bloco agendamento: pausas[].inicio"), fim: horaDoDia("bloco agendamento: pausas[].fim") })
+  .strict()
+  .refine((p) => minutosDaHora(p.fim) > minutosDaHora(p.inicio), {
+    message: "bloco agendamento: pausas[].fim precisa ser depois do início.",
+  });
+
+/**
+ * Agendamento: quem visita escolhe o serviço, o dia e o horário livre, e a reserva entra no
+ * Google Agenda do dono (com link do Meet). Precisa do banco (Supabase) e do Google ligado
+ * (skill ligar-agenda); sem eles, o bloco vira um botão de WhatsApp.
+ */
+const AgendamentoBlockSchema = z
+  .object({
+    type: z.literal("agendamento"),
+    /** false = bloco desligado: sai da página, mas o conteúdo fica guardado na config. */
+    enabled: z.boolean({ message: "enabled deve ser true ou false." }).optional(),
+    visivel: campoVisivel("bloco agendamento"),
+    id: slug("bloco agendamento: id").optional(),
+    title: z.string().max(60, "bloco agendamento: title deve ter no máximo 60 caracteres.").optional(),
+    intro: z.string().max(200, "bloco agendamento: intro deve ter no máximo 200 caracteres.").optional(),
+    servicos: z
+      .array(ServicoAgendamentoSchema)
+      .min(1, "o bloco agendamento precisa de ao menos 1 serviço.")
+      .max(6, "o bloco agendamento aceita no máximo 6 serviços.")
+      .refine((s) => new Set(s.map((x) => x.id)).size === s.length, {
+        message: "bloco agendamento: cada serviço precisa de um id diferente.",
+      }),
+    /** Dias de atendimento. Padrão: segunda a sexta. */
+    dias: z
+      .array(z.enum(["dom", "seg", "ter", "qua", "qui", "sex", "sab"], { message: 'bloco agendamento: dias aceita "dom", "seg", "ter", "qua", "qui", "sex" e "sab".' }))
+      .min(1, "bloco agendamento: dias precisa de ao menos 1 dia.")
+      .optional(),
+    /** Expediente. Padrão: 09:00 às 18:00. */
+    inicio: horaDoDia("bloco agendamento: inicio").optional(),
+    fim: horaDoDia("bloco agendamento: fim").optional(),
+    /** Faixas fechadas todo dia (ex.: almoço). */
+    pausas: z.array(PausaSchema).max(4, "bloco agendamento: pausas aceita no máximo 4 faixas.").optional(),
+    /** Horas mínimas entre agora e o horário marcado. Padrão: 12. */
+    antecedencia: inteiroEntre("bloco agendamento: antecedencia", 0, 720).optional(),
+    /** Quantos dias à frente a agenda mostra. Padrão: 14. */
+    janela: inteiroEntre("bloco agendamento: janela", 1, 90).optional(),
+    /** Minutos livres antes e depois de cada compromisso. Padrão: 15. */
+    intervalo: inteiroEntre("bloco agendamento: intervalo", 0, 120).optional(),
+    /** De quantos em quantos minutos os horários começam. Padrão: 30. */
+    passo: inteiroEntre("bloco agendamento: passo", 15, 240).optional(),
+    /** Máximo de reservas por dia. Sem valor: sem teto. */
+    maxPorDia: inteiroEntre("bloco agendamento: maxPorDia", 1, 20).optional(),
+    /** Endereço ou link da sala. Vazio: a reserva cria um link do Google Meet. */
+    local: z.string().max(200, "bloco agendamento: local deve ter no máximo 200 caracteres.").optional(),
+    /** true = pede e-mail (a pessoa recebe o convite do Google Agenda). Padrão: só nome e WhatsApp. */
+    pedirEmail: z.boolean().optional(),
+  })
+  .strict()
+  .refine((b) => minutosDaHora(b.fim ?? "18:00") > minutosDaHora(b.inicio ?? "09:00"), {
+    message: "bloco agendamento: fim precisa ser depois do início.",
+  });
 
 /** Depoimentos reais de clientes. Não use texto inventado na página publicada. */
 const TestimonialsBlockSchema = z.object({
@@ -828,8 +907,9 @@ export const BlockSchema = z.discriminatedUnion(
     LeadBlockSchema,
     PixBlockSchema,
     AgendaBlockSchema,
+    AgendamentoBlockSchema,
   ],
-  { message: "bloco com type desconhecido. Tipos válidos: profile, social, cta, link, links, cards, text, divider, youtube, gallery, concierge, banner, testimonials, faq, products, coupon, lead, pix, agenda." },
+  { message: "bloco com type desconhecido. Tipos válidos: profile, social, cta, link, links, cards, text, divider, youtube, gallery, concierge, banner, testimonials, faq, products, coupon, lead, pix, agenda, agendamento." },
 );
 
 // ---------------------------------------------------------------------------

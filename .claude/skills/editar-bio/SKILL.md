@@ -43,7 +43,7 @@ Siga "Arquivo ou painel" do `AGENTS.md`.
 | Modelo, cor, fonte, fundo, botões, cantos | `theme` | Aparência (fonte diferente nos títulos e no texto: Fonte > Títulos e texto separados) |
 | Jeito de um bloco aparecer (carrossel, lista, capa) | campo do bloco | Blocos (clique em qualquer ponto da linha do bloco) |
 
-Todos os 19 tipos de bloco já existem. Pedido que cabe num deles NÃO é `novo-bloco`.
+Todos os 20 tipos de bloco já existem. Pedido que cabe num deles NÃO é `novo-bloco`.
 
 ## 3. Referências (leia só quando o pedido tocar nelas)
 

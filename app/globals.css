@@ -2069,3 +2069,277 @@ a.agenda-local,
   box-shadow: 4px 4px 0 var(--text);
 }
 
+/* --- agendamento: serviço, dia, horário e dados; horários vêm do servidor na hora --- */
+.bloco-agendamento {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  min-width: 0;
+}
+
+.ag-titulo {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: var(--display-weight);
+  font-size: 1.15rem;
+}
+
+.ag-intro {
+  margin: 0;
+  color: var(--dim);
+  font-size: 0.9rem;
+}
+
+.ag-passos {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.ag-passos li {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px 4px 4px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--dim);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.ag-passos b {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--bg);
+  font-size: 0.7rem;
+}
+
+.ag-passos li[data-feito] {
+  color: var(--text);
+  border-color: var(--accent-texto);
+}
+
+.ag-passos li[data-feito] b {
+  background: var(--accent-fill);
+  color: #fff;
+}
+
+.ag-etapa,
+.ag-feito,
+.ag-vazio {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+}
+
+.ag-pergunta {
+  margin: 0;
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.ag-pergunta:focus {
+  outline: none;
+}
+
+.ag-carregando,
+.ag-vazio p {
+  margin: 0;
+  color: var(--dim);
+  font-size: 0.9rem;
+}
+
+.ag-aviso {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: var(--radius);
+  background: var(--accent-soft);
+  color: var(--text);
+  font-size: 0.85rem;
+}
+
+.ag-voltar {
+  align-self: flex-start;
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--accent-texto);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.ag-opcoes {
+  display: grid;
+  gap: 8px;
+}
+
+.ag-servico {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  min-height: 56px;
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--bg);
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.ag-servico:hover,
+.ag-hora:hover {
+  border-color: var(--accent-texto);
+}
+
+.ag-servico-nome {
+  font-weight: 700;
+}
+
+.ag-servico-sub {
+  color: var(--dim);
+  font-size: 0.85rem;
+}
+
+.ag-cal-topo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.ag-cal-nav {
+  display: inline-flex;
+  gap: 6px;
+}
+
+.ag-cal-nav button {
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: var(--bg);
+  color: var(--text);
+  font: inherit;
+  font-size: 1.1rem;
+  cursor: pointer;
+}
+
+.ag-cal-nav button:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.ag-cal-grade {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 4px;
+  text-align: center;
+}
+
+.ag-cal-grade i {
+  color: var(--dim);
+  font-size: 0.7rem;
+  font-style: normal;
+  font-weight: 700;
+  padding: 4px 0;
+}
+
+.ag-cal-grade button {
+  aspect-ratio: 1;
+  min-height: 36px;
+  border: 1px solid transparent;
+  border-radius: 50%;
+  background: none;
+  color: var(--dim);
+  font: inherit;
+  font-size: 0.85rem;
+  opacity: 0.5;
+}
+
+.ag-cal-grade button[data-livre] {
+  border-color: var(--line);
+  background: var(--bg);
+  color: var(--text);
+  font-weight: 700;
+  opacity: 1;
+  cursor: pointer;
+}
+
+.ag-cal-grade button[aria-pressed="true"],
+.ag-hora[aria-pressed="true"] {
+  background: var(--accent-fill);
+  border-color: transparent;
+  color: #fff;
+}
+
+.ag-horas {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  gap: 8px;
+}
+
+.ag-hora {
+  min-height: 44px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-btn);
+  background: var(--bg);
+  color: var(--text);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.ag-resumo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: var(--radius);
+  background: var(--bg);
+}
+
+.ag-resumo span {
+  color: var(--dim);
+  font-size: 0.9rem;
+}
+
+.ag-resumo:focus {
+  outline: none;
+}
+
+.bloco-agendamento button.bloco-cta {
+  width: 100%;
+  border-style: solid;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.bloco-agendamento button.bloco-cta:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+
+[data-botoes="brutal"] .bloco-agendamento {
+  border: 2px solid var(--text);
+  box-shadow: 4px 4px 0 var(--text);
+}
+
