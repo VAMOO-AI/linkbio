@@ -218,11 +218,13 @@ export async function reservar(
   if (ocupado.some((o) => inicioMs < o.fimMs + intervalo && o.inicioMs - intervalo < fimMs)) {
     return { tipo: "ocupado", mensagem: MSG.ocupado };
   }
+  // atalho: teto diário conferido antes de gravar, sem trava; dois pedidos juntos no último horário do dia passam os dois; revisitar se alguém reclamar de dia acima do teto (RPC com advisory lock).
   if (regra.maxPorDia !== null) {
     const dia = chaveDoDia(inicioMs, tz);
     if ((contarPorDia(reservasDoDia, tz)[dia] ?? 0) >= regra.maxPorDia) return { tipo: "ocupado", mensagem: MSG.diaCheio };
   }
 
+  // atalho: a constraint do banco barra só sobreposição; duas reservas simultâneas encostadas (fim de uma = início da outra) ignoram o intervalo; revisitar se o respiro entre consultas da bio for regra dura.
   const inserido = await deps.inserir({
     request_id: requestId,
     bloco: ctx.idBloco,

@@ -1,4 +1,4 @@
 {
-  "versao": "0.7.0",
-  "notas": "Bloco novo de agendamento pelo Google Agenda e correção de segurança do Next.js. Vale atualizar."
+  "versao": "0.7.1",
+  "notas": "Ligar a agenda do Google pelo Claude ficou mais seguro."
 }

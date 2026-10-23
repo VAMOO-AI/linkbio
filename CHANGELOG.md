@@ -3,7 +3,16 @@
 ## Não lançado
 
 ### Para quem usa
-- Nada novo desde a v0.7.0.
+- Nada novo desde a v0.7.1.
+
+## v0.7.1 (2026-10-23)
+
+### Para quem usa
+- Ligar a agenda ficou mais seguro: o Claude espera você terminar as telas do Google sem cortar no meio, e lembra de atualizar o site depois de pôr as chaves na Vercel.
+
+### Na bio e no painel
+- Skill `ligar-agenda`: `npm run google:conectar` roda com tempo limite de 10 minutos (o padrão de 2 cortava a autorização no meio); depois das variáveis na Vercel, Redeploy e conferência no endereço público (variável nova só vale em deploy novo, e a página é estática).
+- `lib/agendamento/reserva.ts`: marcados como atalho o teto diário sem trava e o intervalo que a constraint não cobre entre duas reservas simultâneas.
 
 ## v0.7.0 (2026-10-23)
 

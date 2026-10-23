@@ -62,7 +62,10 @@ print se ela não achar.
 
 ## 4. Conectar a conta
 
-Com o `.env.local` já fechado, rode `npm run google:conectar` (espera até 5 minutos). Ele abre o
+Com o `.env.local` já fechado, rode `npm run google:conectar` com tempo limite de 10 minutos (no
+Claude Code, timeout 600000) ou em segundo plano, e espere a linha `OK:` ou `NÃO CONECTOU:`. Com o
+tempo limite padrão (2 minutos), o comando é encerrado no meio das telas do Google, e a volta da
+autorização cai em "não é possível acessar esse site". Ele espera até 5 minutos e abre o
 Google no navegador dela. Diga antes o que ela vai ver:
 
 1. Escolher a conta da agenda.
@@ -83,14 +86,20 @@ o token. Se terminar com `NÃO CONECTOU`, leia o motivo e siga "Problemas".
    ela já tem na agenda não pode aparecer como livre.
 3. Antes de testar uma reserva, diga que ela vai criar um evento de verdade na agenda dela (e
    apagar depois). Só com o "sim".
-4. No ar: as chaves `GOOGLE_CLIENT_ID` e `GOOGLE_CLIENT_SECRET` vão para a Vercel pela skill
-   `publicar`. A conexão da conta já vale para o site no ar (fica no banco).
+4. No ar: as chaves `GOOGLE_CLIENT_ID` e `GOOGLE_CLIENT_SECRET` (e as duas do Supabase, se ainda não
+   estiverem lá) vão para a Vercel, como em "Variáveis" da skill `publicar`. Variável nova só vale
+   depois de um deploy novo: em seguida, na Vercel, Deployments > o deploy mais recente > Redeploy
+   (ou envie uma mudança pela skill `publicar`). Sem isso, a bio no ar continua no botão de WhatsApp.
+   A conexão da conta já vale para o site no ar (fica no banco).
+5. Confira no endereço público: o bloco mostra o calendário com dias livres, não o botão "Marcar pelo
+   WhatsApp". Se mostrar o botão, falta variável ou deploy: volte ao passo 4.
 
 ## Problemas
 
 - **A bio mostra "chame no WhatsApp" no lugar da agenda**: falta uma das quatro chaves (as duas do
-  Supabase e as duas do Google), neste computador ou na Vercel, ou a conexão caiu. Confira por
-  contagem e rode `npm run google:conectar` de novo.
+  Supabase e as duas do Google), neste computador ou na Vercel, faltou o Redeploy depois de pôr as
+  variáveis na Vercel, ou a conexão caiu. Confira por contagem, faça o Redeploy e, se ainda não
+  aparecer, rode `npm run google:conectar` de novo.
 - **Funcionou e parou depois de uns dias**: o app ficou em Teste (passo 2.5). Publique e conecte de
   novo. Trocar a senha do Google ou remover o acesso em myaccount.google.com/permissions também
   derruba: conecte de novo.
