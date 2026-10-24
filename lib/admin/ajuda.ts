@@ -64,6 +64,12 @@ export const DICA_POR_LUGAR: Record<string, string> = {
     "Número do Pixel, no Gerenciador de Eventos da Meta: Fontes de dados, o seu pixel, o número. Só números, de 10 a 20 dígitos. Vazio: a bio não carrega o pixel.",
   "features.pixel.ga4":
     "No Google Analytics: Administrador, Coleta de dados, Fluxos de dados, o fluxo da web, ID de medição. Começa com G-. Vazio: a bio não carrega o Google.",
+  "features.pixel.clarity":
+    "No Microsoft Clarity (clarity.microsoft.com): o seu projeto, Settings, Setup, o código que aparece no fim do endereço do script. Mostra onde as pessoas tocam e até onde rolam a bio. Vazio: a bio não carrega o Clarity.",
+  "site.verificacao.google":
+    "No Google Search Console: adicionar propriedade do tipo Prefixo do URL com o endereço da bio, método Tag HTML. Cole a tag inteira ou só o código. Depois de publicar, clique em Verificar.",
+  "site.verificacao.bing":
+    "No Bing Webmaster Tools você pode importar o site do Google Search Console sem código. Se preferir, método Meta tag: cole a tag inteira ou só o código.",
   "entrega.url": "Link https do arquivo ou da página que a pessoa recebe depois de enviar.",
 };
 

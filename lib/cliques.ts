@@ -75,18 +75,23 @@ export function normalizarOrigem(bruto: string | null | undefined): string {
   return /^[a-z0-9-]{1,20}$/.test(s) ? s : "direto";
 }
 
-/** Origem do clique: `?src=` do atalho, senão o `?src=` da página de onde a pessoa veio. */
+/** `?src=`, senão `utm_source` (link de anúncio). Mesma precedência do script da origem (lib/origem.ts). */
+function origemDosParametros(q: URLSearchParams): string | null {
+  return q.get("src")?.trim() || q.get("utm_source")?.trim() || null;
+}
+
+/** Origem do clique: `?src=` (ou `utm_source`) do atalho, senão o da página de onde a pessoa veio. */
 export function origemDoPedido(url: string, referer: string | null): string {
   let daUrl: string | null = null;
   try {
-    daUrl = new URL(url).searchParams.get("src");
+    daUrl = origemDosParametros(new URL(url).searchParams);
   } catch {
     daUrl = null;
   }
   if (daUrl) return normalizarOrigem(daUrl);
   if (!referer) return "direto";
   try {
-    return normalizarOrigem(new URL(referer).searchParams.get("src"));
+    return normalizarOrigem(origemDosParametros(new URL(referer).searchParams));
   } catch {
     return "direto";
   }
@@ -143,10 +148,25 @@ export function rotuloOrigem(origem: string): string {
 
 export type LinhaClique = { dia: string; alvo: string; origem: string; total: number };
 export type TotalBotao = { nome: string; dias7: number; dias30: number };
-export type TotalOrigem = { origem: string; rotulo: string; dias7: number; dias30: number };
+export type TotalOrigem = { origem: string; rotulo: string; dias7: number; dias30: number; visitas7: number; visitas30: number };
+export type LinhaVisita = { dia: string; origem: string; total: number };
+
+/** Toques ÷ visitas em %, arredondado. Passa de 100% quando a mesma pessoa toca em mais de um botão. Sem visita: null. */
+export function taxaDeToques(toques: number, visitas: number): number | null {
+  return visitas > 0 ? Math.round((toques / visitas) * 100) : null;
+}
+
+function novaOrigem(origem: string): TotalOrigem {
+  return { origem, rotulo: rotuloOrigem(origem), dias7: 0, dias30: 0, visitas7: 0, visitas30: 0 };
+}
 
 /** Soma os últimos 7 e 30 dias (incluindo hoje). Linha fora da janela fica de fora. */
-export function resumirCliques(linhas: readonly LinhaClique[], nomes: ReadonlyMap<string, string>, hoje: string): {
+export function resumirCliques(
+  linhas: readonly LinhaClique[],
+  nomes: ReadonlyMap<string, string>,
+  hoje: string,
+  visitas: readonly LinhaVisita[] = [],
+): {
   botoes: TotalBotao[];
   origens: TotalOrigem[];
 } {
@@ -162,13 +182,21 @@ export function resumirCliques(linhas: readonly LinhaClique[], nomes: ReadonlyMa
     b.dias30 += l.total;
     if (no7) b.dias7 += l.total;
     botoes.set(l.alvo, b);
-    const o = origens.get(l.origem) ?? { origem: l.origem, rotulo: rotuloOrigem(l.origem), dias7: 0, dias30: 0 };
+    const o = origens.get(l.origem) ?? novaOrigem(l.origem);
     o.dias30 += l.total;
     if (no7) o.dias7 += l.total;
     origens.set(l.origem, o);
   }
+  for (const v of visitas) {
+    if (v.dia < desde30 || v.dia > hoje) continue;
+    const o = origens.get(v.origem) ?? novaOrigem(v.origem);
+    o.visitas30 += v.total;
+    if (v.dia >= desde7) o.visitas7 += v.total;
+    origens.set(v.origem, o);
+  }
   const porTotal = (a: { dias30: number }, b: { dias30: number }) => b.dias30 - a.dias30 || 0;
-  return { botoes: [...botoes.values()].sort(porTotal), origens: [...origens.values()].sort(porTotal) };
+  const porVisitas = (a: TotalOrigem, b: TotalOrigem) => b.visitas30 - a.visitas30 || porTotal(a, b);
+  return { botoes: [...botoes.values()].sort(porTotal), origens: [...origens.values()].sort(porVisitas) };
 }
 
 export function linksDeOrigem(siteUrl: string): { rotulo: string; url: string }[] {

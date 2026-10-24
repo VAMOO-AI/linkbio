@@ -1,6 +1,13 @@
 import { z } from "zod";
 import { janelaCoerente } from "../lib/janela";
-import { MSG_GA4, MSG_META, RE_GA4, RE_META } from "../lib/pixel";
+import { MSG_CLARITY, MSG_GA4, MSG_META, RE_CLARITY, RE_GA4, RE_META } from "../lib/pixel";
+import {
+  codigoDeVerificacao,
+  MSG_BING_VERIFICACAO,
+  MSG_GOOGLE_VERIFICACAO,
+  RE_BING_VERIFICACAO,
+  RE_GOOGLE_VERIFICACAO,
+} from "../lib/verificacao";
 import { mensagemDaChave, semAcento } from "../lib/pix";
 import { OPCOES, type Opcao } from "./opcoes";
 
@@ -194,11 +201,29 @@ export const ShareSchema = z
   })
   .strict();
 
+/** Vazio vira null (desligado); preenchido precisa do formato. Meta tag colada inteira vira só o código. */
+function codigoVerificacao(re: RegExp, mensagem: string) {
+  return z
+    .union([z.string(), z.null()])
+    .optional()
+    .transform((v) => codigoDeVerificacao(v))
+    .refine((v) => v === null || re.test(v), { message: mensagem });
+}
+
+/** Posse do site no Google Search Console e no Bing Webmaster Tools. Tudo opcional. */
+export const VerificacaoSchema = z
+  .object({
+    google: codigoVerificacao(RE_GOOGLE_VERIFICACAO, `site.verificacao.google: ${MSG_GOOGLE_VERIFICACAO}`),
+    bing: codigoVerificacao(RE_BING_VERIFICACAO, `site.verificacao.bing: ${MSG_BING_VERIFICACAO}`),
+  })
+  .strict();
+
 export const SiteSchema = z.object({
   url: urlExterna("site.url"),
   locale: textoObrigatorio("site.locale", 10),
   tz: textoObrigatorio("site.tz", 60),
   share: ShareSchema.optional(),
+  verificacao: VerificacaoSchema.optional(),
 });
 
 export const ProfileSchema = z.object({
@@ -356,11 +381,41 @@ export function campoVisivel(bloco: string) {
     });
 }
 
+/** Origem de um bloco: slug curto, em minúsculas, que não seja "direto" (a ausência de origem). */
+function origemDoBloco(campo: string) {
+  return z
+    .string()
+    .trim()
+    .toLowerCase()
+    .refine((v) => /^[a-z0-9-]{1,20}$/.test(v) && v !== "direto", {
+      message: `${campo} aceita origens de 1 a 20 letras minúsculas, números ou hífen, como "bio", "stories" ou "reels" (as do ?src= do link). "direto" não vale: é quem chega sem origem.`,
+    });
+}
+
+/**
+ * Conteúdo por origem (`?src=` ou `utm_source` do link). `mostrar`: o bloco só aparece para essas
+ * origens. `esconder`: some só para elas. Sem o campo, o bloco aparece para todos.
+ * Uma linha por bloco, como o campoVisivel: `origem: campoOrigem("bloco lead"),`
+ */
+export function campoOrigem(bloco: string) {
+  return z
+    .object({
+      mostrar: z.array(origemDoBloco(`${bloco}: origem.mostrar`)).max(10, `${bloco}: origem.mostrar aceita até 10 origens.`).optional(),
+      esconder: z.array(origemDoBloco(`${bloco}: origem.esconder`)).max(10, `${bloco}: origem.esconder aceita até 10 origens.`).optional(),
+    })
+    .strict()
+    .optional()
+    .refine((v) => !v?.mostrar?.some((o) => v.esconder?.includes(o)), {
+      message: `${bloco}: origem tem a mesma origem em mostrar e em esconder.`,
+    });
+}
+
 const ProfileBlockSchema = z.object({
   type: z.literal("profile"),
   /** false = bloco desligado: sai da página, mas o conteúdo fica guardado na config. */
   enabled: z.boolean({ message: "enabled deve ser true ou false." }).optional(),
   visivel: campoVisivel("bloco profile"),
+  origem: campoOrigem("bloco profile"),
   /** Sem valor: vem do modelo (theme.preset). */
   header: opcao("bloco profile: header", OPCOES.header).optional(),
   socials: opcao("bloco profile: socials", OPCOES.socials).optional(),
@@ -373,6 +428,7 @@ const SocialBlockSchema = z.object({
   /** false = bloco desligado: sai da página, mas o conteúdo fica guardado na config. */
   enabled: z.boolean({ message: "enabled deve ser true ou false." }).optional(),
   visivel: campoVisivel("bloco social"),
+  origem: campoOrigem("bloco social"),
   items: z.array(ItemSocialSchema).min(1, "o bloco social precisa de ao menos 1 item."),
 }).strict();
 
@@ -381,6 +437,7 @@ const CtaBlockSchema = z.object({
   /** false = bloco desligado: sai da página, mas o conteúdo fica guardado na config. */
   enabled: z.boolean({ message: "enabled deve ser true ou false." }).optional(),
   visivel: campoVisivel("bloco cta"),
+  origem: campoOrigem("bloco cta"),
   id: slug("bloco cta: id").optional(),
   label: textoObrigatorio("bloco cta: label", 60),
   action: z.union(
@@ -405,6 +462,7 @@ const LinkBlockSchema = z.object({
   /** false = bloco desligado: sai da página, mas o conteúdo fica guardado na config. */
   enabled: z.boolean({ message: "enabled deve ser true ou false." }).optional(),
   visivel: campoVisivel("bloco link"),
+  origem: campoOrigem("bloco link"),
   id: slug("bloco link: id").optional(),
   title: textoObrigatorio("bloco link: title", 80),
   url: urlExterna("bloco link: url"),
@@ -430,6 +488,7 @@ const LinksBlockSchema = z.object({
   /** false = bloco desligado: sai da página, mas o conteúdo fica guardado na config. */
   enabled: z.boolean({ message: "enabled deve ser true ou false." }).optional(),
   visivel: campoVisivel("bloco links"),
+  origem: campoOrigem("bloco links"),
   id: slug("bloco links: id").optional(),
   title: z.string().max(60, "bloco links: title deve ter no máximo 60 caracteres.").optional(),
   layout: opcao("bloco links: layout", OPCOES.linksLayout).optional(),
@@ -444,6 +503,7 @@ const CardsBlockSchema = z.object({
   /** false = bloco desligado: sai da página, mas o conteúdo fica guardado na config. */
   enabled: z.boolean({ message: "enabled deve ser true ou false." }).optional(),
   visivel: campoVisivel("bloco cards"),
+  origem: campoOrigem("bloco cards"),
   id: slug("bloco cards: id").optional(),
   eyebrow: z.string().max(60, "bloco cards: eyebrow deve ter no máximo 60 caracteres.").optional(),
   /** Vazio: o bloco não aparece na página (ex.: a última oferta foi apagada). */
@@ -457,6 +517,7 @@ const TextBlockSchema = z.object({
   /** false = bloco desligado: sai da página, mas o conteúdo fica guardado na config. */
   enabled: z.boolean({ message: "enabled deve ser true ou false." }).optional(),
   visivel: campoVisivel("bloco text"),
+  origem: campoOrigem("bloco text"),
   id: slug("bloco text: id").optional(),
   title: z.string().max(80, "bloco text: title deve ter no máximo 80 caracteres.").optional(),
   body: textoObrigatorio("bloco text: body", 1000),
@@ -471,6 +532,7 @@ const DividerBlockSchema = z.object({
   /** false = bloco desligado: sai da página, mas o conteúdo fica guardado na config. */
   enabled: z.boolean({ message: "enabled deve ser true ou false." }).optional(),
   visivel: campoVisivel("bloco divider"),
+  origem: campoOrigem("bloco divider"),
 }).strict();
 
 const YoutubeBlockSchema = z.object({
@@ -478,6 +540,7 @@ const YoutubeBlockSchema = z.object({
   /** false = bloco desligado: sai da página, mas o conteúdo fica guardado na config. */
   enabled: z.boolean({ message: "enabled deve ser true ou false." }).optional(),
   visivel: campoVisivel("bloco youtube"),
+  origem: campoOrigem("bloco youtube"),
   id: slug("bloco youtube: id").optional(),
   title: z.string().max(80, "bloco youtube: title deve ter no máximo 80 caracteres.").optional(),
   videoId: z
@@ -494,6 +557,7 @@ const GalleryBlockSchema = z.object({
   /** false = bloco desligado: sai da página, mas o conteúdo fica guardado na config. */
   enabled: z.boolean({ message: "enabled deve ser true ou false." }).optional(),
   visivel: campoVisivel("bloco gallery"),
+  origem: campoOrigem("bloco gallery"),
   id: slug("bloco gallery: id").optional(),
   title: z.string().max(80, "bloco gallery: title deve ter no máximo 80 caracteres.").optional(),
   images: z
@@ -547,6 +611,7 @@ const BannerBlockSchema = z
     /** false = bloco desligado: sai da página, mas o conteúdo fica guardado na config. */
     enabled: z.boolean({ message: "enabled deve ser true ou false." }).optional(),
     visivel: campoVisivel("bloco banner"),
+    origem: campoOrigem("bloco banner"),
     id: slug("bloco banner: id").optional(),
     title: textoObrigatorio("bloco banner: title", 80),
     text: z.string().max(140, "bloco banner: text deve ter no máximo 140 caracteres.").optional(),
@@ -564,6 +629,7 @@ const CouponBlockSchema = z
     /** false = bloco desligado: sai da página, mas o conteúdo fica guardado na config. */
     enabled: z.boolean({ message: "enabled deve ser true ou false." }).optional(),
     visivel: campoVisivel("bloco coupon"),
+    origem: campoOrigem("bloco coupon"),
     id: slug("bloco coupon: id").optional(),
     code: z
       .string()
@@ -597,6 +663,7 @@ const LeadBlockSchema = z.object({
   /** false = bloco desligado: sai da página, mas o conteúdo fica guardado na config. */
   enabled: z.boolean({ message: "enabled deve ser true ou false." }).optional(),
   visivel: campoVisivel("bloco lead"),
+  origem: campoOrigem("bloco lead"),
   id: slug("bloco lead: id").optional(),
   title: textoObrigatorio("bloco lead: title", 80),
   text: z.string().max(200, "bloco lead: text deve ter no máximo 200 caracteres.").optional(),
@@ -629,6 +696,7 @@ const PixBlockSchema = z
     /** false = bloco desligado: sai da página, mas o conteúdo fica guardado na config. */
     enabled: z.boolean({ message: "enabled deve ser true ou false." }).optional(),
     visivel: campoVisivel("bloco pix"),
+    origem: campoOrigem("bloco pix"),
     id: slug("bloco pix: id").optional(),
     chave: z.string().min(1, "bloco pix: chave é obrigatória.").superRefine((v, ctx) => {
       const msg = mensagemDaChave(v);
@@ -702,6 +770,7 @@ const AgendaBlockSchema = z
     /** false = bloco desligado: sai da página, mas o conteúdo fica guardado na config. */
     enabled: z.boolean({ message: "enabled deve ser true ou false." }).optional(),
     visivel: campoVisivel("bloco agenda"),
+    origem: campoOrigem("bloco agenda"),
     id: slug("bloco agenda: id").optional(),
     title: z.string().max(60, "bloco agenda: title deve ter no máximo 60 caracteres.").optional(),
     /** Link de agendamento (Cal.com, Calendly). Botão, além dos eventos. */
@@ -753,6 +822,7 @@ const AgendamentoBlockSchema = z
     /** false = bloco desligado: sai da página, mas o conteúdo fica guardado na config. */
     enabled: z.boolean({ message: "enabled deve ser true ou false." }).optional(),
     visivel: campoVisivel("bloco agendamento"),
+    origem: campoOrigem("bloco agendamento"),
     id: slug("bloco agendamento: id").optional(),
     title: z.string().max(60, "bloco agendamento: title deve ter no máximo 60 caracteres.").optional(),
     intro: z.string().max(200, "bloco agendamento: intro deve ter no máximo 200 caracteres.").optional(),
@@ -799,6 +869,7 @@ const TestimonialsBlockSchema = z.object({
   /** false = bloco desligado: sai da página, mas o conteúdo fica guardado na config. */
   enabled: z.boolean({ message: "enabled deve ser true ou false." }).optional(),
   visivel: campoVisivel("bloco testimonials"),
+  origem: campoOrigem("bloco testimonials"),
   id: slug("bloco testimonials: id").optional(),
   title: z.string().max(60, "bloco testimonials: title deve ter no máximo 60 caracteres.").optional(),
   items: z
@@ -822,6 +893,7 @@ const FaqBlockSchema = z.object({
   /** false = bloco desligado: sai da página, mas o conteúdo fica guardado na config. */
   enabled: z.boolean({ message: "enabled deve ser true ou false." }).optional(),
   visivel: campoVisivel("bloco faq"),
+  origem: campoOrigem("bloco faq"),
   id: slug("bloco faq: id").optional(),
   title: z.string().max(60, "bloco faq: title deve ter no máximo 60 caracteres.").optional(),
   openFirst: z.boolean().optional(),
@@ -843,6 +915,7 @@ const ConciergeBlockSchema = z.object({
   /** false = bloco desligado: sai da página, mas o conteúdo fica guardado na config. */
   enabled: z.boolean({ message: "enabled deve ser true ou false." }).optional(),
   visivel: campoVisivel("bloco concierge"),
+  origem: campoOrigem("bloco concierge"),
   id: slug("bloco concierge: id").optional(),
   title: z.string().max(80, "bloco concierge: title deve ter no máximo 80 caracteres.").optional(),
   intro: z.string().max(200, "bloco concierge: intro deve ter no máximo 200 caracteres.").optional(),
@@ -871,6 +944,7 @@ const ProductsBlockSchema = z
     /** false = bloco desligado: sai da página, mas o conteúdo fica guardado na config. */
     enabled: z.boolean({ message: "enabled deve ser true ou false." }).optional(),
     visivel: campoVisivel("bloco products"),
+    origem: campoOrigem("bloco products"),
     id: slug("bloco products: id").optional(),
     title: z.string().max(60, "bloco products: title deve ter no máximo 60 caracteres.").optional(),
     /** Sem valor: vem do modelo. */
@@ -940,8 +1014,10 @@ export const FeaturesSchema = z.object({
     .object({
       meta: idDePixel(RE_META, MSG_META).default(null),
       ga4: idDePixel(RE_GA4, MSG_GA4).default(null),
+      /** Microsoft Clarity: mapa de calor, rolagem e gravação. Carrega junto, depois do aceite. */
+      clarity: idDePixel(RE_CLARITY, MSG_CLARITY).default(null),
     })
-    .default({ meta: null, ga4: null }),
+    .default({ meta: null, ga4: null, clarity: null }),
 });
 
 /** Máximo de categorias no filtro da vitrine (o CSS tem regra para cada uma). */
@@ -967,7 +1043,7 @@ export const ConfigSchema = z
     /** Produtos da vitrine (bloco products). Opcional. */
     catalog: z.array(ProdutoSchema).max(60, "catalog aceita no máximo 60 produtos.").default([]),
     blocks: z.array(BlockSchema).min(1, "defina ao menos 1 bloco em blocks."),
-    features: FeaturesSchema.default({ leads: false, analytics: false, pixel: { meta: null, ga4: null } }),
+    features: FeaturesSchema.default({ leads: false, analytics: false, pixel: { meta: null, ga4: null, clarity: null } }),
   })
   .superRefine((cfg, ctx) => {
     // Modo ou paleta que o modelo não tem (sobra de troca de modelo) não é erro: o motor ignora

@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useId, useMemo, useRef, useState } from "react";
+import { dispararEvento } from "@/lib/eventos";
+import { origemGuardada } from "@/lib/origem-navegador";
 import { linkWhatsApp } from "@/lib/whatsapp";
 
 type Servico = { id: string; title: string; duracao: number; subtitle?: string };
@@ -177,12 +179,15 @@ export function AgendamentoBlock({
           empresa: dados.get("empresa") ?? "",
           aberto: String(abertoEm),
           request_id: pedido.current,
+          ...origemGuardada(),
         }),
       });
       const corpo = (await r.json()) as Partial<Confirmacao> & { ok: boolean; mensagem?: string; motivo?: string };
       if (corpo.ok && corpo.inicio && corpo.fim && corpo.servico) {
         setConfirmacao({ servico: corpo.servico, inicio: corpo.inicio, fim: corpo.fim, meetUrl: corpo.meetUrl ?? null, local: corpo.local ?? null });
         setEtapa("feito");
+        // O mesmo pedido devolve a mesma reserva: o id dele deduplica o Lead.
+        dispararEvento({ nome: "Lead", id: pedido.current, metodo: "agendamento" });
         return;
       }
       setAviso(corpo.mensagem || "Não deu para marcar agora. Tente de novo.");

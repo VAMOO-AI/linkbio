@@ -1,4 +1,5 @@
 import "server-only";
+import { semColunaDeOrigem } from "@/lib/origem";
 import { rest } from "@/lib/supabase";
 import type { ReservaGravada, ReservaNova, ResultadoInsercao } from "./reserva";
 
@@ -31,13 +32,24 @@ export async function contarReservasDoIp(hash: string, desdeIso: string): Promis
 
 /** Grava a reserva. Horário já tomado (constraint de sobreposição) volta como "ocupado". */
 export async function inserirReserva(nova: ReservaNova): Promise<ResultadoInsercao> {
-  try {
-    const linhas = await rest<{ id: string }[]>("agendamentos?select=id", {
+  const gravar = (corpo: unknown) =>
+    rest<{ id: string }[]>("agendamentos?select=id", {
       method: "POST",
       headers: { Prefer: "return=representation" },
-      body: JSON.stringify(nova),
+      body: JSON.stringify(corpo),
       ...SEM_CACHE,
     });
+  try {
+    let linhas: { id: string }[];
+    try {
+      linhas = await gravar(nova);
+    } catch (e) {
+      // Banco que ainda não rodou a 0010: grava sem a origem em vez de perder a reserva.
+      if (!semColunaDeOrigem(e)) throw e;
+      console.error("[linkbio] agendamentos sem as colunas origem/utm: rode supabase/migrations/0010_origem.sql.");
+      const { origem: _o, utm: _u, ...semOrigem } = nova;
+      linhas = await gravar(semOrigem);
+    }
     const id = linhas?.[0]?.id;
     return id ? { ok: true, id } : { ok: false, motivo: "falha" };
   } catch (e) {

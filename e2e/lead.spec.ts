@@ -52,6 +52,8 @@ async function enviarFormulario(page: Page, semJs = false) {
   await form.getByRole("button", { name: "Quero receber" }).click({ force: semJs });
   await expect(page).toHaveURL(/\/contato\/enviado\?bloco=contato/);
   await expect(page.getByRole("heading", { name: "Pronto! Em instantes você recebe." })).toBeVisible();
+  // O aviso de cookies marca Lead ao achar este atributo (só se a pessoa aceitou).
+  await expect(page.locator('[data-linkbio-evento="Lead"]')).toHaveAttribute("data-linkbio-evento-metodo", "formulario");
 }
 
 test("a planilha sem sessão responde que é preciso entrar", async ({ request }) => {

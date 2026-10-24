@@ -3,7 +3,34 @@
 ## Não lançado
 
 ### Para quem usa
-- Nada novo desde a v0.7.2.
+- Nada novo desde a v0.9.0.
+
+## v0.9.0 (2026-10-24)
+
+### Para quem usa
+- A bio pode mudar conforme de onde a pessoa vem: um bloco só para quem chegou pelos stories, outro escondido de quem veio da bio. Peça: "mostrar este bloco só para quem vem dos stories".
+- Em Resultados, cada origem mostra visitas e toques por visita: dá para ver se os stories ou o reels levam mais gente a tocar.
+- O contato do formulário e o horário marcado chegam dizendo de onde a pessoa veio e de qual campanha. Para valer, rode o SQL novo (`0010_origem.sql`).
+
+### Na bio e no painel
+- `origem: { mostrar?, esconder? }` em todos os blocos (`campoOrigem`). Script inline no `<head>` (`lib/origem.ts`, `scriptDaOrigem`) lê `?src=` (senão `utm_source`), guarda na sessão e marca `<html data-origem>` antes de pintar; `cssDeOrigem` gera o CSS e o bloco com regra ganha um invólucro `display: contents` (`app/(site)/por-origem.tsx`). Página estática, canonical na home, `suppressHydrationWarning` no `<html>`. A prévia do painel mostra todos os blocos.
+- Visitas: migration `0010_origem.sql` (tabela `visitas` por dia e origem, `registrar_visita` só para o service role) e `POST /api/visita`, uma por sessão e por origem, só na home, só com `features.analytics` e banco, sem robô. Resultados junta visitas e toques por origem (`taxaDeToques`); banco sem a tabela continua mostrando os cliques.
+- A origem do clique (`/r/`) também lê `utm_source` quando não há `src`. O Clarity recebe `clarity("set","origem",…)`.
+- Lead e agendamento gravam `origem` e `utm` (colunas novas da 0010; o formulário leva os campos escondidos `origem` e `utm`, preenchidos no envio; sem JavaScript, vale o `?src=` do Referer). O aviso por e-mail e webhook leva os dois. Banco sem as colunas (PGRST204): grava de novo sem elas, sem perder o contato.
+- Testes: `cliques.spec`, `lead.spec` e `login-codigo.spec` viram projetos em fila (`banco`, `banco-lead`, `banco-login`). No mesmo projeto rodavam em paralelo e um limpava o banco falso do outro, o que fazia o login por código falhar de vez em quando.
+
+## v0.8.0 (2026-10-24)
+
+### Para quem usa
+- Mapa de calor: com o Microsoft Clarity ligado, você vê onde as pessoas tocam, até onde rolam a bio e a gravação das visitas. Grátis. Peça: "ligar o Clarity na minha bio".
+- Google e Bing: dá para provar que a bio é sua no Search Console e no Bing, e o Google passa a ver uma página só, mesmo com `?src=` no link.
+- Quem preenche o formulário ou marca um horário vira "Lead" no Pixel da Meta e no Google Analytics, para você medir anúncio.
+
+### Na bio e no painel
+- `features.pixel.clarity` (ou `CLARITY_PROJECT_ID`, que só vale com o campo vazio): carrega junto com o Pixel e o GA4, depois do aceite do aviso de cookies, com `clarity("consent")`. O script do aviso agora só leva o carregador dos serviços ligados.
+- Eventos depois do aceite: `Contact` no WhatsApp (como antes, agora com eventID), `Lead` com eventID na página `/contato/enviado` (`data-linkbio-evento`) e na reserva do `agendamento` (`linkbio:evento`, id = `request_id`), `generate_lead` no GA4 com o método e, no Clarity, `toque_<alvo>` em cada link `/r/`. `lib/eventos.ts` dispara sem levar o texto do aviso para o JavaScript do navegador.
+- `site.verificacao.google` e `site.verificacao.bing` geram `google-site-verification` e `msvalidate.01`. Aceita a meta tag inteira colada; vazio desliga. No painel, em Site > Avançado.
+- `<link rel="canonical">` na home de `site.url` (`lib/seo.ts`, `metadadosDeBusca`).
 
 ## v0.7.2 (2026-10-23)
 

@@ -6,11 +6,12 @@ declare global {
   interface Window {
     fbq?: FbqFn;
     gtag?: (...args: unknown[]) => void;
+    clarity?: ((...args: unknown[]) => void) & { q?: ArrayLike<unknown>[] };
     dataLayer?: unknown[];
   }
 }
 
-const TERCEIRO = /facebook\.net|facebook\.com|googletagmanager|google-analytics|doubleclick/i;
+const TERCEIRO = /facebook\.net|facebook\.com|googletagmanager|google-analytics|doubleclick|clarity\.ms/i;
 
 test("sem pixel, a bio não pede script de terceiro nem o aviso", async ({ page, request }) => {
   const terceiros: string[] = [];
@@ -26,6 +27,7 @@ test("sem pixel, a bio não pede script de terceiro nem o aviso", async ({ page,
   expect(html).not.toContain("fbevents");
   expect(html).not.toContain("googletagmanager");
   expect(html).not.toContain("connect.facebook.net");
+  expect(html).not.toContain("clarity.ms");
 
   const srcs = await page.locator("script[src]:not([nomodule])").evaluateAll((els) => els.map((el) => (el as HTMLScriptElement).src));
   for (const src of srcs) {
@@ -33,6 +35,7 @@ test("sem pixel, a bio não pede script de terceiro nem o aviso", async ({ page,
     expect(corpo, src).not.toContain("linkbio-cookies");
     expect(corpo, src).not.toContain("fbevents");
     expect(corpo, src).not.toContain("googletagmanager");
+    expect(corpo, src).not.toContain("clarity.ms");
   }
 });
 
@@ -48,7 +51,9 @@ test("com pixel, nada carrega antes do aceite e o clique no WhatsApp vira contat
 
   await page.getByRole("button", { name: "Aceitar" }).click();
   await expect.poll(() => hits.length).toBeGreaterThan(0);
-  await page.waitForFunction(() => typeof window.fbq === "function" && typeof window.gtag === "function");
+  await page.waitForFunction(
+    () => typeof window.fbq === "function" && typeof window.gtag === "function" && typeof window.clarity === "function",
+  );
   await page.evaluate(() => {
     window.addEventListener(
       "click",
@@ -61,14 +66,30 @@ test("com pixel, nada carrega antes do aceite e o clique no WhatsApp vira contat
   });
   await page.getByRole("link", { name: "WhatsApp", exact: true }).click();
   await page.getByRole("link", { name: "WhatsApp pelo atalho" }).click();
+  await page.getByRole("link", { name: "Curso" }).click();
+  // A reserva do agendamento avisa por CustomEvent (lib/eventos.ts).
+  await page.evaluate(() =>
+    document.dispatchEvent(new CustomEvent("linkbio:evento", { detail: { nome: "Lead", id: "req-9", metodo: "agendamento" } })),
+  );
   const eventos = await page.evaluate(() => ({
     fb: [...(window.fbq?.queue ?? [])].map((item) => Array.from(item as ArrayLike<unknown>)),
     dl: [...(window.dataLayer ?? [])].map((item) => Array.from(item as ArrayLike<unknown>)),
+    cl: [...(window.clarity?.q ?? [])].map((item) => Array.from(item as ArrayLike<unknown>)),
   }));
   const fb = JSON.stringify(eventos.fb);
   const dl = JSON.stringify(eventos.dl);
   expect(fb.split("Contact").length - 1).toBe(2);
-  expect(dl.split("generate_lead").length - 1).toBe(2);
+  // Lead da página (data-linkbio-evento) e da agenda, cada um com o eventID do próprio pedido.
+  expect(eventos.fb).toContainEqual(["track", "Lead", {}, { eventID: "lead-pedido-1" }]);
+  expect(eventos.fb).toContainEqual(["track", "Lead", {}, { eventID: "lead-req-9" }]);
+  expect(dl.split("generate_lead").length - 1).toBe(4);
+  expect(eventos.dl).toContainEqual(["event", "generate_lead", { method: "agendamento" }]);
+  expect(eventos.cl).toContainEqual(["consent"]);
+  expect(eventos.cl).toContainEqual(["set", "origem", "direto"]);
+  expect(eventos.cl).toContainEqual(["event", "toque_links.curso.0"]);
+  expect(eventos.cl).toContainEqual(["event", "toque_cta.falar"]);
+  expect(eventos.cl).toContainEqual(["event", "contact_whatsapp"]);
+  expect(eventos.cl).toContainEqual(["event", "lead_agendamento"]);
 });
 
 test("recusar o pixel fica gravado e, ao recarregar, nada carrega", async ({ page }) => {

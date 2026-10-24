@@ -37,8 +37,10 @@ Siga "Arquivo ou painel" do `AGENTS.md`.
 | Pix (QR e código) | bloco `pix` | Blocos > Adicionar bloco > Pix |
 | Agenda (encontros, Google Agenda, arquivo) | bloco `agenda` | Blocos > Adicionar bloco > Agenda |
 | Só entre duas datas | `visivel.de` / `visivel.ate` no bloco | abra o bloco > "Mostrar só entre datas" |
+| Bloco diferente para quem vem dos stories, do reels ou do anúncio | `origem.mostrar` / `origem.esconder` no bloco | abra o bloco > Avançado > "Mostrar conforme a origem do link" |
 | Contagem de cliques | `features.analytics: true` | Contato e site (números em Resultados) |
-| Pixel da Meta / Google Analytics | `features.pixel` | Contato e site > Medição de visitas |
+| Pixel da Meta / Google Analytics / Microsoft Clarity | `features.pixel` | Contato e site > Medição de visitas |
+| Google Search Console / Bing (verificar o site) | `site.verificacao` | Contato e site > Site > Avançado |
 | Esconder sem apagar | `enabled: false` no bloco | a chave ao lado do bloco (mostra "Na bio" ou "Escondido") |
 | Modelo, cor, fonte, fundo, botões, cantos | `theme` | Aparência (fonte diferente nos títulos e no texto: Fonte > Títulos e texto separados) |
 | Jeito de um bloco aparecer (carrossel, lista, capa) | campo do bloco | Blocos (clique em qualquer ponto da linha do bloco) |

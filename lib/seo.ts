@@ -55,3 +55,20 @@ export function regrasDeRobos(siteUrl: string, env: AmbienteVercel = {}) {
     sitemap: new URL("/sitemap.xml", base).href,
   };
 }
+
+/** Canonical (sempre a home do endereço base) e as metas de verificação do Google e do Bing. */
+export function metadadosDeBusca(
+  site: { verificacao?: { google?: string | null; bing?: string | null } },
+  base: URL,
+): { alternates: { canonical: string }; verification?: { google?: string; other?: Record<string, string> } } {
+  const google = site.verificacao?.google ?? null;
+  const bing = site.verificacao?.bing ?? null;
+  const verification = {
+    ...(google ? { google } : {}),
+    ...(bing ? { other: { "msvalidate.01": bing } } : {}),
+  };
+  return {
+    alternates: { canonical: new URL("/", base).href },
+    ...(google || bing ? { verification } : {}),
+  };
+}

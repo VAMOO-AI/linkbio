@@ -18,7 +18,8 @@ export default async function ContatoEnviado({
   const sucesso = bloco?.type === "lead" ? bloco.sucesso : "Recebemos seu contato.";
   const entrega = bloco?.type === "lead" ? bloco.entrega?.url : undefined;
   return (
-    <section className="bloco-lead" aria-label="Contato enviado">
+    // O aviso de cookies lê data-linkbio-evento e marca Lead (só se a pessoa aceitou).
+    <section className="bloco-lead" aria-label="Contato enviado" data-linkbio-evento="Lead" data-linkbio-evento-metodo="formulario">
       <h2 className="lead-titulo">{sucesso}</h2>
       {entrega && (
         <a className="bloco-cta" href={entrega}>

@@ -37,6 +37,9 @@ export function LeadBlock({
         <form method="post" action="/api/lead">
           <input type="hidden" name="bloco" value={id} />
           <input type="hidden" name="aberto" value={String(abertoEm)} />
+          {/* Preenchidos no envio pelo script da origem (lib/origem.ts). Sem JavaScript, vale o Referer. */}
+          <input type="hidden" name="origem" defaultValue="" />
+          <input type="hidden" name="utm" defaultValue="" />
           <div className="lead-isca" aria-hidden="true">
             <label>
               Empresa

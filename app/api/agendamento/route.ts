@@ -93,6 +93,7 @@ export async function POST(request: Request): Promise<Response> {
     agora: Date.now(),
     ip: ipDoPedido(request),
     sal: process.env.ADMIN_SESSION_SECRET || lerSupabase(process.env)?.url || "linkbio-agenda",
+    referer: request.headers.get("referer"),
     deps: depsDoServidor(config.site.tz),
   });
   if (r.tipo === "ok") cache.clear();

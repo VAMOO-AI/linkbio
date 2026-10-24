@@ -75,6 +75,9 @@ export const CAMPOS: Record<string, string> = {
   type: "Tipo",
   enabled: "Ligado",
   visivel: "Mostrar só entre datas",
+  origem: "Mostrar conforme a origem do link",
+  mostrar: "Só para quem vem de",
+  esconder: "Esconder de quem vem de",
   de: "De",
   ate: "Até",
   header: "Cabeçalho",
@@ -113,6 +116,10 @@ export const CAMPOS: Record<string, string> = {
   features: "Recursos",
   meta: "Pixel da Meta",
   ga4: "Google Analytics",
+  clarity: "Microsoft Clarity",
+  verificacao: "Google e Bing (verificação do site)",
+  google: "Google Search Console",
+  bing: "Bing Webmaster Tools",
   pedir: "O que pedir",
   sucesso: "Mensagem depois de enviar",
   consentimento: "Texto do consentimento",
@@ -350,6 +357,10 @@ export const DICAS: Record<string, string> = {
   collapsed: "Mostra só o título; abre ao tocar.",
   enabled: "Desligado sai da página, mas o conteúdo fica guardado.",
   visivel: "A bio mostra este bloco só entre essas datas. O último dia vale até o fim. Vazio fica sempre no ar.",
+  origem:
+    "A origem é o ?src= do link (bio, stories, reels) ou o utm_source do anúncio. Com \"Só para quem vem de\", o bloco some para o resto. Vazio: aparece para todos.",
+  mostrar: "Ex.: stories. Quem chega sem origem não vê este bloco.",
+  esconder: "Ex.: bio. Quem vem dessa origem não vê este bloco.",
   url: "Endereço completo. Se faltar o https://, o painel coloca.",
   more_url: "Endereço completo. Se faltar o https://, o painel coloca.",
   code: "Letras, números, - ou _. O painel coloca em maiúsculas.",
@@ -405,4 +416,4 @@ export const GRUPOS: Record<string, { titulo: string; campos: string[]; dica?: s
 };
 
 /** Campos que ficam em "Avançado" (quase ninguém precisa mexer). */
-export const AVANCADO = new Set(["id", "radius", "palette", "locale", "tz", "mode", "more_label", "more_url", "passo", "intervalo"]);
+export const AVANCADO = new Set(["id", "origem", "verificacao", "radius", "palette", "locale", "tz", "mode", "more_label", "more_url", "passo", "intervalo"]);

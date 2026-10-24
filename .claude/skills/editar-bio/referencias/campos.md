@@ -30,11 +30,19 @@ Nunca mostre estes nomes à pessoa: use para acertar a config.
 ## Medição de visitas (pixel)
 - `features.pixel.meta`: só números, de 10 a 20. Vazio ou ausente: a bio não carrega o Pixel da Meta.
 - `features.pixel.ga4`: começa com `G-` e segue com letras ou números (ex.: `G-AB12CD34`). Vazio: não carrega o Google Analytics.
-- Os dois são opcionais. Com algum preenchido, a bio mostra um aviso de cookies e só carrega o script depois do aceite. Recusar fica gravado no navegador.
+- `features.pixel.clarity`: ID do projeto no Microsoft Clarity (de 6 a 20 letras minúsculas ou números; em Settings, Setup). Mostra onde as pessoas tocam e até onde rolam, com gravação das visitas. Vazio: não carrega o Clarity.
+- Depois do aceite, a bio marca sozinha: `Contact` no toque no WhatsApp, `Lead` no envio do bloco lead e na reserva do agendamento (com eventID) e, no Clarity, um evento `toque_<botão>` por toque contado.
+- Os três são opcionais. Com algum preenchido, a bio mostra um aviso de cookies e só carrega o script depois do aceite. Recusar fica gravado no navegador.
 - No painel: Contato e site, "Medição de visitas". O número da Meta está no Gerenciador de Eventos (Fontes de dados). O do Google está em Administrador, Coleta de dados, Fluxos de dados, ID de medição.
-- `META_PIXEL_ID` e `GA4_MEASUREMENT_ID` no ambiente só valem se o campo da config estiver vazio. ID que não parece ID vira aviso no check e não carrega script.
+- `META_PIXEL_ID`, `GA4_MEASUREMENT_ID` e `CLARITY_PROJECT_ID` no ambiente só valem se o campo da config estiver vazio. ID que não parece ID vira aviso no check e não carrega script.
 - `contact.whatsapp`: só dígitos, com 55 e DDD (ex.: `5511987654321`). No painel pode digitar com
   parênteses e espaços: ele tira os símbolos e põe o 55.
+
+## Google e Bing (`site.verificacao`)
+- `site.verificacao.google`: código da tag `google-site-verification` do Google Search Console (propriedade "Prefixo do URL" com o endereço da bio, método "Tag HTML"). Pode colar a tag inteira: a bio guarda só o código.
+- `site.verificacao.bing`: código da tag `msvalidate.01` (32 caracteres). Mais simples: no Bing Webmaster Tools, importar o site do Google Search Console, sem código.
+- Ordem: põe o código, publica, e só então clica em Verificar no Google. Depois, em Sitemaps, envie `sitemap.xml`.
+- No painel: Contato e site > Site > Avançado. A página sempre aponta o canonical para a home de `site.url`: o link com `?src=` ou `utm_` não vira página duplicada.
 
 ## Cartão do link ao compartilhar (`site.share`)
 - Tudo opcional. Sem nada: capa automática com foto, nome, @ e bio.
@@ -90,11 +98,29 @@ Nunca mostre estes nomes à pessoa: use para acertar a config.
 - Mostrar só entre datas: `visivel` em qualquer bloco, `{ de?: "AAAA-MM-DD" ou "AAAA-MM-DDTHH:MM", ate?: o mesmo }`. Vale no fuso `site.tz` (padrão América/São Paulo). Sem hora, `de` começa à meia-noite e `ate` inclui o dia inteiro. `de` não pode ser depois de `ate`. No painel: abra o bloco e use "Mostrar só entre datas". Fora do prazo o bloco some da bio; na prévia ele continua, com o selo, e a linha mostra "Programado" ou "Expirado".
 - Campos de cada bloco: tabela "Blocos" do `README.md`.
 
+## Conteúdo por origem (`origem` em qualquer bloco)
+- `origem: { mostrar: ["stories"] }`: o bloco só aparece para quem chegou com `?src=stories`
+  (ou `utm_source=stories`). Quem chega sem origem não vê.
+- `origem: { esconder: ["bio"] }`: o bloco some só para quem veio da bio.
+- Para trocar o título ou o botão do topo por origem, duplique o bloco: um com `mostrar` da origem
+  e o original com `esconder` da mesma origem.
+- Origem: de 1 a 20 letras minúsculas, números ou hífen. "direto" não vale (é quem chega sem origem).
+  A mesma origem não pode estar em `mostrar` e em `esconder`.
+- A origem fica guardada na sessão: quem chegou pelos stories e recarrega continua vendo a versão dos stories.
+- A página continua a mesma para o Google (canonical na home). Sem JavaScript, vale a versão sem origem.
+- O lead e o agendamento gravam a origem e a campanha (`utm_*`, `fbclid`) junto do contato, e o
+  aviso por e-mail ou webhook diz de onde a pessoa veio.
+- No painel: abra o bloco > Avançado > "Mostrar conforme a origem do link". A prévia mostra todos os blocos.
+
 ## Contagem de cliques (`features.analytics`)
 - `false` por padrão. Com `true` e o banco ligado (painel), cada botão da bio passa por um atalho
   nosso que conta o toque e manda para o destino. Sem o banco, o check só avisa e os botões
   continuam diretos: a bio não quebra.
 - A pessoa vê os números na seção Resultados do painel (7 e 30 dias, por botão e por origem).
   Links para copiar: a bio com `?src=bio`, `?src=stories` e `?src=reels`.
+- Com a contagem ligada, a bio também conta visitas por origem (uma por sessão do navegador, sem
+  cookie). Resultados mostra, por origem, visitas, toques e "toques por visita" dos últimos 30 dias.
+  Precisa da migration `0010_origem.sql` no banco; sem ela os cliques continuam e as visitas ficam zeradas.
+- A origem é o `?src=` do link, ou o `utm_source` quando não há `src` (link de anúncio).
 - Bloco sem `id`: a contagem usa o tipo e a posição. Mudar a ordem muda a chave e o histórico
   daquele botão recomeça. Com `id`, a chave fica estável. Não mostre esses nomes à pessoa.

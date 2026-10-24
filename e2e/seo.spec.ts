@@ -30,3 +30,19 @@ test("robots tira o painel do índice e o sitemap aponta a home", async ({ reque
   const sitemap = await (await request.get("/sitemap.xml")).text();
   expect(sitemap).toMatch(/<loc>https?:\/\/[^<]+\/?<\/loc>/);
 });
+
+test("a bio aponta o canonical para a home e, sem código, não publica meta de verificação", async ({ page }) => {
+  await page.goto("/?src=story&utm_source=ig");
+  const canonical = await page.locator('link[rel="canonical"]').getAttribute("href");
+  // O Next escreve a home sem a barra final, igual ao og:url. Sem ?src nem utm: todas as origens contam como uma página.
+  expect(canonical).toMatch(/^https:\/\/[^/?#]+\/?$/);
+  await expect(page.locator('meta[name="google-site-verification"]')).toHaveCount(0);
+  await expect(page.locator('meta[name="msvalidate.01"]')).toHaveCount(0);
+});
+
+test("com códigos, o Next escreve as metas do Google e do Bing", async ({ page }) => {
+  await page.goto("/e2e/verificacao");
+  await expect(page.locator('meta[name="google-site-verification"]')).toHaveAttribute("content", "codigoGoogleDeTeste_1234567890");
+  await expect(page.locator('meta[name="msvalidate.01"]')).toHaveAttribute("content", "0123456789ABCDEF0123456789ABCDEF");
+  await expect(page.locator('link[rel="canonical"]')).toHaveAttribute("href", /^https:\/\/casa\.exemplo\.com\/?$/);
+});

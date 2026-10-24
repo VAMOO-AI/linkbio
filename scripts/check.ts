@@ -411,11 +411,12 @@ if (conciergeIa) {
   }
   aviso(AVISO_CUSTO_IA);
 }
-// O ID mora na config (painel ou arquivo). META_PIXEL_ID e GA4_MEASUREMENT_ID só valem se o campo estiver vazio.
+// O ID mora na config (painel ou arquivo). META_PIXEL_ID, GA4_MEASUREMENT_ID e CLARITY_PROJECT_ID só valem se o campo estiver vazio.
 const pixelMod = await import(pathToFileURL(join(root, "lib", "pixel.ts")).href);
 for (const msg of pixelMod.avisosDePixel(config?.features?.pixel, {
   META_PIXEL_ID: env("META_PIXEL_ID"),
   GA4_MEASUREMENT_ID: env("GA4_MEASUREMENT_ID"),
+  CLARITY_PROJECT_ID: env("CLARITY_PROJECT_ID"),
 })) {
   aviso(msg);
 }

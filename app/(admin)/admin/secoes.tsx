@@ -8,6 +8,7 @@ import { BLOCOS, resumoDoBloco } from "@/lib/admin/rotulos";
 import { idLivre } from "@/lib/admin/normalizar";
 import { AJUDA_BLOCO } from "@/lib/admin/ajuda";
 import { resumoDaJanela, type Janela } from "@/lib/janela";
+import { taxaDeToques } from "@/lib/cliques";
 
 export type ModeloResumo = { id: string; nome: string; descricao: string; bg: string; surface: string; text: string; dim: string; ctaBg: string; ctaText: string; accent: string; line: string };
 export type Versao = { id: number; created_at: string; created_by: string | null; nota: string | null };
@@ -557,7 +558,7 @@ export function SecaoResultados({
   noAr: boolean;
   erro: boolean;
   botoes: { nome: string; dias7: number; dias30: number }[];
-  origens: { rotulo: string; dias7: number; dias30: number }[];
+  origens: { rotulo: string; dias7: number; dias30: number; visitas7: number; visitas30: number }[];
   links: { rotulo: string; url: string }[];
   onLigar: (v: boolean) => void;
 }) {
@@ -600,24 +601,37 @@ export function SecaoResultados({
               </tbody>
             </table>
           </div>
+        </>
+      )}
+      {noAr && !erro && origens.length > 0 && (
+        <>
           <h2 className="a-subtitulo">De onde vieram</h2>
+          <p className="c-dica">
+            Últimos 30 dias. Toques por visita passa de 100% quando a mesma pessoa toca em mais de um botão. Para comparar
+            origens, use os links abaixo.
+          </p>
           <div className="r-tabela-rola">
             <table className="r-tabela">
               <thead>
                 <tr>
                   <th>Origem</th>
-                  <th>7 dias</th>
-                  <th>30 dias</th>
+                  <th>Visitas</th>
+                  <th>Toques</th>
+                  <th>Toques por visita</th>
                 </tr>
               </thead>
               <tbody>
-                {origens.map((o) => (
-                  <tr key={o.rotulo}>
-                    <td>{o.rotulo}</td>
-                    <td>{o.dias7}</td>
-                    <td>{o.dias30}</td>
-                  </tr>
-                ))}
+                {origens.map((o) => {
+                  const taxa = taxaDeToques(o.dias30, o.visitas30);
+                  return (
+                    <tr key={o.rotulo}>
+                      <td>{o.rotulo}</td>
+                      <td>{o.visitas30}</td>
+                      <td>{o.dias30}</td>
+                      <td>{taxa === null ? "—" : `${taxa}%`}</td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>

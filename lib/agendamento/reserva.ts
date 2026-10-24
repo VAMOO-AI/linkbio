@@ -6,6 +6,7 @@
  * constraint de sobreposição. Se o Google falhar, a linha sai: reserva sem evento não bloqueia nada.
  */
 import { ESPERA_MINIMA_MS, hashIp } from "@/lib/lead";
+import { lerOrigemDoEnvio } from "../origem";
 import { calcularHorarios, chaveDoDia, contarPorDia, dentroDaRegra, type Horario, type Ocupado } from "./horarios";
 import { regraDoBloco, type BlocoAgendamento } from "./regra";
 
@@ -39,6 +40,8 @@ export type ReservaNova = {
   whatsapp: string;
   email: string | null;
   ip_hash: string;
+  origem: string | null;
+  utm: Record<string, string> | null;
 };
 
 export type ReservaGravada = { id: string; servico: string; inicio: string; fim: string; meet_url: string | null };
@@ -50,6 +53,8 @@ export type AvisoReserva = {
   whatsapp: string;
   email: string | null;
   entrega: string;
+  origem: string | null;
+  utm: Record<string, string> | null;
   criado_em: string;
 };
 
@@ -152,6 +157,8 @@ export async function reservar(
     agora: number;
     ip: string;
     sal: string;
+    /** Referer da reserva: sem origem no corpo, vale o `?src=` da bio. */
+    referer?: string | null;
     deps: DepsReserva;
   },
 ): Promise<ResultadoReserva> {
@@ -225,6 +232,7 @@ export async function reservar(
   }
 
   // atalho: a constraint do banco barra só sobreposição; duas reservas simultâneas encostadas (fim de uma = início da outra) ignoram o intervalo; revisitar se o respiro entre consultas da bio for regra dura.
+  const deOnde = lerOrigemDoEnvio(bruto, ctx.referer);
   const inserido = await deps.inserir({
     request_id: requestId,
     bloco: ctx.idBloco,
@@ -235,6 +243,7 @@ export async function reservar(
     whatsapp,
     email: email || null,
     ip_hash: ipHash,
+    ...deOnde,
   });
   if (!inserido.ok) {
     if (inserido.motivo === "ocupado") return { tipo: "ocupado", mensagem: MSG.ocupado };
@@ -283,6 +292,7 @@ export async function reservar(
       whatsapp,
       email: email || null,
       entrega: `${servico.title}, ${quando(inicio, tz)}${evento.meetUrl ? ` · ${evento.meetUrl}` : local ? ` · ${local}` : ""}`,
+      ...deOnde,
       criado_em: new Date(agora).toISOString(),
     })
     .catch(() => ["aviso"]);

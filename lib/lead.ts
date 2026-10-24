@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import { lerOrigemDoEnvio } from "./origem";
 import { z } from "zod";
 
 /** Quanto tempo o formulário precisa ficar aberto antes do envio (corta robô que dispara na hora). */
@@ -36,6 +37,9 @@ export type LeadGravado = {
   email: string | null;
   entrega: string | null;
   ip_hash: string;
+  /** De onde a pessoa veio (`?src=` ou `utm_source`) e a campanha (utm_*, fbclid). Null sem origem. */
+  origem: string | null;
+  utm: Record<string, string> | null;
 };
 
 export type AvisoLead = {
@@ -44,6 +48,8 @@ export type AvisoLead = {
   whatsapp: string | null;
   email: string | null;
   entrega: string | null;
+  origem: string | null;
+  utm: Record<string, string> | null;
   criado_em: string;
 };
 
@@ -120,6 +126,8 @@ export async function tratarLead(
     supabase: boolean;
     ip: string;
     sal: string;
+    /** Referer do envio: sem JavaScript, a origem sai do `?src=` da bio. */
+    referer?: string | null;
     contar: (hash: string, desdeIso: string) => Promise<number>;
     gravar: (lead: LeadGravado) => Promise<void>;
     avisar: (aviso: AvisoLead) => Promise<string[]>;
@@ -169,6 +177,7 @@ export async function tratarLead(
     email: email || null,
     entrega: bloco.entrega?.url ?? null,
     ip_hash: ipHash,
+    ...lerOrigemDoEnvio(bruto, ctx.referer),
   };
   try {
     await ctx.gravar(gravado);
@@ -184,6 +193,8 @@ export async function tratarLead(
       whatsapp: gravado.whatsapp,
       email: gravado.email,
       entrega: gravado.entrega,
+      origem: gravado.origem,
+      utm: gravado.utm,
       criado_em: new Date(ctx.agora).toISOString(),
     });
   } catch {
@@ -224,6 +235,7 @@ export async function avisarDono(
       aviso.whatsapp ? `WhatsApp: ${aviso.whatsapp}` : "",
       aviso.email ? `E-mail: ${aviso.email}` : "",
       aviso.entrega ? `Material: ${aviso.entrega}` : "",
+      aviso.origem ? `Veio de: ${aviso.origem}${aviso.utm?.utm_campaign ? ` (campanha ${aviso.utm.utm_campaign})` : ""}` : "",
       `Quando: ${aviso.criado_em}`,
     ].filter(Boolean);
     try {

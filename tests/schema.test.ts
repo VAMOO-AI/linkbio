@@ -82,7 +82,7 @@ describe("schema da config — casos válidos", () => {
 
   test("defineConfig devolve a config (com defaults aplicados)", () => {
     const cfg = defineConfig(baseBruta());
-    expect(cfg.features.pixel).toEqual({ meta: null, ga4: null });
+    expect(cfg.features.pixel).toEqual({ meta: null, ga4: null, clarity: null });
   });
 
   test("aceita offer com cta e link secundário (more_label/more_url)", () => {
@@ -713,9 +713,9 @@ describe("pixel e tipo de perfil", () => {
 
   test("aceita IDs de pixel no formato certo e trata vazio como desligado", () => {
     const ok = ConfigSchema.parse(com(["features"], { pixel: { meta: "123456789012345", ga4: "G-AB12CD34" } }));
-    expect(ok.features.pixel).toEqual({ meta: "123456789012345", ga4: "G-AB12CD34" });
-    const vazio = ConfigSchema.parse(com(["features"], { pixel: { meta: "  ", ga4: "" } }));
-    expect(vazio.features.pixel).toEqual({ meta: null, ga4: null });
+    expect(ok.features.pixel).toEqual({ meta: "123456789012345", ga4: "G-AB12CD34", clarity: null });
+    const vazio = ConfigSchema.parse(com(["features"], { pixel: { meta: "  ", ga4: "", clarity: " " } }));
+    expect(vazio.features.pixel).toEqual({ meta: null, ga4: null, clarity: null });
     const curto = ConfigSchema.parse(com(["features"], { pixel: { meta: "1234567890", ga4: null } }));
     expect(curto.features.pixel.meta).toBe("1234567890");
     const longo = ConfigSchema.parse(com(["features"], { pixel: { meta: "12345678901234567890", ga4: null } }));
@@ -725,6 +725,13 @@ describe("pixel e tipo de perfil", () => {
   test("rejeita ID da Meta com letra, curto ou longo demais", () => {
     for (const meta of ["abc1234567890", "123456789", "123456789012345678901"]) {
       expect(mensagens(com(["features"], { pixel: { meta, ga4: null } })).join("\n"), meta).toMatch(/Pixel da Meta/);
+    }
+  });
+
+  test("aceita ID do Clarity e rejeita maiúscula, espaço ou tamanho errado", () => {
+    expect(ConfigSchema.parse(com(["features"], { pixel: { clarity: "abc123defg" } })).features.pixel.clarity).toBe("abc123defg");
+    for (const clarity of ["ABC123DEFG", "abc 123", "abc12", "a".repeat(21)]) {
+      expect(mensagens(com(["features"], { pixel: { clarity } })).join("\n"), clarity).toMatch(/Clarity/);
     }
   });
 

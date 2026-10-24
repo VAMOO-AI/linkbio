@@ -155,6 +155,16 @@ describe("reservar", () => {
     expect(f.avisos).toHaveLength(1);
   });
 
+  test("grava a origem e a campanha da reserva e manda no aviso; sem elas, vale o Referer", async () => {
+    const f = falsos();
+    await reservar(pedido({ origem: "bio", utm: { utm_source: "ig", utm_medium: "bio" } }), ctx(f.deps));
+    expect(f.linhas[0]).toMatchObject({ origem: "bio", utm: { utm_source: "ig", utm_medium: "bio" } });
+    expect(f.avisos[0]).toMatchObject({ origem: "bio" });
+    const g = falsos();
+    await reservar(pedido(), { ...ctx(g.deps), referer: "https://bio.exemplo.com/?src=stories" });
+    expect(g.linhas[0]).toMatchObject({ origem: "stories", utm: null });
+  });
+
   test("com local, o evento leva o endereço e não cria Meet", async () => {
     const f = falsos();
     const r = await reservar(pedido(), ctx(f.deps, "1.2.3.4", { ...BLOCO, local: "Av. Paulista, 1000" }));

@@ -9,7 +9,9 @@ import { dadosDeCompartilhar, enderecoBase } from "@/lib/compartilhar";
 import { scriptDeCookies } from "@/lib/aviso-cookies";
 import { idsEfetivos } from "@/lib/pixel";
 import { cssDasFontes, hrefsParaPreload } from "@/lib/preloads-fonte";
-import { dadosEstruturados } from "@/lib/seo";
+import { dadosEstruturados, metadadosDeBusca } from "@/lib/seo";
+import { scriptDaOrigem } from "@/lib/origem";
+import { supabaseConfigurado } from "@/lib/supabase";
 import { BannerInApp } from "./banner-in-app";
 import "../instance.css";
 import "../globals.css";
@@ -23,6 +25,7 @@ export async function generateMetadata(): Promise<Metadata> {
     title: `${config.profile.name} ${config.profile.handle}`,
     description: config.profile.bio,
     metadataBase: base,
+    ...metadadosDeBusca(config.site, base),
     icons: { icon: "/favicon.svg" },
     openGraph: {
       title: c.titulo,
@@ -46,10 +49,13 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
   const preloads = hrefsParaPreload(tema.font, cssDasFontes());
   const pixels = idsEfetivos(config.features.pixel, process.env);
   // Sem ID, isto é null: o HTML não ganha script nem o texto do aviso.
-  const scriptCookies = scriptDeCookies(pixels.meta, pixels.ga4);
+  const scriptCookies = scriptDeCookies(pixels);
+  const scriptOrigem = scriptDaOrigem({ contarVisita: config.features.analytics === true && supabaseConfigurado() });
 
   return (
     <html
+      // O script da origem marca data-origem antes da hidratação.
+      suppressHydrationWarning
       lang={config.site.locale}
       className={variaveisDeFonte}
       data-theme={modoFixo(tema) ?? undefined}
@@ -62,6 +68,8 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
         {preloads.map((href) => (
           <link key={href} rel="preload" href={href} as="font" type="font/woff2" crossOrigin="anonymous" />
         ))}
+        {/* Antes de pintar: marca <html data-origem> para o CSS dos blocos por origem. */}
+        <script dangerouslySetInnerHTML={{ __html: scriptOrigem }} />
         <style dangerouslySetInnerHTML={{ __html: themeParaCss(tema) }} />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       </head>

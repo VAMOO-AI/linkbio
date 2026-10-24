@@ -74,6 +74,18 @@ describe("tratarLead", () => {
     if (r.tipo === "ok") expect(r.avisosFalhos).toEqual(["aviso"]);
   });
 
+  test("grava a origem e a campanha do envio; sem elas, a origem do Referer; e manda as duas no aviso", async () => {
+    const avisos: unknown[] = [];
+    const { gravados, base } = ctx({ avisar: async (a) => (avisos.push(a), []) });
+    await tratarLead(corpo({ origem: "stories", utm: JSON.stringify({ utm_campaign: "outubro", lixo: "x" }) }), base);
+    expect(gravados[0]).toMatchObject({ origem: "stories", utm: { utm_campaign: "outubro" } });
+    expect(avisos[0]).toMatchObject({ origem: "stories", utm: { utm_campaign: "outubro" } });
+    await tratarLead(corpo(), { ...base, referer: "https://bio.exemplo.com/?src=reels" });
+    expect(gravados[1]).toMatchObject({ origem: "reels", utm: null });
+    await tratarLead(corpo(), base);
+    expect(gravados[2]).toMatchObject({ origem: null, utm: null });
+  });
+
   test("honeypot preenchido não grava e responde como se tivesse dado certo", async () => {
     const { gravados, base } = ctx();
     const r = await tratarLead(corpo({ empresa: "acme ltda" }), base);

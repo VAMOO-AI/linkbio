@@ -38,6 +38,12 @@ const semEstouro = (page: Page) =>
 test("agendamento: serviço, dia, horário e dados até a confirmação, sem estourar 375 px", async ({ page }) => {
   await page.setViewportSize({ width: 375, height: 800 });
   const { horarios, pedidos } = await simularApi(page);
+  // O aviso de cookies escuta este evento e marca Lead (lib/eventos.ts).
+  await page.addInitScript(() => {
+    const w = window as unknown as { eventosDaBio: unknown[] };
+    w.eventosDaBio = [];
+    document.addEventListener("linkbio:evento", (e) => w.eventosDaBio.push((e as CustomEvent).detail));
+  });
   await page.goto("/e2e/agendamento");
   const bloco = page.locator(".bloco-agendamento");
   await expect(bloco).toContainText("Marque um horário");
@@ -62,6 +68,8 @@ test("agendamento: serviço, dia, horário e dados até a confirmação, sem est
   expect(pedidos).toHaveLength(1);
   expect(pedidos[0]).toMatchObject({ bloco: "agenda", servico: "consulta", nome: "Maria Souza", inicio: `${primeiroDia}T12:30:00.000Z` });
   expect(String(pedidos[0]!.request_id)).toMatch(/^[0-9a-f-]{36}$/);
+  const eventos = await page.evaluate(() => (window as unknown as { eventosDaBio: unknown[] }).eventosDaBio);
+  expect(eventos).toEqual([{ nome: "Lead", id: pedidos[0]!.request_id, metodo: "agendamento" }]);
   expect(await semEstouro(page)).toBe(true);
 });
 

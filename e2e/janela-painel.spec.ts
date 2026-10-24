@@ -47,3 +47,22 @@ test("selo na prévia e editor de datas no bloco", async ({ page }) => {
   await expect(futura.locator(".s-janela")).toHaveText("Expirado");
   await expect(quadro.getByText("Saiu do ar em 15/06")).toBeVisible();
 });
+
+test("origem: no Avançado do bloco, as origens entram como etiquetas e a prévia segue mostrando o bloco", async ({ page }) => {
+  await entrar(page);
+  await page.getByRole("navigation", { name: "Seções" }).getByRole("button", { name: "Blocos" }).click();
+  const linha = page.locator(".s-lista > li").filter({ hasText: "Turma que ainda não começou" });
+  await linha.locator(".s-bloco-nome").click();
+  await linha.locator("summary", { hasText: "Avançado" }).click();
+  await linha.getByRole("button", { name: /^Adicionar mostrar conforme a origem/ }).click();
+  const avancado = linha.locator("details.c-avancado");
+  await expect(avancado).toContainText("Só para quem vem de");
+  await expect(avancado).toContainText("Esconder de quem vem de");
+  const campo = avancado.locator(".c-etiqueta-input").first();
+  await campo.fill("stories");
+  await campo.press("Enter");
+  await expect(avancado.locator(".c-etiqueta")).toHaveText(["stories"]);
+  // Quem edita vê todos os blocos: a prévia não tem origem e não esconde o bloco com "Só para quem vem de".
+  const quadro = await quadroPronto(page);
+  await expect(quadro.getByText("Exemplo de bloco programado: fica fora da página até a data marcada.")).toBeVisible();
+});

@@ -22,6 +22,7 @@ import {
   normalizarOrigem,
   origemDoPedido,
   resumirCliques,
+  taxaDeToques,
 } from "@/lib/cliques";
 import { resolverDestino } from "@/lib/cliques-destino";
 
@@ -80,6 +81,9 @@ describe("origem", () => {
   test("lê src do próprio atalho ou, se não vier, do Referer da bio", () => {
     expect(origemDoPedido("https://bio.exemplo/?src=stories", null)).toBe("stories");
     expect(origemDoPedido("https://bio.exemplo/r/cta.x", "https://bio.exemplo/?src=reels")).toBe("reels");
+    // Link de anúncio sem ?src=: vale o utm_source; com os dois, o src ganha.
+    expect(origemDoPedido("https://bio.exemplo/r/cta.x", "https://bio.exemplo/?utm_source=Meta")).toBe("meta");
+    expect(origemDoPedido("https://bio.exemplo/r/cta.x", "https://bio.exemplo/?src=bio&utm_source=meta")).toBe("bio");
     expect(origemDoPedido("https://bio.exemplo/r/cta.x?src=bio", "https://bio.exemplo/?src=reels")).toBe("bio");
     expect(origemDoPedido("https://bio.exemplo/r/cta.x", "https://bio.exemplo/")).toBe("direto");
     expect(origemDoPedido("https://bio.exemplo/r/cta.x", null)).toBe("direto");
@@ -167,6 +171,25 @@ describe("resumo", () => {
     expect(r.botoes.find((b) => b.nome === "Botão que saiu da bio")?.dias7).toBe(1);
     expect(r.origens.find((o) => o.origem === "stories")).toMatchObject({ rotulo: "Stories", dias7: 2, dias30: 2 });
     expect(r.origens.find((o) => o.origem === "bio")).toMatchObject({ rotulo: "Bio", dias7: 0, dias30: 4 });
+  });
+
+  test("junta as visitas por origem, inclusive origem sem toque, e calcula toques por visita", () => {
+    const r = resumirCliques(
+      [{ dia: "2026-10-13", alvo: "cta.x", origem: "stories", total: 3 }],
+      new Map(),
+      "2026-10-13",
+      [
+        { dia: "2026-10-13", origem: "stories", total: 10 },
+        { dia: "2026-10-01", origem: "bio", total: 5 },
+        { dia: "2026-08-01", origem: "bio", total: 99 },
+      ],
+    );
+    expect(r.origens.map((o) => o.origem)).toEqual(["stories", "bio"]);
+    expect(r.origens[0]).toMatchObject({ dias30: 3, visitas7: 10, visitas30: 10 });
+    expect(r.origens[1]).toMatchObject({ dias30: 0, visitas7: 0, visitas30: 5 });
+    expect(taxaDeToques(3, 10)).toBe(30);
+    expect(taxaDeToques(12, 10)).toBe(120);
+    expect(taxaDeToques(3, 0)).toBeNull();
   });
 
   test("links para copiar levam a origem na bio", () => {

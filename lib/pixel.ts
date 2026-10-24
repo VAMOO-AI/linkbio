@@ -1,23 +1,29 @@
 /**
- * Pixel da Meta e Google Analytics 4.
+ * Pixel da Meta, Google Analytics 4 e Microsoft Clarity.
  * A config (arquivo ou painel) é a fonte. A variável de ambiente só vale se o campo estiver vazio.
  * ID inválido não liga script nenhum.
  */
 
 export const RE_META = /^\d{10,20}$/;
 export const RE_GA4 = /^G-[A-Za-z0-9]+$/;
+/** ID do projeto no Clarity: letras minúsculas e números (ex.: "abc123defg"). */
+export const RE_CLARITY = /^[a-z0-9]{6,20}$/;
 
 export const MSG_META =
   'O ID do Pixel da Meta deve ter só números, de 10 a 20 dígitos (ex.: "123456789012345").';
 export const MSG_GA4 =
   'O ID do Google Analytics deve começar com G- seguido de letras ou números (ex.: "G-AB12CD34").';
 
-export type IdsPixel = { meta: string | null; ga4: string | null };
+export const MSG_CLARITY =
+  'O ID do Microsoft Clarity tem de 6 a 20 letras minúsculas ou números (ex.: "abc123defg"). Fica em Settings, Setup, no código de instalação.';
+
+export type IdsPixel = { meta: string | null; ga4: string | null; clarity: string | null };
 
 /** process.env entra direto: a assinatura aberta evita o erro de tipo fraco do Node. */
 export type AmbientePixel = {
   META_PIXEL_ID?: string;
   GA4_MEASUREMENT_ID?: string;
+  CLARITY_PROJECT_ID?: string;
   [outra: string]: string | undefined;
 };
 
@@ -32,18 +38,19 @@ function escolher(daConfig: string, doAmbiente: string, re: RegExp): string | nu
 
 /** IDs que a página pode carregar. Config preenchida ganha da variável de ambiente. */
 export function idsEfetivos(
-  pixel: { meta?: string | null; ga4?: string | null } | null | undefined,
+  pixel: { meta?: string | null; ga4?: string | null; clarity?: string | null } | null | undefined,
   env: AmbientePixel,
 ): IdsPixel {
   return {
     meta: escolher(texto(pixel?.meta), texto(env.META_PIXEL_ID), RE_META),
     ga4: escolher(texto(pixel?.ga4), texto(env.GA4_MEASUREMENT_ID), RE_GA4),
+    clarity: escolher(texto(pixel?.clarity), texto(env.CLARITY_PROJECT_ID), RE_CLARITY),
   };
 }
 
 /** Avisos do `npm run check`. ID na config inválida já quebra no schema; aqui o ambiente entra. */
 export function avisosDePixel(
-  pixel: { meta?: unknown; ga4?: unknown } | null | undefined,
+  pixel: { meta?: unknown; ga4?: unknown; clarity?: unknown } | null | undefined,
   env: AmbientePixel,
 ): string[] {
   const avisos: string[] = [];
@@ -51,6 +58,8 @@ export function avisosDePixel(
   const ga4Cfg = texto(pixel?.ga4);
   const metaEnv = texto(env.META_PIXEL_ID);
   const ga4Env = texto(env.GA4_MEASUREMENT_ID);
+  const clarityCfg = texto(pixel?.clarity);
+  const clarityEnv = texto(env.CLARITY_PROJECT_ID);
   if (metaCfg && !RE_META.test(metaCfg)) {
     avisos.push("features.pixel.meta não parece um ID do Pixel da Meta (só números, de 10 a 20 dígitos).");
   }
@@ -65,6 +74,14 @@ export function avisosDePixel(
   if (!ga4Cfg && ga4Env && !RE_GA4.test(ga4Env)) {
     avisos.push(
       "GA4_MEASUREMENT_ID não parece um ID do Google Analytics (deve começar com G-). O painel e a config têm prioridade; esta variável só vale se o campo estiver vazio.",
+    );
+  }
+  if (clarityCfg && !RE_CLARITY.test(clarityCfg)) {
+    avisos.push("features.pixel.clarity não parece um ID do Microsoft Clarity (de 6 a 20 letras minúsculas ou números).");
+  }
+  if (!clarityCfg && clarityEnv && !RE_CLARITY.test(clarityEnv)) {
+    avisos.push(
+      "CLARITY_PROJECT_ID não parece um ID do Microsoft Clarity (de 6 a 20 letras minúsculas ou números). O painel e a config têm prioridade; esta variável só vale se o campo estiver vazio.",
     );
   }
   return avisos;

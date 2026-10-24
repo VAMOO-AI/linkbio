@@ -1,4 +1,4 @@
 {
-  "versao": "0.7.2",
-  "notas": "Corrige o pré-carregamento da fonte, que dava erro no console do navegador."
+  "versao": "0.9.0",
+  "notas": "A bio muda conforme de onde a pessoa vem (stories, reels, anúncio) e Resultados mostra visitas e toques por origem."
 }

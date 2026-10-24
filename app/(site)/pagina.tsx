@@ -2,8 +2,10 @@ import { renderBlock } from "@/blocks/registry";
 import { blocosAtivos } from "@/lib/blocos";
 import { chavesDosBlocos } from "@/lib/cliques";
 import { obterConfig, obterTema } from "@/lib/config-fonte";
+import { cssDeOrigem } from "@/lib/origem";
 import { supabaseConfigurado } from "@/lib/supabase";
 import { agendamentoNoAmbiente } from "@/lib/agendamento/servidor";
+import { PorOrigem } from "./por-origem";
 
 /**
  * Página da bio. `testeIa` só é ligado pela página de teste, quando ANTHROPIC_BASE_URL existe:
@@ -18,17 +20,26 @@ export async function PaginaPublica({ testeIa = false }: { testeIa?: boolean }) 
   // A chave fica neste módulo de servidor. O registro dos blocos também roda na prévia, no navegador.
   const chaveIa = Boolean(process.env.ANTHROPIC_API_KEY);
   const agendamento = agendamentoNoAmbiente();
+  // Regras de origem viram CSS: o HTML é o mesmo para todo mundo e o <head> marca a origem (lib/origem.ts).
+  const css = cssDeOrigem(config.blocks);
   return (
     <>
-      {blocosAtivos(config.blocks, new Date(), config.site.tz).map((block, i) =>
-        renderBlock(block, i, config, tema, chaves ? (chaves[config.blocks.indexOf(block)] ?? null) : null, {
+      {css && <style dangerouslySetInnerHTML={{ __html: css }} />}
+      {blocosAtivos(config.blocks, new Date(), config.site.tz).map((block, i) => {
+        const pos = config.blocks.indexOf(block);
+        const el = renderBlock(block, i, config, tema, chaves ? (chaves[pos] ?? null) : null, {
           captura,
           abertoEm: 0,
           ia: block.type === "concierge" && chaveIa && (block.mode === "ia" || testeIa),
           teste: testeIa,
           agendamento,
-        }),
-      )}
+        });
+        return (
+          <PorOrigem key={`bloco-${pos}`} origem={block.origem} pos={pos}>
+            {el}
+          </PorOrigem>
+        );
+      })}
     </>
   );
 }

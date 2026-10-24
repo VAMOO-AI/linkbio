@@ -283,6 +283,6 @@ export default defineConfig({
   features: {
     leads: false,
     analytics: false,
-    pixel: { meta: null, ga4: null },
+    pixel: { meta: null, ga4: null, clarity: null },
   },
 });

@@ -101,6 +101,7 @@ export async function POST(request: Request): Promise<Response> {
     blocos: blocosDaPagina(config),
     supabase: supabaseConfigurado(),
     ip: ipDoPedido(request),
+    referer: request.headers.get("referer"),
     sal: process.env.ADMIN_SESSION_SECRET || lerSupabase(process.env)?.url || "linkbio-lead",
     contar: contarLeadsRecentes,
     gravar: gravarLead,

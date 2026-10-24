@@ -13,7 +13,10 @@ test.describe.configure({ mode: "serial" });
 const cabecalho = { apikey: CHAVE_FALSA };
 const NAVEGADOR = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36";
 
-type Estado = { cliques: { dia: string; alvo: string; origem: string; total: number }[] };
+type Estado = {
+  cliques: { dia: string; alvo: string; origem: string; total: number }[];
+  visitas: { dia: string; origem: string; total: number }[];
+};
 
 async function limpar(request: APIRequestContext) {
   expect((await request.post(`${URL_FALSA}/__controle/limpar`, { headers: cabecalho })).status()).toBe(204);
@@ -103,4 +106,41 @@ test("Resultados explica como ligar e, depois de publicar, mostra o clique", asy
   await expect(page.locator(".r-tabela").first()).toContainText("Falar no WhatsApp");
   await expect(page.locator(".r-tabela").nth(1)).toContainText("Stories");
   await expect(page.getByRole("switch", { name: "Contar cliques" })).toHaveAttribute("aria-checked", "true");
+});
+
+test("com a contagem no ar, a visita conta uma vez por sessão e por origem, e Resultados mostra a taxa", async ({ page, request }) => {
+  await entrar(page);
+  await page.getByRole("navigation", { name: "Seções" }).getByRole("button", { name: "Resultados" }).click();
+  const sw = page.getByRole("switch", { name: "Contar cliques" });
+  if ((await sw.getAttribute("aria-checked")) !== "true") await sw.click();
+  await page.getByRole("button", { name: "Publicar" }).click();
+  await expect(page.locator(".a-estado")).toHaveText("Tudo publicado");
+
+  await page.goto("/?src=stories");
+  await expect.poll(async () => (await estado(request)).visitas).toEqual([expect.objectContaining({ origem: "stories", total: 1 })]);
+  await page.reload();
+  await page.goto("/");
+  await page.waitForLoadState("networkidle");
+  // Mesma sessão: a origem guardada é stories e já contou.
+  expect((await estado(request)).visitas).toEqual([expect.objectContaining({ origem: "stories", total: 1 })]);
+
+  const robo = await request.post("/api/visita", { data: { origem: "bio" }, headers: { "user-agent": "facebookexternalhit/1.1" } });
+  expect(robo.status()).toBe(204);
+  const ruim = await request.post("/api/visita", { data: { origem: "<script>" }, headers: { "user-agent": NAVEGADOR } });
+  expect(ruim.status()).toBe(204);
+  const v = (await estado(request)).visitas;
+  expect(v.find((l) => l.origem === "bio")).toBeUndefined();
+  expect(v.find((l) => l.origem === "direto")?.total).toBe(1);
+
+  const clique = await request.get("/r/cta.falar-whatsapp", {
+    maxRedirects: 0,
+    headers: { referer: `${URL_APP}/?src=stories`, "user-agent": NAVEGADOR },
+  });
+  expect(clique.status()).toBe(302);
+
+  await page.goto("/admin");
+  await page.getByRole("navigation", { name: "Seções" }).getByRole("button", { name: "Resultados" }).click();
+  const origens = page.locator(".r-tabela").nth(1);
+  await expect(origens).toContainText("Toques por visita");
+  await expect(origens.locator("tr", { hasText: "Stories" })).toContainText("100%");
 });

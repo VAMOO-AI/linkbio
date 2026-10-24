@@ -18,10 +18,14 @@ export default defineConfig({
     { name: "webkit", testIgnore: ["admin.spec.ts", "painel.spec.ts", "painel-celular.spec.ts", "previa-segue.spec.ts", "painel-sem-oferta.spec.ts", "keepalive.spec.ts", "saude.spec.ts", "capa-publicada.spec.ts", "painel-contraste.spec.ts", "login-codigo.spec.ts", "cliques.spec.ts", "concierge-ia.spec.ts", "janela-painel.spec.ts", "lead.spec.ts"], use: { browserName: "webkit" } },
     // Contagem e formulário de contato publicam uma bio diferente do arquivo. Rodam depois dos três
     // motores, senão o "/" dos testes públicos ganha atalho /r/ ou some o Pix no meio da execução.
-    { name: "banco", testMatch: ["cliques.spec.ts", "lead.spec.ts", "login-codigo.spec.ts"], dependencies: ["chromium", "firefox", "webkit"], use: { browserName: "chromium" } },
+    // Um arquivo por projeto, em fila: os três limpam o mesmo banco falso (__controle/limpar). Juntos num
+    // projeto só eles rodavam em paralelo e um apagava o estado do outro no meio do teste.
+    { name: "banco", testMatch: "cliques.spec.ts", dependencies: ["chromium", "firefox", "webkit"], use: { browserName: "chromium" } },
+    { name: "banco-lead", testMatch: "lead.spec.ts", dependencies: ["banco"], use: { browserName: "chromium" } },
+    { name: "banco-login", testMatch: "login-codigo.spec.ts", dependencies: ["banco-lead"], use: { browserName: "chromium" } },
     // Contraste do painel no claro e no escuro: cria um bloco novo (rascunho no banco falso), então roda
-    // sozinho, depois dos três motores e do banco, antes do "sem-oferta".
-    { name: "contraste", testMatch: "painel-contraste.spec.ts", dependencies: ["banco"], use: { browserName: "chromium" } },
+    // sozinho, depois dos três motores e dos três do banco, antes do "sem-oferta".
+    { name: "contraste", testMatch: "painel-contraste.spec.ts", dependencies: ["banco-login"], use: { browserName: "chromium" } },
     { name: "sem-oferta", testMatch: "painel-sem-oferta.spec.ts", dependencies: ["contraste"], use: { browserName: "chromium" } },
     // Capa ao compartilhar publicada pelo painel: também muda a bio no ar, então roda por último, sozinha.
     { name: "capa", testMatch: "capa-publicada.spec.ts", dependencies: ["sem-oferta"], use: { browserName: "chromium" } },
