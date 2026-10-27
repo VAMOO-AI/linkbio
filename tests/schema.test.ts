@@ -82,7 +82,7 @@ describe("schema da config — casos válidos", () => {
 
   test("defineConfig devolve a config (com defaults aplicados)", () => {
     const cfg = defineConfig(baseBruta());
-    expect(cfg.features.pixel).toEqual({ meta: null, ga4: null, clarity: null });
+    expect(cfg.features.pixel).toEqual({ meta: null, ga4: null, clarity: null, claritySemCookies: true });
   });
 
   test("aceita offer com cta e link secundário (more_label/more_url)", () => {
@@ -713,9 +713,10 @@ describe("pixel e tipo de perfil", () => {
 
   test("aceita IDs de pixel no formato certo e trata vazio como desligado", () => {
     const ok = ConfigSchema.parse(com(["features"], { pixel: { meta: "123456789012345", ga4: "G-AB12CD34" } }));
-    expect(ok.features.pixel).toEqual({ meta: "123456789012345", ga4: "G-AB12CD34", clarity: null });
+    expect(ok.features.pixel).toEqual({ meta: "123456789012345", ga4: "G-AB12CD34", clarity: null, claritySemCookies: true });
     const vazio = ConfigSchema.parse(com(["features"], { pixel: { meta: "  ", ga4: "", clarity: " " } }));
-    expect(vazio.features.pixel).toEqual({ meta: null, ga4: null, clarity: null });
+    expect(vazio.features.pixel).toEqual({ meta: null, ga4: null, clarity: null, claritySemCookies: true });
+    expect(ConfigSchema.parse(com(["features"], { pixel: { claritySemCookies: false } })).features.pixel.claritySemCookies).toBe(false);
     const curto = ConfigSchema.parse(com(["features"], { pixel: { meta: "1234567890", ga4: null } }));
     expect(curto.features.pixel.meta).toBe("1234567890");
     const longo = ConfigSchema.parse(com(["features"], { pixel: { meta: "12345678901234567890", ga4: null } }));

@@ -12,6 +12,11 @@ declare global {
 }
 
 const TERCEIRO = /facebook\.net|facebook\.com|googletagmanager|google-analytics|doubleclick|clarity\.ms/i;
+/** Pixel e GA4: só depois do aceite. O Clarity entra antes, sem cookies (features.pixel.claritySemCookies). */
+const SO_COM_ACEITE = /facebook\.net|facebook\.com|googletagmanager|google-analytics|doubleclick/i;
+const NEGADO = ["consentv2", { ad_Storage: "denied", analytics_Storage: "denied" }];
+const CONCEDIDO = ["consentv2", { ad_Storage: "denied", analytics_Storage: "granted" }];
+const filaClarity = () => [...(window.clarity?.q ?? [])].map((item) => Array.from(item as ArrayLike<unknown>));
 
 test("sem pixel, a bio não pede script de terceiro nem o aviso", async ({ page, request }) => {
   const terceiros: string[] = [];
@@ -39,7 +44,7 @@ test("sem pixel, a bio não pede script de terceiro nem o aviso", async ({ page,
   }
 });
 
-test("com pixel, nada carrega antes do aceite e o clique no WhatsApp vira contato", async ({ page }) => {
+test("com pixel, só o Clarity (sem cookies) carrega antes do aceite e o clique no WhatsApp vira contato", async ({ page }) => {
   const hits: string[] = [];
   await page.route(TERCEIRO, async (route) => {
     hits.push(route.request().url());
@@ -47,7 +52,11 @@ test("com pixel, nada carrega antes do aceite e o clique no WhatsApp vira contat
   });
   await page.goto("/e2e/pixel");
   await expect(page.getByRole("dialog", { name: "Cookies" })).toBeVisible();
-  expect(hits).toEqual([]);
+  await expect(page.getByRole("dialog", { name: "Cookies" })).toContainText("nada fica guardado no seu aparelho");
+  await expect.poll(() => hits.filter((h) => /clarity\.ms/.test(h)).length).toBeGreaterThan(0);
+  expect(hits.filter((h) => SO_COM_ACEITE.test(h))).toEqual([]);
+  expect(await page.evaluate(filaClarity)).toContainEqual(NEGADO);
+  expect(await page.evaluate(filaClarity)).not.toContainEqual(CONCEDIDO);
 
   await page.getByRole("button", { name: "Aceitar" }).click();
   await expect.poll(() => hits.length).toBeGreaterThan(0);
@@ -84,7 +93,9 @@ test("com pixel, nada carrega antes do aceite e o clique no WhatsApp vira contat
   expect(eventos.fb).toContainEqual(["track", "Lead", {}, { eventID: "lead-req-9" }]);
   expect(dl.split("generate_lead").length - 1).toBe(4);
   expect(eventos.dl).toContainEqual(["event", "generate_lead", { method: "agendamento" }]);
-  expect(eventos.cl).toContainEqual(["consent"]);
+  expect(eventos.cl).toContainEqual(NEGADO);
+  expect(eventos.cl).toContainEqual(CONCEDIDO);
+  expect(eventos.cl).not.toContainEqual(["consent"]);
   expect(eventos.cl).toContainEqual(["set", "origem", "direto"]);
   expect(eventos.cl).toContainEqual(["event", "toque_links.curso.0"]);
   expect(eventos.cl).toContainEqual(["event", "toque_cta.falar"]);
@@ -92,7 +103,7 @@ test("com pixel, nada carrega antes do aceite e o clique no WhatsApp vira contat
   expect(eventos.cl).toContainEqual(["event", "lead_agendamento"]);
 });
 
-test("recusar o pixel fica gravado e, ao recarregar, nada carrega", async ({ page }) => {
+test("recusar fica gravado e, ao recarregar, Pixel e GA4 não carregam; o Clarity segue sem cookies", async ({ page }) => {
   const hits: string[] = [];
   await page.route(TERCEIRO, async (route) => {
     hits.push(route.request().url());
@@ -104,5 +115,9 @@ test("recusar o pixel fica gravado e, ao recarregar, nada carrega", async ({ pag
   await page.reload();
   await page.waitForFunction(() => localStorage.getItem("linkbio-cookies") === "recusado");
   await expect(page.getByRole("dialog", { name: "Cookies" })).toHaveCount(0);
-  expect(hits).toEqual([]);
+  expect(hits.filter((h) => SO_COM_ACEITE.test(h))).toEqual([]);
+  expect(await page.evaluate(filaClarity)).toContainEqual(NEGADO);
+  expect(await page.evaluate(filaClarity)).not.toContainEqual(CONCEDIDO);
+  const cookies = (await page.context().cookies()).map((c) => c.name);
+  expect(cookies.filter((n) => /^_cl/.test(n))).toEqual([]);
 });

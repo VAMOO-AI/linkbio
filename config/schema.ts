@@ -1014,10 +1014,15 @@ export const FeaturesSchema = z.object({
     .object({
       meta: idDePixel(RE_META, MSG_META).default(null),
       ga4: idDePixel(RE_GA4, MSG_GA4).default(null),
-      /** Microsoft Clarity: mapa de calor, rolagem e gravação. Carrega junto, depois do aceite. */
+      /** Microsoft Clarity: mapa de calor, rolagem e gravação. */
       clarity: idDePixel(RE_CLARITY, MSG_CLARITY).default(null),
+      /**
+       * true (padrão): o Clarity grava desde a entrada, sem cookies (consentv2 negado), e passa a usar
+       * cookies só depois do Aceitar. false: só carrega depois do Aceitar, como o Pixel e o GA4.
+       */
+      claritySemCookies: z.boolean({ message: "features.pixel.claritySemCookies deve ser true ou false." }).default(true),
     })
-    .default({ meta: null, ga4: null, clarity: null }),
+    .default({ meta: null, ga4: null, clarity: null, claritySemCookies: true }),
 });
 
 /** Máximo de categorias no filtro da vitrine (o CSS tem regra para cada uma). */
@@ -1043,7 +1048,7 @@ export const ConfigSchema = z
     /** Produtos da vitrine (bloco products). Opcional. */
     catalog: z.array(ProdutoSchema).max(60, "catalog aceita no máximo 60 produtos.").default([]),
     blocks: z.array(BlockSchema).min(1, "defina ao menos 1 bloco em blocks."),
-    features: FeaturesSchema.default({ leads: false, analytics: false, pixel: { meta: null, ga4: null, clarity: null } }),
+    features: FeaturesSchema.default({ leads: false, analytics: false, pixel: { meta: null, ga4: null, clarity: null, claritySemCookies: true } }),
   })
   .superRefine((cfg, ctx) => {
     // Modo ou paleta que o modelo não tem (sobra de troca de modelo) não é erro: o motor ignora

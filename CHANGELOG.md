@@ -3,7 +3,17 @@
 ## Não lançado
 
 ### Para quem usa
-- Nada novo desde a v0.9.0.
+- Nada novo desde a v0.10.0.
+
+## v0.10.0 (2026-10-26)
+
+### Para quem usa
+- O Clarity passa a gravar também quem não aceita o aviso de cookies, sem guardar nada no aparelho. Antes ele só via quem tocava em Aceitar, e quase ninguém aceita no navegador do Instagram.
+- Prefere o jeito antigo? Peça: "Clarity só depois do aceite".
+
+### Na bio e no painel
+- `features.pixel.claritySemCookies` (padrão `true`). Com ele, o script do aviso carrega o Clarity na abertura com `consentv2` negado (`analytics_Storage: "denied"`, sem cookie) e concede no Aceitar. Recusou: segue negado. Pixel e GA4 continuam só depois do aceite. O texto do aviso vira "Se você recusar, nada fica guardado no seu aparelho".
+- Troca o `clarity("consent")`, obsoleto, pela API `consentv2` do Clarity. O evento `toque_<alvo>` passa a valer também no modo sem cookies.
 
 ## v0.9.0 (2026-10-24)
 

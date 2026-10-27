@@ -8,7 +8,8 @@ import { RE_CLARITY, RE_GA4, RE_META, type IdsPixel } from "./pixel";
  * Depois do aceite: PageView, Contact no toque no WhatsApp, Lead no formulário e na agenda
  * (com eventID, para deduplicar se um dia houver API de conversões) e, no Clarity, um evento por toque contado.
  */
-export function scriptDeCookies(ids: IdsPixel): string | null {
+export function scriptDeCookies(ids: IdsPixel, opcoes: { claritySemCookies?: boolean } = {}): string | null {
+  const semCookies = opcoes.claritySemCookies !== false;
   const metaOk = ids.meta && RE_META.test(ids.meta) ? ids.meta : null;
   const ga4Ok = ids.ga4 && RE_GA4.test(ids.ga4) ? ids.ga4 : null;
   const clarityOk = ids.clarity && RE_CLARITY.test(ids.clarity) ? ids.clarity : null;
@@ -23,12 +24,35 @@ var s=document.createElement("script");s.async=true;s.src="https://www.googletag
 window.dataLayer=window.dataLayer||[];window.gtag=function(){window.dataLayer.push(arguments);};window.gtag("js",new Date());window.gtag("config",ga4);
 }
 ` : "";
-  const carregaClarity = clarityOk ? `if(clarity){
+  // Clarity: liga uma vez (tag, origem e evento por toque) e ajusta o consentimento (API consentv2).
+  // Negado = grava sem cookie, com um ID novo a cada página. Concedido = sessão com cookie.
+  const funcoesClarity = clarityOk ? `var clarityLigado=false;
+function consentimentoClarity(concedido){window.clarity("consentv2",{ad_Storage:"denied",analytics_Storage:concedido?"granted":"denied"});}
+function ligarClarity(concedido){
+if(!clarityLigado){
+clarityLigado=true;
 (function(c,l,a,r,i,t,y){c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+encodeURIComponent(i);y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);})(window,document,"clarity","script",clarity);
-window.clarity("consent");
+consentimentoClarity(concedido);
 window.clarity("set","origem",document.documentElement.getAttribute("data-origem")||"direto");
+document.addEventListener("click",function(e){
+var alvo=e.target&&e.target.closest?e.target.closest("a[href]"):null;
+var contado=(alvo?alvo.getAttribute("href")||"":"").match(/^\\/r\\/([a-z0-9.-]+)/);
+if(contado)window.clarity("event","toque_"+contado[1]);
+});
+return;
+}
+consentimentoClarity(concedido);
 }
 ` : "";
+  const carregaClarity = clarityOk ? `ligarClarity(true);
+` : "";
+  // Sem cookies: o Clarity entra já na abertura (e continua assim se a pessoa recusar).
+  const antesDoAceite = clarityOk && semCookies ? `ligarClarity(false);
+` : "";
+  const textoAviso =
+    clarityOk && semCookies
+      ? "Usamos cookies para medir visitas. Se você recusar, nada fica guardado no seu aparelho."
+      : "Usamos cookies para medir visitas. Nada disso é carregado se você recusar.";
   return `(function(){
 var meta=${JSON.stringify(metaOk)};
 var ga4=${JSON.stringify(ga4Ok)};
@@ -37,7 +61,7 @@ var nomes=${JSON.stringify(EVENTOS_DA_BIO)};
 var chave="linkbio-cookies";
 function ler(){try{var v=localStorage.getItem(chave);return v==="aceito"||v==="recusado"?v:null;}catch(e){return null;}}
 function guardar(v){try{localStorage.setItem(chave,v);}catch(e){}}
-function idNovo(nome){return nome.toLowerCase()+"-"+Date.now().toString(36)+"-"+Math.random().toString(36).slice(2,8);}
+${funcoesClarity}function idNovo(nome){return nome.toLowerCase()+"-"+Date.now().toString(36)+"-"+Math.random().toString(36).slice(2,8);}
 function marcar(nome,id,metodo){
 if(nomes.indexOf(nome)<0)return;
 var eventID=id?nome.toLowerCase()+"-"+id:idNovo(nome);
@@ -49,8 +73,6 @@ function carregar(){
 ${carregaMeta}${carregaGa4}${carregaClarity}document.addEventListener("click",function(e){
 var alvo=e.target&&e.target.closest?e.target.closest("a[href]"):null;
 var href=alvo?alvo.getAttribute("href")||"":"";
-var contado=href.match(/^\\/r\\/([a-z0-9.-]+)/);
-if(contado&&window.clarity)window.clarity("event","toque_"+contado[1]);
 if(!/wa\\.me|api\\.whatsapp\\.com|whatsapp\\.com\\/send|[?&]wa=1(?:&|$)/i.test(href))return;
 marcar("Contact",null,"whatsapp");
 });
@@ -64,7 +86,7 @@ barra.className="aviso-cookies";
 barra.setAttribute("role","dialog");
 barra.setAttribute("aria-label","Cookies");
 var texto=document.createElement("p");
-texto.textContent="Usamos cookies para medir visitas. Nada disso é carregado se você recusar.";
+texto.textContent=${JSON.stringify(textoAviso)};
 var acoes=document.createElement("div");
 acoes.className="aviso-acoes";
 function botao(rotulo,classe,aoClicar){
@@ -78,6 +100,7 @@ document.body.appendChild(barra);
 }
 function iniciar(){
 var atual=ler();
+if(atual!=="aceito"){${antesDoAceite}}
 if(atual==="recusado")return;
 if(atual==="aceito")carregar();
 else perguntar();

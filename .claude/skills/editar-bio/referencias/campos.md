@@ -31,6 +31,7 @@ Nunca mostre estes nomes à pessoa: use para acertar a config.
 - `features.pixel.meta`: só números, de 10 a 20. Vazio ou ausente: a bio não carrega o Pixel da Meta.
 - `features.pixel.ga4`: começa com `G-` e segue com letras ou números (ex.: `G-AB12CD34`). Vazio: não carrega o Google Analytics.
 - `features.pixel.clarity`: ID do projeto no Microsoft Clarity (de 6 a 20 letras minúsculas ou números; em Settings, Setup). Mostra onde as pessoas tocam e até onde rolam, com gravação das visitas. Vazio: não carrega o Clarity.
+- `features.pixel.claritySemCookies` (padrão `true`): o Clarity grava desde a entrada sem cookies (consentimento negado, um ID novo a cada página) e passa a usar cookies só depois do Aceitar. Quem recusa continua gravado sem cookies. O texto do aviso muda para "Se você recusar, nada fica guardado no seu aparelho". `false`: o Clarity espera o aceite, como o Pixel e o GA4. Sem o modo sem cookies, quem chega pelo navegador do Instagram quase nunca aceita e o Clarity não vê essas visitas.
 - Depois do aceite, a bio marca sozinha: `Contact` no toque no WhatsApp, `Lead` no envio do bloco lead e na reserva do agendamento (com eventID) e, no Clarity, um evento `toque_<botão>` por toque contado.
 - Os três são opcionais. Com algum preenchido, a bio mostra um aviso de cookies e só carrega o script depois do aceite. Recusar fica gravado no navegador.
 - No painel: Contato e site, "Medição de visitas". O número da Meta está no Gerenciador de Eventos (Fontes de dados). O do Google está em Administrador, Coleta de dados, Fluxos de dados, ID de medição.

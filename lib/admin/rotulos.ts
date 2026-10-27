@@ -117,6 +117,7 @@ export const CAMPOS: Record<string, string> = {
   meta: "Pixel da Meta",
   ga4: "Google Analytics",
   clarity: "Microsoft Clarity",
+  claritySemCookies: "Clarity antes do aceite, sem cookies",
   verificacao: "Google e Bing (verificação do site)",
   google: "Google Search Console",
   bing: "Bing Webmaster Tools",

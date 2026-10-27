@@ -1,4 +1,4 @@
 {
-  "versao": "0.9.0",
-  "notas": "A bio muda conforme de onde a pessoa vem (stories, reels, anúncio) e Resultados mostra visitas e toques por origem."
+  "versao": "0.10.0",
+  "notas": "O Clarity grava também quem não aceita os cookies, sem guardar nada no aparelho."
 }
