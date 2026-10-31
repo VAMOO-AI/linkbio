@@ -3,7 +3,16 @@
 ## Não lançado
 
 ### Para quem usa
-- Nada novo desde a v0.11.0.
+- Nada novo desde a v0.11.1.
+
+## v0.11.1 (2026-10-31)
+
+### Para quem usa
+- Correção de segurança: atualiza duas bibliotecas com falha conhecida. Nada muda na bio nem no painel.
+
+### Na bio e no painel
+- `zod` 4.6.5 → 4.6.7 (GHSA-mrhx-c7xc-m3w5: memória esgotada ao validar lista enorme; o formulário de contato e o concierge com IA validam entrada pública com zod).
+- `undici` 6.29.0 → 6.29.1, dependência do `@vercel/blob` (GHSA-xjj6-f33q-929c e GHSA-4qv8-2p9j-2685, negação de serviço). `npm audit` sem vulnerabilidades.
 
 ## v0.11.0 (2026-10-31)
 

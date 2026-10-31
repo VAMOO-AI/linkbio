@@ -1,4 +1,4 @@
 {
-  "versao": "0.11.0",
-  "notas": "Bloco de contagem regressiva, origem por rede social sem ?src= e proteção contra a bio aberta dentro de outro site."
+  "versao": "0.11.1",
+  "notas": "Correção de segurança em duas bibliotecas. Nada muda na bio nem no painel."
 }
