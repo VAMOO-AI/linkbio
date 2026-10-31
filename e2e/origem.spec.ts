@@ -65,3 +65,20 @@ test("na bio, o script da origem não gera erro de hidratação nem de console",
   await page.waitForLoadState("networkidle");
   expect(erros).toEqual([]);
 });
+
+test("sem ?src=, quem chega do Instagram fica com a origem instagram, e ela vai junto no toque do atalho", async ({ page }) => {
+  await page.goto("/e2e/origem", { referer: "https://l.instagram.com/" });
+  await expect(page.locator("html")).toHaveAttribute("data-origem", "instagram");
+  let pedido = "";
+  await page.route("**/r/**", (rota) => {
+    pedido = rota.request().url();
+    return rota.fulfill({ status: 204 });
+  });
+  await page.getByText("Atalho").click();
+  await expect.poll(() => pedido).toContain("/r/link.teste?src=instagram");
+});
+
+test("site desconhecido no referrer não vira origem", async ({ page }) => {
+  await page.goto("/e2e/origem", { referer: "https://blog.qualquer.com/" });
+  await expect(page.locator("html")).not.toHaveAttribute("data-origem", /.*/);
+});

@@ -16,6 +16,7 @@ import { TestimonialsBlock } from "./testimonials";
 import { FaqBlock } from "./faq";
 import { ProductsBlock } from "./products";
 import { CouponBlock } from "./coupon";
+import { ContagemBlock } from "./contagem";
 import { LeadBlock } from "./lead";
 import { PixBlock } from "./pix";
 import { AgendaBlock } from "./agenda";
@@ -148,6 +149,21 @@ export function renderBlock(
           expires={block.expires}
           cta={block.cta}
           action={block.action}
+          chave={chave}
+        />
+      );
+    case "contagem":
+      return (
+        <ContagemBlock
+          key={block.id ?? key}
+          quando={block.quando}
+          tz={config.site.tz}
+          title={block.title}
+          text={block.text}
+          aoZerar={block.aoZerar}
+          cta={block.cta}
+          action={block.action}
+          whatsapp={config.contact.whatsapp}
           chave={chave}
         />
       );

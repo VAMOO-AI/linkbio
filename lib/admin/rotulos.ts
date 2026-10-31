@@ -112,6 +112,8 @@ export const CAMPOS: Record<string, string> = {
   filter: "Filtro por categoria",
   code: "Código do cupom",
   expires: "Válido até",
+  quando: "Contagem até",
+  aoZerar: "Texto quando zerar",
   copy: "Botão Copiar",
   features: "Recursos",
   meta: "Pixel da Meta",
@@ -191,6 +193,12 @@ export const NOVO_ITEM: Record<string, (id: string) => Record<string, unknown>> 
 };
 export const PREFIXO_ID: Record<string, string> = { offers: "oferta", catalog: "produto" };
 
+/** Daqui a 7 dias, às 20:00 (AAAA-MM-DDTHH:MM): contagem nova já nasce no futuro. */
+function proximaSemana(): string {
+  const d = new Date(Date.now() + 7 * 86400000);
+  return `${d.toISOString().slice(0, 10)}T20:00`;
+}
+
 export const BLOCOS: Record<string, { nome: string; descricao: string; novo: Novo }> = {
   profile: { nome: "Perfil", descricao: "Foto, nome, bio e redes", novo: () => ({ type: "profile" }) },
   cta: {
@@ -233,6 +241,11 @@ export const BLOCOS: Record<string, { nome: string; descricao: string; novo: Nov
     nome: "Cupom",
     descricao: "Código de desconto",
     novo: () => ({ type: "coupon", code: "CUPOM10", label: "10% de desconto" }),
+  },
+  contagem: {
+    nome: "Contagem regressiva",
+    descricao: "Dias, horas e minutos até uma data",
+    novo: () => ({ type: "contagem", quando: proximaSemana(), title: "Começa em" }),
   },
   link: { nome: "Link", descricao: "Um link (vira card com imagem)", novo: () => ({ type: "link", title: "Novo link", url: "https://" }) },
   links: {
@@ -354,6 +367,8 @@ export const DICAS: Record<string, string> = {
   headline: "Texto grande da capa quando não há imagem. Use Enter para quebrar linha.",
   videoId: "Cole o link inteiro do vídeo (do navegador ou do botão Compartilhar). O painel guarda só o código dele.",
   expires: "O check avisa quando o cupom vencer.",
+  quando: "No fuso do site. Para o bloco sumir depois, use também \"Mostrar até\".",
+  aoZerar: "Aparece no lugar dos números quando chega a hora. Vazio: \"Começou.\"",
   filter: "Mostra botões por categoria (até 6).",
   collapsed: "Mostra só o título; abre ao tocar.",
   enabled: "Desligado sai da página, mas o conteúdo fica guardado.",

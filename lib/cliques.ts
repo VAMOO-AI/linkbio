@@ -38,6 +38,9 @@ export function alvoItemLinks(chave: string, indice: number): string {
 export function alvoCupom(chave: string): string {
   return `cupom.${chave}`;
 }
+export function alvoContagem(chave: string): string {
+  return `contagem.${chave}`;
+}
 export function alvoPerfil(indice: number): string {
   return `perfil.${indice}`;
 }

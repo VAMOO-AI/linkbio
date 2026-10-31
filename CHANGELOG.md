@@ -3,7 +3,19 @@
 ## Não lançado
 
 ### Para quem usa
-- Nada novo desde a v0.10.0.
+- Nada novo desde a v0.11.0.
+
+## v0.11.0 (2026-10-31)
+
+### Para quem usa
+- Contagem regressiva: um bloco novo com dias, horas, minutos e segundos até uma data (lançamento, abertura de turma, live). Quando zera, mostra o texto que você escolher. Junto com "Mostrar até", o bloco some sozinho depois do evento. Peça: "põe uma contagem até dia 11 às 20h".
+- Quem chega do Instagram, Facebook, YouTube, TikTok, LinkedIn, X ou Google sem `?src=` no link agora aparece em Resultados com o nome da rede, não mais como "direto".
+- A bio e o painel não abrem mais dentro de outro site (proteção contra quem tenta enganar o clique pondo a sua página por baixo da dele).
+
+### Na bio e no painel
+- Bloco `contagem` (`quando`, `title`, `text?`, `aoZerar?`, `cta?` + `action?`): `blocks/contagem.tsx` monta no servidor com o instante já em UTC (`instanteUtc` em `lib/janela.ts`, no fuso `site.tz`); `blocks/contagem-relogio.tsx` anda no navegador e corrige o HTML que veio do cache. Sem JavaScript ficam os números da montagem e a data. Toque do botão conta em `/r/contagem.<chave>`. No painel, `quando` usa o campo de data e hora do aparelho.
+- Origem pelo referrer: sem `?src=`, `utm_source` nem origem guardada, o script do `<head>` usa o domínio de onde a pessoa veio, só para as redes de `REDES_DO_REFERRER` (`lib/origem.ts`). Site desconhecido continua "direto". O próprio script põe a origem que não está na URL (sessão ou referrer) como `?src=` no toque dos atalhos `/r/`, então o clique e a visita contam na mesma origem.
+- Cabeçalhos em toda rota (`next.config.ts`): `X-Frame-Options: SAMEORIGIN`, `Content-Security-Policy: frame-ancestors 'self'` (a prévia do painel continua no iframe), `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin` e `Permissions-Policy` sem câmera, microfone, localização e USB. A CSP completa fica para depois: teria de listar Meta, GA4, Clarity, Supabase e Google.
 
 ## v0.10.0 (2026-10-26)
 

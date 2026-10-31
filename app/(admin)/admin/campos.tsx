@@ -379,6 +379,7 @@ function CampoJanela({
  */
 function Texto({ chave, valor, onChange, id }: { chave: string | number; valor: string; onChange: (v: string) => void; id: string }) {
   if (chave === "expires" || chave === "date") return <input id={id} type="date" value={valor} onChange={(ev) => onChange(ev.target.value)} />;
+  if (chave === "quando") return <input id={id} type="datetime-local" value={valor} onChange={(ev) => onChange(ev.target.value.slice(0, 16))} />;
   if (chave === "time") return <input id={id} type="time" value={valor} onChange={(ev) => onChange(ev.target.value)} />;
   const aoDigitar = chave === "videoId" ? idDoYoutube : chave === "code" ? normalizarCupom : (v: string) => v;
   const aoSair =

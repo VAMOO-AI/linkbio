@@ -20,6 +20,8 @@ const INTEIRAS: [RegExp, string][] = [
   [/^defina ao menos 1 bloco em blocks\.$/, "A página precisa de pelo menos 1 bloco."],
   [/^bloco banner: label exige action.*$/s, 'O aviso tem texto de botão mas não tem destino: preencha "Ao clicar, abre" ou apague o texto do botão.'],
   [/^bloco banner: action exige label.*$/s, 'O aviso tem destino mas não tem texto de botão: preencha "Texto do botão".'],
+  [/^bloco contagem: cta exige action.*$/s, 'A contagem tem texto de botão mas não tem destino: preencha "Ao clicar, abre" ou apague o texto do botão.'],
+  [/^bloco contagem: action exige cta.*$/s, 'A contagem tem destino mas não tem texto de botão: preencha "Texto do botão".'],
   [/^bloco coupon: cta exige action.*$/s, 'O cupom tem texto de botão mas não tem destino: preencha "Ao clicar, abre" ou apague o texto do botão.'],
   [/^bloco lead: pedir deve ser.*$/s, "Escolha o que pedir: WhatsApp, e-mail ou os dois."],
   [/^bloco youtube: videoId deve ser.*$/s, "Cole o link do vídeo do YouTube (ex.: https://youtu.be/... ou https://www.youtube.com/watch?v=...)."],

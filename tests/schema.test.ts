@@ -812,3 +812,31 @@ describe("janela visivel", () => {
     expect(ConfigSchema.safeParse(cfg).success).toBe(true);
   });
 });
+
+describe("bloco contagem", () => {
+  test("aceita data com hora, só a data e o botão completo", () => {
+    for (const bloco of [
+      { quando: "2026-11-11T00:00", title: "Começa em" },
+      { quando: "2026-11-11", title: "Começa em", text: "Entre no grupo para não perder.", aoZerar: "Começou.", cta: "Entrar no grupo", action: { url: "https://exemplo.com/grupo" } },
+      { quando: "2026-11-11T18:30", title: "Começa em", cta: "Me avisa", action: { wa: "Quero ser avisado." } },
+    ]) {
+      const cfg = baseBruta();
+      cfg.blocks.push({ type: "contagem", ...bloco });
+      expect(ConfigSchema.safeParse(cfg).success, JSON.stringify(bloco)).toBe(true);
+    }
+  });
+
+  test("recusa data inválida, botão sem destino e campo desconhecido, com a mensagem em português", () => {
+    const semData = baseBruta();
+    semData.blocks.push({ type: "contagem", quando: "11/11/2026", title: "Começa em" });
+    expect(mensagens(semData).join("\n")).toContain("bloco contagem: quando deve estar no formato AAAA-MM-DD");
+
+    const semAcao = baseBruta();
+    semAcao.blocks.push({ type: "contagem", quando: "2026-11-11", title: "Começa em", cta: "Entrar" });
+    expect(mensagens(semAcao).join("\n")).toContain("bloco contagem: cta exige action");
+
+    const extra = baseBruta();
+    extra.blocks.push({ type: "contagem", quando: "2026-11-11", title: "Começa em", cor: "azul" });
+    expect(ConfigSchema.safeParse(extra).success).toBe(false);
+  });
+});

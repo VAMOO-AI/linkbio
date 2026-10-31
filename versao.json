@@ -1,4 +1,4 @@
 {
-  "versao": "0.10.0",
-  "notas": "O Clarity grava também quem não aceita os cookies, sem guardar nada no aparelho."
+  "versao": "0.11.0",
+  "notas": "Bloco de contagem regressiva, origem por rede social sem ?src= e proteção contra a bio aberta dentro de outro site."
 }

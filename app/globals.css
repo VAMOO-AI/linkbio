@@ -1790,6 +1790,93 @@ button.concierge-cabecalho {
   box-shadow: 4px 4px 0 var(--text);
 }
 
+/* Contagem regressiva: números em colunas iguais, sem pular de largura a cada segundo. */
+.bloco-contagem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 18px 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  text-align: center;
+}
+
+.contagem-titulo {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.contagem-relogio {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  width: 100%;
+  max-width: 320px;
+}
+
+.contagem-unidade {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px 0;
+  border-radius: var(--radius);
+  background: var(--bg);
+}
+
+.contagem-unidade strong {
+  font-size: 1.6rem;
+  font-weight: 800;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+}
+
+.contagem-unidade small {
+  font-size: 0.7rem;
+  color: var(--dim);
+}
+
+.contagem-fim {
+  margin: 0;
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: var(--text);
+}
+
+.contagem-quando,
+.contagem-texto {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--dim);
+}
+
+.contagem-texto {
+  font-size: 0.9rem;
+}
+
+.contagem-acao {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0 18px;
+  border-radius: var(--radius-btn);
+  background: var(--cta-bg);
+  color: var(--cta-text);
+  font-weight: 700;
+  font-size: 0.9rem;
+  text-decoration: none;
+}
+
+[data-botoes="brutal"] .bloco-contagem {
+  border: 2px solid var(--text);
+  box-shadow: 4px 4px 0 var(--text);
+}
+
 /* theme.fundoImagem: a imagem fica fixa por baixo de um véu na cor do fundo (o contraste não cai). */
 [data-fundo-imagem] body {
   background:

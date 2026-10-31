@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 import { ConfigSchema } from "../config/schema";
-import { cssDeOrigem, lerOrigemDoEnvio, origemDaBusca, scriptDaOrigem, semColunaDeOrigem } from "../lib/origem";
+import { cssDeOrigem, lerOrigemDoEnvio, origemDaBusca, origemDoReferrer, scriptDaOrigem, semColunaDeOrigem } from "../lib/origem";
 import configExemplo from "./fixtures/config-exemplo";
 
 /** Conteúdo por origem (v0.9.0): de onde a pessoa veio decide quais blocos aparecem. */
@@ -68,6 +68,68 @@ describe("script da origem", () => {
       expect(() => new Function(js)).not.toThrow();
       expect(js.includes("/api/visita")).toBe(contarVisita);
     }
+  });
+});
+
+describe("origem pelo site de onde a pessoa veio", () => {
+  test("rede conhecida vira origem; o próprio site, site desconhecido e lixo não", () => {
+    const aqui = "bio.exemplo.com";
+    expect(origemDoReferrer("https://l.instagram.com/?u=x", aqui)).toBe("instagram");
+    expect(origemDoReferrer("https://www.instagram.com/", aqui)).toBe("instagram");
+    expect(origemDoReferrer("https://m.facebook.com/", aqui)).toBe("facebook");
+    expect(origemDoReferrer("https://t.co/abc", aqui)).toBe("x");
+    expect(origemDoReferrer("https://www.youtube.com/", aqui)).toBe("youtube");
+    expect(origemDoReferrer("https://www.google.com.br/", aqui)).toBe("google");
+    expect(origemDoReferrer("https://www.linkedin.com/", aqui)).toBe("linkedin");
+    expect(origemDoReferrer("https://notinstagram.com/", aqui)).toBeNull();
+    expect(origemDoReferrer("https://bio.exemplo.com/agenda", aqui)).toBeNull();
+    expect(origemDoReferrer("https://blog.qualquer.com/", aqui)).toBeNull();
+    expect(origemDoReferrer("", aqui)).toBeNull();
+    expect(origemDoReferrer("lixo", aqui)).toBeNull();
+  });
+
+  /** Roda o script do <head> num navegador de mentira e devolve a origem marcada e a guardada. */
+  function rodar(busca: string, referrer: string, guardada: string | null = null) {
+    const sessao = new Map<string, string>(guardada ? [["linkbio-origem", guardada]] : []);
+    const attrs: Record<string, string> = {};
+    const ouvintes: Record<string, (e: unknown) => void> = {};
+    const env = {
+      location: { search: busca, hostname: "bio.exemplo.com", pathname: "/", href: `https://bio.exemplo.com/${busca}` },
+      document: {
+        referrer,
+        documentElement: { setAttribute: (k: string, v: string) => (attrs[k] = v) },
+        addEventListener: (tipo: string, f: (e: unknown) => void) => (ouvintes[tipo] = f),
+      },
+      window: { sessionStorage: { getItem: (k: string) => sessao.get(k) ?? null, setItem: (k: string, v: string) => sessao.set(k, v) } },
+      navigator: {},
+    };
+    new Function("location", "document", "window", "navigator", scriptDaOrigem({ contarVisita: false }))(
+      env.location, env.document, env.window, env.navigator,
+    );
+    /** Toque num link: devolve o href depois do script (a origem vai junto no atalho /r/). */
+    function tocar(href: string): string {
+      const a = { href, closest: (sel: string) => (sel.includes("/r/") && href.startsWith("/r/") ? a : null) };
+      ouvintes.click?.({ target: { closest: (sel: string) => a.closest(sel) } });
+      return a.href;
+    }
+    return { marcada: attrs["data-origem"] ?? null, guardada: sessao.get("linkbio-origem") ?? null, tocar };
+  }
+
+  test("sem ?src=, o script usa o referrer; ?src= e a origem já guardada vencem", () => {
+    const so = (r: ReturnType<typeof rodar>) => ({ marcada: r.marcada, guardada: r.guardada });
+    expect(so(rodar("", "https://l.instagram.com/"))).toEqual({ marcada: "instagram", guardada: "instagram" });
+    expect(so(rodar("?src=bio", "https://l.instagram.com/"))).toEqual({ marcada: "bio", guardada: "bio" });
+    expect(so(rodar("", "https://l.instagram.com/", "stories"))).toEqual({ marcada: "stories", guardada: "stories" });
+    expect(so(rodar("", "https://blog.qualquer.com/"))).toEqual({ marcada: null, guardada: null });
+    expect(so(rodar("", ""))).toEqual({ marcada: null, guardada: null });
+  });
+
+  test("o toque no atalho /r/ leva a origem que não está na URL, sem mexer em quem já tem", () => {
+    expect(rodar("", "https://l.instagram.com/").tocar("/r/cta.falar?wa=1")).toBe("/r/cta.falar?wa=1&src=instagram");
+    expect(rodar("", "", "stories").tocar("/r/link.curso")).toBe("/r/link.curso?src=stories");
+    expect(rodar("", "https://l.instagram.com/").tocar("/r/link.curso?src=bio")).toBe("/r/link.curso?src=bio");
+    expect(rodar("", "https://l.instagram.com/").tocar("https://fora.com/x")).toBe("https://fora.com/x");
+    expect(rodar("", "").tocar("/r/link.curso")).toBe("/r/link.curso");
   });
 });
 

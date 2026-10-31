@@ -22,6 +22,44 @@ export function origemDaBusca(busca: string): string | null {
 }
 
 /**
+ * Sem `?src=` nem `utm_source`, o site de onde a pessoa veio (`document.referrer`) vira a origem,
+ * só para estas redes. Site desconhecido continua "direto": não inventa origem a partir de domínio.
+ */
+export const REDES_DO_REFERRER: readonly (readonly [string, string])[] = [
+  ["instagram.com", "instagram"],
+  ["facebook.com", "facebook"],
+  ["fb.com", "facebook"],
+  ["threads.net", "threads"],
+  ["t.co", "x"],
+  ["x.com", "x"],
+  ["twitter.com", "x"],
+  ["youtube.com", "youtube"],
+  ["youtu.be", "youtube"],
+  ["tiktok.com", "tiktok"],
+  ["linkedin.com", "linkedin"],
+  ["lnkd.in", "linkedin"],
+  ["google.com", "google"],
+  ["google.com.br", "google"],
+  ["bing.com", "bing"],
+  ["whatsapp.com", "whatsapp"],
+];
+
+/** Origem pelo referrer, ou null. `hostAtual`: o próprio site não conta (navegação interna). */
+export function origemDoReferrer(referrer: string, hostAtual: string): string | null {
+  let host: string;
+  try {
+    host = new URL(referrer).hostname.toLowerCase();
+  } catch {
+    return null;
+  }
+  if (host.replace(/^www\./, "") === hostAtual.toLowerCase().replace(/^www\./, "")) return null;
+  for (const [dominio, origem] of REDES_DO_REFERRER) {
+    if (host === dominio || host.endsWith(`.${dominio}`)) return origem;
+  }
+  return null;
+}
+
+/**
  * Regras por bloco, pela posição em `config.blocks` (o mesmo índice de `data-bloco-origem`).
  * Os valores já passaram pelo schema (slug curto), então entram no seletor sem escapar.
  */
@@ -38,7 +76,11 @@ export function cssDeOrigem(blocks: readonly { type: string; origem?: RegraOrige
   return regras.join("\n");
 }
 
-/** Script do <head>. `contarVisita`: só com features.analytics e o banco ligados. */
+/**
+ * Script do <head>. `contarVisita`: só com features.analytics e o banco ligados.
+ * Origem que não está na URL (guardada na sessão ou vinda do referrer) vai no toque do atalho
+ * `/r/` como `?src=`: o servidor só enxerga a URL e o Referer, e o clique contaria como "direto".
+ */
 export function scriptDaOrigem({ contarVisita }: { contarVisita: boolean }): string {
   const visita = contarVisita
     ? `if(location.pathname==="/"){var kv="linkbio-visita-"+(o||"direto"),ja=null;try{ja=ss.getItem(kv);ss.setItem(kv,"1");}catch(e){}
@@ -51,7 +93,12 @@ var q=new URLSearchParams(location.search),d=document.documentElement,ss=null;tr
 function n(v){v=(v||"").trim().toLowerCase();return /^[a-z0-9-]{1,20}$/.test(v)&&v!=="direto"?v:null;}
 var o=null,brutos=[q.get("src"),q.get("utm_source")];for(var i=0;i<2;i++){if(brutos[i]&&brutos[i].trim()){o=n(brutos[i]);break;}}
 try{if(o)ss.setItem(${JSON.stringify(CHAVE_ORIGEM)},o);else o=n(ss.getItem(${JSON.stringify(CHAVE_ORIGEM)}));}catch(e){}
+if(!o&&document.referrer){try{var rh=new URL(document.referrer).hostname.toLowerCase(),R=${JSON.stringify(REDES_DO_REFERRER)};
+if(rh.replace(/^www[.]/,"")!==location.hostname.toLowerCase().replace(/^www[.]/,"")){for(var j=0;j<R.length;j++){if(rh===R[j][0]||rh.slice(-R[j][0].length-1)==="."+R[j][0]){o=R[j][1];break;}}}
+if(o)ss.setItem(${JSON.stringify(CHAVE_ORIGEM)},o);}catch(e){}}
 if(o)d.setAttribute("data-origem",o);
+document.addEventListener("click",function(e){if(!o)return;var a=e.target&&e.target.closest?e.target.closest('a[href^="/r/"]'):null;if(!a)return;
+try{var ur=new URL(a.href,location.href);if(!ur.searchParams.get("src")&&!ur.searchParams.get("utm_source")){ur.searchParams.set("src",o);a.href=ur.pathname+ur.search;}}catch(x){}},true);
 var u={},novo=false;try{u=JSON.parse(ss.getItem(${JSON.stringify(CHAVE_UTM)})||"{}")||{};}catch(e){u={};}
 ${JSON.stringify(CHAVES_CAMPANHA)}.forEach(function(k){var v=q.get(k);if(v){u[k]=v.slice(0,200);novo=true;}});
 if(novo)try{ss.setItem(${JSON.stringify(CHAVE_UTM)},JSON.stringify(u));}catch(e){}

@@ -650,6 +650,34 @@ const CouponBlockSchema = z
   .strict()
   .refine((b) => !b.cta || b.action, { message: "bloco coupon: cta exige action (para onde o botão leva)." });
 
+/**
+ * Contagem regressiva até `quando` (fuso `site.tz`). Chegou a zero, mostra `aoZerar` no lugar dos números.
+ * Para sumir depois do evento, use `visivel.ate` como em qualquer bloco.
+ */
+const ContagemBlockSchema = z
+  .object({
+    type: z.literal("contagem"),
+    /** false = bloco desligado: sai da página, mas o conteúdo fica guardado na config. */
+    enabled: z.boolean({ message: "enabled deve ser true ou false." }).optional(),
+    visivel: campoVisivel("bloco contagem"),
+    origem: campoOrigem("bloco contagem"),
+    id: slug("bloco contagem: id").optional(),
+    /** Quando a contagem chega a zero: AAAA-MM-DDTHH:MM (só a data: meia-noite). */
+    quando: instanteVisivel("bloco contagem: quando"),
+    /** Acima dos números (ex.: "A turma abre em"). */
+    title: textoObrigatorio("bloco contagem: title", 80),
+    /** Linha abaixo dos números. */
+    text: z.string().min(1, "bloco contagem: text não pode ser vazio.").max(200, "bloco contagem: text deve ter no máximo 200 caracteres.").optional(),
+    /** No lugar dos números quando chega a zero. Padrão: "Começou." */
+    aoZerar: z.string().min(1, "bloco contagem: aoZerar não pode ser vazio.").max(80, "bloco contagem: aoZerar deve ter no máximo 80 caracteres.").optional(),
+    /** Texto do botão. */
+    cta: z.string().min(1, "bloco contagem: cta não pode ser vazio.").max(40, "bloco contagem: cta deve ter no máximo 40 caracteres.").optional(),
+    action: acao("bloco contagem: action").optional(),
+  })
+  .strict()
+  .refine((b) => !b.cta || b.action, { message: "bloco contagem: cta exige action (para onde o botão leva)." })
+  .refine((b) => !b.action || b.cta, { message: "bloco contagem: action exige cta (o texto do botão)." });
+
 /** Texto da caixinha LGPD quando a pessoa não escreve o dela. */
 export const CONSENTIMENTO_PADRAO =
   "Ao enviar, você concorda que eu use este contato só para te enviar o material e avisos sobre ele. Sem spam.";
@@ -978,12 +1006,13 @@ export const BlockSchema = z.discriminatedUnion(
     FaqBlockSchema,
     ProductsBlockSchema,
     CouponBlockSchema,
+    ContagemBlockSchema,
     LeadBlockSchema,
     PixBlockSchema,
     AgendaBlockSchema,
     AgendamentoBlockSchema,
   ],
-  { message: "bloco com type desconhecido. Tipos válidos: profile, social, cta, link, links, cards, text, divider, youtube, gallery, concierge, banner, testimonials, faq, products, coupon, lead, pix, agenda, agendamento." },
+  { message: "bloco com type desconhecido. Tipos válidos: profile, social, cta, link, links, cards, text, divider, youtube, gallery, concierge, banner, testimonials, faq, products, coupon, contagem, lead, pix, agenda, agendamento." },
 );
 
 // ---------------------------------------------------------------------------

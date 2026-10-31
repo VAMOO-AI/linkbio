@@ -2,6 +2,7 @@ import type { Block, LinkbioConfig } from "@/config/schema";
 import { mensagemConcierge, respostaQueDecide, type RespostaConcierge } from "@/lib/concierge";
 import {
   alvoBanner,
+  alvoContagem,
   alvoConciergeMais,
   alvoCta,
   alvoCupom,
@@ -84,6 +85,13 @@ export function resolverDestino(config: LinkbioConfig, alvo: string, caminho: st
     if (!bloco?.action) return null;
     const url = "wa" in bloco.action ? linkWhatsApp(config.contact.whatsapp, bloco.action.wa) : bloco.action.url;
     return { url, nome: bloco.label };
+  }
+
+  if (tipo === "contagem" && a && b === undefined) {
+    const bloco = blocoPorChave(config, "contagem", a);
+    if (!bloco?.action || !bloco.cta) return null;
+    const url = "wa" in bloco.action ? linkWhatsApp(config.contact.whatsapp, bloco.action.wa) : bloco.action.url;
+    return { url, nome: bloco.cta };
   }
 
   if (tipo === "perfil" && a !== undefined && b === undefined) {
@@ -173,6 +181,7 @@ export function nomesDosBotoes(config: LinkbioConfig): Map<string, string> {
     else if (b.type === "link") por(alvoLink(chave));
     else if (b.type === "links") b.items.forEach((_, i) => por(alvoItemLinks(chave, i)));
     else if (b.type === "coupon" && b.action) por(alvoCupom(chave));
+    else if (b.type === "contagem" && b.action && b.cta) por(alvoContagem(chave));
     else if (b.type === "social") b.items.forEach((_, i) => por(alvoRede(chave, i)));
     else if (b.type === "concierge") {
       nomes.set(`concierge.${chave}`, b.title?.trim() || "Concierge");

@@ -108,6 +108,7 @@ duas datas), ver abaixo.
 | `cards` | Ofertas de `offers`, com capa e preço (sem nenhuma, o bloco não aparece) | `items`, `layout`, `eyebrow` |
 | `products` | Vitrine de produtos de `catalog`, com filtro | `items`, `layout`, `filter`, `title` |
 | `coupon` | Cupom de desconto (toque seleciona o código) | `code`, `label`, `expires`, `action`, `copy` |
+| `contagem` | Contagem regressiva até uma data, no fuso do site; zerada, mostra `aoZerar` | `quando`, `title`, `text`, `aoZerar`, `cta`, `action` |
 | `link` | Um link (vira card com `image` ou `subtitle`) | `title`, `url`, `subtitle`, `image`, `icon` |
 | `links` | Grupo de até 12 links | `items`, `layout`, `title` |
 | `social` | Redes sociais em linha | `items` |

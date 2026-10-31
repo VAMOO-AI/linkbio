@@ -28,6 +28,7 @@ Siga "Arquivo ou painel" do `AGENTS.md`.
 | Quais ofertas aparecem nos cards | bloco `cards`, `items` | Blocos > Ofertas |
 | Produto da vitrine | `catalog[]` + bloco `products` | Vitrine (ordem: Blocos > Vitrine, setas) |
 | Cupom, aviso em destaque | bloco `coupon`, `banner` | Blocos |
+| Contagem regressiva (lançamento, abertura de turma, live) | bloco `contagem` (com `visivel.ate` para sumir depois) | Blocos |
 | Vídeo, fotos, depoimentos, perguntas frequentes | bloco `youtube`, `gallery`, `testimonials`, `faq` | Blocos > Adicionar bloco (entra no fim; ver "Mudar a ordem") |
 | Texto livre, rodapé, linha divisória | bloco `text`, `divider` | Blocos > Adicionar bloco (entra no fim; ver "Mudar a ordem") |
 | Concierge (perguntas e para onde leva) | bloco `concierge` | Blocos > Concierge |
@@ -45,7 +46,7 @@ Siga "Arquivo ou painel" do `AGENTS.md`.
 | Modelo, cor, fonte, fundo, botões, cantos | `theme` | Aparência (fonte diferente nos títulos e no texto: Fonte > Títulos e texto separados) |
 | Jeito de um bloco aparecer (carrossel, lista, capa) | campo do bloco | Blocos (clique em qualquer ponto da linha do bloco) |
 
-Todos os 20 tipos de bloco já existem. Pedido que cabe num deles NÃO é `novo-bloco`.
+Todos os 21 tipos de bloco já existem. Pedido que cabe num deles NÃO é `novo-bloco`.
 
 ## 3. Referências (leia só quando o pedido tocar nelas)
 

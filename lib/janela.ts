@@ -161,6 +161,11 @@ function fronteiraUtc(v: string, lado: "de" | "ate", tz: string): number | null 
   return utcDoRelogio(n.y, n.m, n.d, 0, 0, tz);
 }
 
+/** Instante UTC (ms) em que o relógio de `tz` chega a `v` (só a data: meia-noite). Inválido: null. */
+export function instanteUtc(v: string, tz = FUSO_PADRAO): number | null {
+  return fronteiraUtc(v, "de", tz);
+}
+
 const MIN_SEG = 60;
 const MAX_SEG = 60 * 60 * 24 * 365;
 

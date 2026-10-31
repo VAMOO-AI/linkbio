@@ -18,6 +18,7 @@ export default function PaginaOrigem() {
           <p>{b.texto}</p>
         </PorOrigem>
       ))}
+      <a href="/r/link.teste">Atalho</a>
       <form method="post" action="/e2e/origem">
         <input type="hidden" name="origem" defaultValue="" />
         <input type="hidden" name="utm" defaultValue="" />
