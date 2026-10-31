@@ -1,6 +1,6 @@
 ---
 name: novo-bloco
-description: Cria um tipo de bloco que NÃO existe no motor (schema, componente, estilo, registry, painel e teste). Use quando a pessoa pedir algo que nenhum dos 21 tipos faz (ex.: mapa), e só depois de confirmar com ela. Tipos existentes: profile, cta, banner, concierge, cards, products, coupon, contagem, link, links, social, youtube, gallery, testimonials, faq, text, divider, lead, pix, agenda, agendamento. Pedidos como "põe um vídeo", "adiciona depoimentos", "coloca perguntas frequentes", "quero uma galeria", "formulário de contato", "chave Pix", "agenda", "marcar horário", "contagem regressiva" ou "muda o jeito dos links" são editar-bio, não esta skill.
+description: Cria um tipo de bloco que NÃO existe no motor (schema, componente, estilo, registry, painel e teste). Use quando a pessoa pedir algo que nenhum dos 22 tipos faz (ex.: mapa), e só depois de confirmar com ela. Tipos existentes: profile, cta, banner, concierge, cards, products, coupon, contagem, numeros, link, links, social, youtube, gallery, testimonials, faq, text, divider, lead, pix, agenda, agendamento. Pedidos como "põe um vídeo", "adiciona depoimentos", "coloca perguntas frequentes", "quero uma galeria", "formulário de contato", "chave Pix", "agenda", "marcar horário", "contagem regressiva", "números em destaque" ou "muda o jeito dos links" são editar-bio, não esta skill.
 ---
 
 # Novo bloco

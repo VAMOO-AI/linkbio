@@ -1,4 +1,4 @@
 {
-  "versao": "0.11.1",
-  "notas": "Correção de segurança em duas bibliotecas. Nada muda na bio nem no painel."
+  "versao": "0.12.0",
+  "notas": "Foto que troca por data, botão Compartilhar com QR Code, bloco de números com fonte e sites que trouxeram visitas em Resultados (rode o 0011_sites.sql)."
 }

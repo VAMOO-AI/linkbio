@@ -41,6 +41,7 @@ const tabelas: Record<string, Linha[]> = {
   cliques: [],
   // Visitas por dia e origem (migration 0010).
   visitas: [],
+  visitas_sites: [],
   leads: [],
 };
 const contadores: Record<string, number> = {};
@@ -219,6 +220,14 @@ function rpc(nome: string, corpo: Buffer, resp: ServerResponse): void {
     else tabelas.visitas!.push({ dia: v.p_dia, origem: v.p_origem, total: 1 });
     return responderVazio(resp, 204);
   }
+  if (nome === "registrar_site_visita") {
+    const v = JSON.parse(corpo.toString()) as { p_dia?: string; p_site?: string };
+    if (!v.p_dia || !v.p_site) throw new Recusa(400, "registrar_site_visita sem dia ou site");
+    const linha = tabelas.visitas_sites!.find((l) => l.dia === v.p_dia && l.site === v.p_site);
+    if (linha) linha.total = Number(linha.total) + 1;
+    else tabelas.visitas_sites!.push({ dia: v.p_dia, site: v.p_site, total: 1 });
+    return responderVazio(resp, 204);
+  }
   if (nome !== "registrar_clique") throw new Recusa(404, `a função "${nome}" não existe no Supabase falso`);
   const pedido = JSON.parse(corpo.toString()) as { p_dia?: string; p_alvo?: string; p_origem?: string };
   if (!pedido.p_dia || !pedido.p_alvo || !pedido.p_origem) throw new Recusa(400, "registrar_clique sem dia, alvo ou origem");
@@ -250,6 +259,7 @@ function controle(acao: string, resp: ServerResponse): void {
       keepalive: tabelas.keepalive!,
       cliques: tabelas.cliques!,
       visitas: tabelas.visitas!,
+      visitasSites: tabelas.visitas_sites!,
       leads: tabelas.leads!,
       arquivos: [...arquivos.keys()],
       pedidos,

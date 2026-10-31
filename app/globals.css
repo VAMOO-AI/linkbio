@@ -1790,6 +1790,174 @@ button.concierge-cabecalho {
   box-shadow: 4px 4px 0 var(--text);
 }
 
+/* Compartilhar (bloco profile, compartilhar: true): <details> que abre o QR sem JavaScript. */
+.perfil-compartilhar {
+  margin-top: 12px;
+  text-align: center;
+}
+
+.perfil-compartilhar summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-btn);
+  background: var(--surface);
+  color: var(--text);
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+  list-style: none;
+}
+
+.perfil-compartilhar summary::-webkit-details-marker {
+  display: none;
+}
+
+.compartilhar-painel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+/* QR sempre preto no branco: leitor de câmera falha com QR claro em fundo escuro. */
+.compartilhar-qr {
+  width: 184px;
+  max-width: 100%;
+  padding: 8px;
+  border-radius: 8px;
+  background: #fff;
+  color: #000;
+}
+
+.compartilhar-qr svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.compartilhar-dica,
+.compartilhar-link {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--dim);
+  overflow-wrap: anywhere;
+}
+
+.compartilhar-link {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.compartilhar-acoes {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+
+.compartilhar-acoes button,
+.compartilhar-baixar {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-btn);
+  background: var(--bg);
+  color: var(--text);
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+/* Números: 2 a 4 colunas iguais; em tela estreita, 4 números viram 2 por linha. */
+.bloco-numeros {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.numeros-titulo {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 700;
+  text-align: center;
+  color: var(--text);
+}
+
+.numeros-lista {
+  display: grid;
+  grid-template-columns: repeat(var(--qtd, 2), minmax(0, 1fr));
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.numeros-lista[data-qtd="3"] {
+  --qtd: 3;
+}
+
+.numeros-lista[data-qtd="4"] {
+  --qtd: 4;
+}
+
+@media (max-width: 420px) {
+  .numeros-lista[data-qtd="4"] {
+    --qtd: 2;
+  }
+}
+
+.numeros-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-width: 0;
+  padding: 12px 6px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  text-align: center;
+}
+
+.numeros-valor {
+  font-size: 1.5rem;
+  font-weight: 800;
+  line-height: 1.1;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+.numeros-legenda {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text);
+  overflow-wrap: anywhere;
+}
+
+.numeros-fonte {
+  font-size: 0.7rem;
+  color: var(--dim);
+  overflow-wrap: anywhere;
+}
+
+[data-botoes="brutal"] .numeros-item {
+  border: 2px solid var(--text);
+  box-shadow: 3px 3px 0 var(--text);
+}
+
 /* Contagem regressiva: números em colunas iguais, sem pular de largura a cada segundo. */
 .bloco-contagem {
   display: flex;

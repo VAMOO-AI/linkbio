@@ -3,7 +3,20 @@
 ## Não lançado
 
 ### Para quem usa
-- Nada novo desde a v0.11.1.
+- Nada novo desde a v0.12.0.
+
+## v0.12.0 (2026-10-31)
+
+### Para quem usa
+- Foto que troca sozinha numa data (campanha, data especial) e bloco de números em destaque, cada número com a fonte embaixo. Peça: "troca minha foto entre 11 e 12/11".
+- Botão Compartilhar com QR Code da bio, para palestra e evento: abre o código, copia o link ou envia pelo celular. Quem entra pelo QR aparece como "qr" em Resultados. Peça: "liga o botão de compartilhar".
+- Resultados mostra os sites que trouxeram visitas. Para valer, rode o SQL novo (`0011_sites.sql`).
+
+### Na bio e no painel
+- `profile.avatarPorData` (até 5 `{ avatar, visivel }`, cada um com `de` ou `ate`): `avatarNaData` (`lib/perfil.ts`) escolhe a foto no render da página, a primeira janela que vale ganha; `janelasDaConfig` soma essas janelas às dos blocos no revalidate. A capa `/capa.jpg` e o JSON-LD ficam com `profile.avatar`.
+- `compartilhar: true` no bloco `profile`: `<details>` com o QR em SVG desenhado no servidor (`lib/qr.ts`, `urlDoQr` com `?src=qr`), link de baixar o SVG, e `blocks/compartilhar.tsx` com Copiar, Enviar (`navigator.share`, só quando existe) e Esc fecha. Abre sem JavaScript.
+- Bloco `numeros` (`title?`, `items` de 2 a 4 com `valor` até 12 caracteres, `legenda` e `fonte` obrigatória, visível embaixo do número). 4 números viram 2 por linha abaixo de 420 px.
+- Sites na visita: o script do `<head>` manda o domínio do referrer externo junto da visita; `/api/visita` normaliza (`siteDaVisita`: só host, sem `www`, sem o próprio site, IP ou localhost) e grava por `registrar_site_visita` numa chamada à parte, então banco sem a 0011 continua contando a visita. Migration `0011_sites.sql`: tabela `visitas_sites` (dia, site, total), RLS sem policy, função só para o service role, e teto de 200 domínios por dia (o resto vai para "outros"). Resultados lista os 10 sites dos últimos 30 dias.
 
 ## v0.11.1 (2026-10-31)
 

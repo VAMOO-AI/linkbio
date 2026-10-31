@@ -2,6 +2,7 @@ import Image from "next/image";
 import type { ChaveDe } from "@/config/opcoes";
 import type { LinkbioConfig } from "@/config/schema";
 import { alvoPerfil, hrefDoClique } from "@/lib/cliques";
+import { AcoesCompartilhar } from "./compartilhar";
 import { IconeSocial } from "./social";
 
 type Props = {
@@ -10,9 +11,13 @@ type Props = {
   cover?: string;
   profile: LinkbioConfig["profile"];
   chave?: string | null;
+  /** Foto do dia (profile.avatarPorData); sem ela, profile.avatar. */
+  avatar?: string;
+  /** Painel "Compartilhar": link da bio e o QR já desenhado no servidor (lib/qr.ts). */
+  compartilhar?: { url: string; qrUrl: string; svg: string } | null;
 };
 
-export function ProfileBlock({ header, socials, cover, profile, chave = null }: Props) {
+export function ProfileBlock({ header, socials, cover, profile, chave = null, avatar, compartilhar = null }: Props) {
   const redes = socials === "oculto" ? [] : (profile.socials ?? []);
   return (
     <header className="bloco-perfil" data-header={header} data-socials={socials}>
@@ -24,7 +29,7 @@ export function ProfileBlock({ header, socials, cover, profile, chave = null }: 
         </div>
       )}
       <Image
-        src={profile.avatar}
+        src={avatar ?? profile.avatar}
         alt={`Foto de ${profile.name}`}
         width={96}
         height={96}
@@ -67,6 +72,30 @@ export function ProfileBlock({ header, socials, cover, profile, chave = null }: 
             ),
           )}
         </nav>
+      )}
+      {compartilhar && (
+        <details className="perfil-compartilhar">
+          <summary>
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <rect x="3" y="3" width="7" height="7" rx="1.5" />
+              <rect x="14" y="3" width="7" height="7" rx="1.5" />
+              <rect x="3" y="14" width="7" height="7" rx="1.5" />
+              <path d="M14 14h3v3h-3zM20 14v.01M14 20h.01M17 20h4v-3" />
+            </svg>
+            Compartilhar
+          </summary>
+          <div className="compartilhar-painel">
+            <div className="compartilhar-qr" role="img" aria-label={`QR Code da bio de ${profile.name}`} dangerouslySetInnerHTML={{ __html: compartilhar.svg }} />
+            <p className="compartilhar-dica">Aponte a câmera do celular para o código.</p>
+            <p className="compartilhar-link" translate="no">
+              {compartilhar.url.replace(/^https?:\/\//, "").replace(/\/$/, "")}
+            </p>
+            <AcoesCompartilhar url={compartilhar.url} titulo={profile.name} />
+            <a className="compartilhar-baixar" href={`data:image/svg+xml;charset=utf-8,${encodeURIComponent(compartilhar.svg)}`} download="qr-code-bio.svg">
+              Baixar QR Code
+            </a>
+          </div>
+        </details>
       )}
     </header>
   );

@@ -551,6 +551,7 @@ export function SecaoResultados({
   erro,
   botoes,
   origens,
+  sites = [],
   links,
   onLigar,
 }: {
@@ -559,6 +560,7 @@ export function SecaoResultados({
   erro: boolean;
   botoes: { nome: string; dias7: number; dias30: number }[];
   origens: { rotulo: string; dias7: number; dias30: number; visitas7: number; visitas30: number }[];
+  sites?: { site: string; dias7: number; dias30: number }[];
   links: { rotulo: string; url: string }[];
   onLigar: (v: boolean) => void;
 }) {
@@ -632,6 +634,32 @@ export function SecaoResultados({
                     </tr>
                   );
                 })}
+              </tbody>
+            </table>
+          </div>
+        </>
+      )}
+      {noAr && !erro && sites.length > 0 && (
+        <>
+          <h2 className="a-subtitulo">Sites que trouxeram visitas</h2>
+          <p className="c-dica">Só o endereço do site, sem a página. Muita visita vem sem site (app do Instagram, WhatsApp, link digitado): essas não aparecem aqui.</p>
+          <div className="r-tabela-rola">
+            <table className="r-tabela">
+              <thead>
+                <tr>
+                  <th>Site</th>
+                  <th>7 dias</th>
+                  <th>30 dias</th>
+                </tr>
+              </thead>
+              <tbody>
+                {sites.map((s) => (
+                  <tr key={s.site}>
+                    <td>{s.site === "outros" ? "Outros sites" : s.site}</td>
+                    <td>{s.dias7}</td>
+                    <td>{s.dias30}</td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>

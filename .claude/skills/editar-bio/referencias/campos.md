@@ -122,6 +122,11 @@ Nunca mostre estes nomes à pessoa: use para acertar a config.
 - Com a contagem ligada, a bio também conta visitas por origem (uma por sessão do navegador, sem
   cookie). Resultados mostra, por origem, visitas, toques e "toques por visita" dos últimos 30 dias.
   Precisa da migration `0010_origem.sql` no banco; sem ela os cliques continuam e as visitas ficam zeradas.
+- Resultados também lista os sites que trouxeram visitas (só o domínio, 7 e 30 dias, até 10). Precisa
+  da migration `0011_sites.sql`; sem ela a lista não aparece e o resto continua. App do Instagram,
+  WhatsApp e link digitado não mandam site: essas visitas não entram na lista.
+- Sem `?src=` nem `utm_source`, quem vem de rede conhecida (Instagram, Facebook, YouTube, TikTok,
+  LinkedIn, X, Google) conta com o nome da rede; o QR do botão Compartilhar conta como `qr`.
 - A origem é o `?src=` do link, ou o `utm_source` quando não há `src` (link de anúncio).
 - Bloco sem `id`: a contagem usa o tipo e a posição. Mudar a ordem muda a chave e o histórico
   daquele botão recomeça. Com `id`, a chave fica estável. Não mostre esses nomes à pessoa.

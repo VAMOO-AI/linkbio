@@ -11,7 +11,7 @@ import { usePreviaFoco } from "./previa-foco";
 import { BLOCOS } from "@/lib/admin/rotulos";
 import { AJUDA_SECAO } from "@/lib/admin/ajuda";
 import { acompanharCantos, acompanharModelo, acompanharReferencias } from "@/lib/admin/referencias";
-import { linksDeOrigem, type TotalBotao, type TotalOrigem } from "@/lib/cliques";
+import { linksDeOrigem, type TotalBotao, type TotalOrigem, type TotalSite } from "@/lib/cliques";
 
 type Problema = { caminho: string; mensagem: string };
 type Estado = "igual" | "salvando" | "rascunho" | "invalido" | "erro";
@@ -141,7 +141,7 @@ export function Editor({
   modelos: ModeloResumo[];
   versoes: Versao[];
   email: string;
-  cliques: { erro: boolean; botoes: TotalBotao[]; origens: TotalOrigem[] };
+  cliques: { erro: boolean; botoes: TotalBotao[]; origens: TotalOrigem[]; sites: TotalSite[] };
   contatos: ContatoPainel[];
   contatosErro: boolean;
 }) {
@@ -564,6 +564,7 @@ export function Editor({
                 erro={cliques.erro}
                 botoes={cliques.botoes}
                 origens={cliques.origens}
+                sites={cliques.sites}
                 links={linksDeOrigem(ehObj(cfg.site) && typeof cfg.site.url === "string" ? cfg.site.url : "")}
                 onLigar={(v) => ctx.set(["features", "analytics"], v)}
               />

@@ -27,12 +27,12 @@ export default async function Admin() {
     );
   }
   const [editavel, versoes] = dados;
-  let cliques: ResumoCliques = { erro: false, botoes: [], origens: [] };
+  let cliques: ResumoCliques = { erro: false, botoes: [], origens: [], sites: [] };
   try {
     cliques = await lerCliques(editavel.config);
   } catch (erro) {
     console.error("[linkbio admin] não foi possível ler os cliques", erro);
-    cliques = { erro: true, botoes: [], origens: [] };
+    cliques = { erro: true, botoes: [], origens: [], sites: [] };
   }
   let contatos: Awaited<ReturnType<typeof listarContatos>> = [];
   let contatosErro = false;

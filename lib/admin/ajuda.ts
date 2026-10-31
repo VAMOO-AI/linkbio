@@ -26,6 +26,7 @@ export const AJUDA_BLOCO: Record<string, string> = {
   cards: "Cards das suas ofertas, com capa, preço e botão. Editar um card aqui muda a oferta em todo lugar.",
   products: "Vitrine dos produtos da seção Vitrine, com preço e filtro por categoria.",
   coupon: "Cupom de desconto que a pessoa copia com um toque.",
+  numeros: "De 2 a 4 números em destaque (alunos, anos, projetos), cada um com a fonte embaixo. Use só número real.",
   contagem: "Contagem regressiva até uma data (lançamento, abertura de turma, live). Quando zera, mostra o texto que você escolher no lugar dos números.",
   pix: "QR Code e código copia-e-cola. A pessoa copia com um toque. O nome vai sem acento no código do banco.",
   agenda: "Próximos eventos, com Google Agenda e arquivo para baixar. Evento que já passou some sozinho: a página atualiza de hora em hora, ou na hora se você publicar de novo.",

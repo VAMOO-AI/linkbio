@@ -1,6 +1,7 @@
 import "server-only";
 import { obterConfig } from "@/lib/config-fonte";
 import { diaNoFuso, ehRobo, normalizarOrigem } from "@/lib/cliques";
+import { siteDaVisita } from "@/lib/origem";
 import { rest, supabaseConfigurado } from "@/lib/supabase";
 
 /** Uma visita por sessão do navegador (o script da origem guarda a marca). Sem cache. */
@@ -20,20 +21,35 @@ export async function POST(request: Request): Promise<Response> {
   });
   if (robo) return new Response(null, { status: 204, headers: SEM_CACHE });
   let origem = "direto";
+  let site: string | null = null;
   try {
-    const corpo = (await request.json()) as { origem?: unknown };
+    const corpo = (await request.json()) as { origem?: unknown; site?: unknown };
     origem = normalizarOrigem(typeof corpo?.origem === "string" ? corpo.origem : null);
+    site = siteDaVisita(typeof corpo?.site === "string" ? corpo.site : null, config.site.url);
   } catch {
     origem = "direto";
   }
+  const dia = diaNoFuso(config.site.tz);
   try {
     await rest("rpc/registrar_visita", {
       method: "POST",
       cache: "no-store",
-      body: JSON.stringify({ p_dia: diaNoFuso(config.site.tz), p_origem: origem }),
+      body: JSON.stringify({ p_dia: dia, p_origem: origem }),
     });
   } catch (erro) {
     console.error("[linkbio] não foi possível contar a visita (rodou supabase/migrations/0010_origem.sql?)", erro);
+  }
+  // À parte: banco que só rodou a 0010 continua contando a visita, só sem o site.
+  if (site) {
+    try {
+      await rest("rpc/registrar_site_visita", {
+        method: "POST",
+        cache: "no-store",
+        body: JSON.stringify({ p_dia: dia, p_site: site }),
+      });
+    } catch (erro) {
+      console.error("[linkbio] não foi possível guardar o site da visita (rodou supabase/migrations/0011_sites.sql?)", erro);
+    }
   }
   return new Response(null, { status: 204, headers: SEM_CACHE });
 }

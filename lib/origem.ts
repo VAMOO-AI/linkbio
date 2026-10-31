@@ -59,6 +59,24 @@ export function origemDoReferrer(referrer: string, hostAtual: string): string | 
   return null;
 }
 
+const RE_HOST = /^(?=.{4,100}$)[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+$/;
+
+/**
+ * Domínio de onde veio a visita, para Resultados. Só o host, sem caminho nem busca (o caminho pode
+ * levar dado pessoal). Fora: o próprio site, IP, localhost e o que não parece domínio.
+ */
+export function siteDaVisita(host: string | null | undefined, siteUrl: string): string | null {
+  const h = (host ?? "").trim().toLowerCase().replace(/^www\./, "");
+  if (!RE_HOST.test(h) || /^[\d.]+$/.test(h)) return null;
+  let proprio = "";
+  try {
+    proprio = new URL(siteUrl).hostname.toLowerCase().replace(/^www\./, "");
+  } catch {
+    proprio = "";
+  }
+  return h === proprio ? null : h;
+}
+
 /**
  * Regras por bloco, pela posição em `config.blocks` (o mesmo índice de `data-bloco-origem`).
  * Os valores já passaram pelo schema (slug curto), então entram no seletor sem escapar.
@@ -84,7 +102,8 @@ export function cssDeOrigem(blocks: readonly { type: string; origem?: RegraOrige
 export function scriptDaOrigem({ contarVisita }: { contarVisita: boolean }): string {
   const visita = contarVisita
     ? `if(location.pathname==="/"){var kv="linkbio-visita-"+(o||"direto"),ja=null;try{ja=ss.getItem(kv);ss.setItem(kv,"1");}catch(e){}
-if(!ja){var corpo=JSON.stringify({origem:o||"direto"});
+if(!ja){var cv={origem:o||"direto"};try{var sh=document.referrer?new URL(document.referrer).hostname.toLowerCase():"";if(sh&&sh.replace(/^www[.]/,"")!==location.hostname.toLowerCase().replace(/^www[.]/,""))cv.site=sh;}catch(e){}
+var corpo=JSON.stringify(cv);
 if(!(navigator.sendBeacon&&navigator.sendBeacon("/api/visita",new Blob([corpo],{type:"application/json"}))))fetch("/api/visita",{method:"POST",headers:{"content-type":"application/json"},body:corpo,keepalive:true}).catch(function(){});}}
 `
     : "";

@@ -202,6 +202,24 @@ export function resumirCliques(
   return { botoes: [...botoes.values()].sort(porTotal), origens: [...origens.values()].sort(porVisitas) };
 }
 
+export type LinhaSite = { dia: string; site: string; total: number };
+export type TotalSite = { site: string; dias7: number; dias30: number };
+
+/** Os 10 sites que mais trouxeram visitas nos últimos 30 dias (com os 7 dias ao lado). */
+export function resumirSites(linhas: readonly LinhaSite[], hoje: string): TotalSite[] {
+  const desde7 = diaMenos(hoje, 6);
+  const desde30 = diaMenos(hoje, 29);
+  const sites = new Map<string, TotalSite>();
+  for (const l of linhas) {
+    if (l.dia < desde30 || l.dia > hoje) continue;
+    const s = sites.get(l.site) ?? { site: l.site, dias7: 0, dias30: 0 };
+    s.dias30 += l.total;
+    if (l.dia >= desde7) s.dias7 += l.total;
+    sites.set(l.site, s);
+  }
+  return [...sites.values()].sort((a, b) => b.dias30 - a.dias30 || a.site.localeCompare(b.site)).slice(0, 10);
+}
+
 export function linksDeOrigem(siteUrl: string): { rotulo: string; url: string }[] {
   const base = siteUrl.replace(/\/$/, "");
   return [

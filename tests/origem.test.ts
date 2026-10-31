@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 import { ConfigSchema } from "../config/schema";
-import { cssDeOrigem, lerOrigemDoEnvio, origemDaBusca, origemDoReferrer, scriptDaOrigem, semColunaDeOrigem } from "../lib/origem";
+import { cssDeOrigem, lerOrigemDoEnvio, origemDaBusca, origemDoReferrer, scriptDaOrigem, semColunaDeOrigem, siteDaVisita } from "../lib/origem";
 import configExemplo from "./fixtures/config-exemplo";
 
 /** Conteúdo por origem (v0.9.0): de onde a pessoa veio decide quais blocos aparecem. */
@@ -89,10 +89,11 @@ describe("origem pelo site de onde a pessoa veio", () => {
   });
 
   /** Roda o script do <head> num navegador de mentira e devolve a origem marcada e a guardada. */
-  function rodar(busca: string, referrer: string, guardada: string | null = null) {
+  function rodar(busca: string, referrer: string, guardada: string | null = null, contarVisita = false) {
     const sessao = new Map<string, string>(guardada ? [["linkbio-origem", guardada]] : []);
     const attrs: Record<string, string> = {};
     const ouvintes: Record<string, (e: unknown) => void> = {};
+    const beacons: Blob[] = [];
     const env = {
       location: { search: busca, hostname: "bio.exemplo.com", pathname: "/", href: `https://bio.exemplo.com/${busca}` },
       document: {
@@ -101,9 +102,14 @@ describe("origem pelo site de onde a pessoa veio", () => {
         addEventListener: (tipo: string, f: (e: unknown) => void) => (ouvintes[tipo] = f),
       },
       window: { sessionStorage: { getItem: (k: string) => sessao.get(k) ?? null, setItem: (k: string, v: string) => sessao.set(k, v) } },
-      navigator: {},
+      navigator: {
+        sendBeacon: (_url: string, corpo: Blob) => {
+          beacons.push(corpo);
+          return true;
+        },
+      },
     };
-    new Function("location", "document", "window", "navigator", scriptDaOrigem({ contarVisita: false }))(
+    new Function("location", "document", "window", "navigator", scriptDaOrigem({ contarVisita }))(
       env.location, env.document, env.window, env.navigator,
     );
     /** Toque num link: devolve o href depois do script (a origem vai junto no atalho /r/). */
@@ -112,7 +118,7 @@ describe("origem pelo site de onde a pessoa veio", () => {
       ouvintes.click?.({ target: { closest: (sel: string) => a.closest(sel) } });
       return a.href;
     }
-    return { marcada: attrs["data-origem"] ?? null, guardada: sessao.get("linkbio-origem") ?? null, tocar };
+    return { marcada: attrs["data-origem"] ?? null, guardada: sessao.get("linkbio-origem") ?? null, tocar, beacons };
   }
 
   test("sem ?src=, o script usa o referrer; ?src= e a origem já guardada vencem", () => {
@@ -124,12 +130,36 @@ describe("origem pelo site de onde a pessoa veio", () => {
     expect(so(rodar("", ""))).toEqual({ marcada: null, guardada: null });
   });
 
+  test("o aviso de visita leva o domínio de onde a pessoa veio, e só ele", async () => {
+    const corpo = async (r: ReturnType<typeof rodar>) => JSON.parse(await r.beacons[0]!.text()) as Record<string, string>;
+    expect(await corpo(rodar("", "https://blog.qualquer.com/post/1?x=2", null, true))).toEqual({ origem: "direto", site: "blog.qualquer.com" });
+    expect(await corpo(rodar("?src=bio", "https://l.instagram.com/", null, true))).toEqual({ origem: "bio", site: "l.instagram.com" });
+    expect(await corpo(rodar("", "https://bio.exemplo.com/agenda", null, true))).toEqual({ origem: "direto" });
+    expect(await corpo(rodar("", "", null, true))).toEqual({ origem: "direto" });
+  });
+
   test("o toque no atalho /r/ leva a origem que não está na URL, sem mexer em quem já tem", () => {
     expect(rodar("", "https://l.instagram.com/").tocar("/r/cta.falar?wa=1")).toBe("/r/cta.falar?wa=1&src=instagram");
     expect(rodar("", "", "stories").tocar("/r/link.curso")).toBe("/r/link.curso?src=stories");
     expect(rodar("", "https://l.instagram.com/").tocar("/r/link.curso?src=bio")).toBe("/r/link.curso?src=bio");
     expect(rodar("", "https://l.instagram.com/").tocar("https://fora.com/x")).toBe("https://fora.com/x");
     expect(rodar("", "").tocar("/r/link.curso")).toBe("/r/link.curso");
+  });
+});
+
+describe("site de onde veio a visita", () => {
+  test("guarda só o domínio, sem www; o próprio site, IP, localhost e lixo não", () => {
+    const aqui = "https://bio.exemplo.com";
+    expect(siteDaVisita("blog.Qualquer.com", aqui)).toBe("blog.qualquer.com");
+    expect(siteDaVisita("www.google.com.br", aqui)).toBe("google.com.br");
+    expect(siteDaVisita("bio.exemplo.com", aqui)).toBeNull();
+    expect(siteDaVisita("www.bio.exemplo.com", aqui)).toBeNull();
+    expect(siteDaVisita("192.168.0.1", aqui)).toBeNull();
+    expect(siteDaVisita("localhost", aqui)).toBeNull();
+    expect(siteDaVisita("sem-ponto", aqui)).toBeNull();
+    expect(siteDaVisita("a".repeat(120) + ".com", aqui)).toBeNull();
+    expect(siteDaVisita("<script>.com", aqui)).toBeNull();
+    expect(siteDaVisita(null, aqui)).toBeNull();
   });
 });
 

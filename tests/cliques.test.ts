@@ -200,3 +200,21 @@ describe("resumo", () => {
     ]);
   });
 });
+
+describe("sites de onde vieram as visitas", () => {
+  test("soma 7 e 30 dias por site, do maior para o menor, até 10 sites", async () => {
+    const { resumirSites } = await import("../lib/cliques");
+    const linhas = [
+      { dia: "2026-10-31", site: "blog.qualquer.com", total: 3 },
+      { dia: "2026-10-10", site: "blog.qualquer.com", total: 2 },
+      { dia: "2026-10-30", site: "l.instagram.com", total: 9 },
+      { dia: "2026-09-01", site: "velho.com", total: 50 },
+      ...Array.from({ length: 12 }, (_, i) => ({ dia: "2026-10-29", site: `s${i}.com`, total: 1 })),
+    ];
+    const r = resumirSites(linhas, "2026-10-31");
+    expect(r[0]).toEqual({ site: "l.instagram.com", dias7: 9, dias30: 9 });
+    expect(r[1]).toEqual({ site: "blog.qualquer.com", dias7: 3, dias30: 5 });
+    expect(r.find((s) => s.site === "velho.com")).toBeUndefined();
+    expect(r).toHaveLength(10);
+  });
+});

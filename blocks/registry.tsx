@@ -22,6 +22,18 @@ import { PixBlock } from "./pix";
 import { AgendaBlock } from "./agenda";
 import { AgendamentoBlock } from "./agendamento";
 import { idDoBloco } from "@/lib/agendamento/regra";
+import { qrSvg, urlDoQr } from "@/lib/qr";
+import { NumerosBlock } from "./numeros";
+
+/** Link da bio e o QR (com ?src=qr), desenhado aqui como o do Pix. URL inválida: sem painel. */
+function dadosDoCompartilhar(siteUrl: string): { url: string; qrUrl: string; svg: string } | null {
+  try {
+    const qrUrl = urlDoQr(siteUrl);
+    return { url: siteUrl, qrUrl, svg: qrSvg(qrUrl) };
+  } catch {
+    return null;
+  }
+}
 
 /**
  * type → componente. Bloco novo entra aqui (skill novo-bloco).
@@ -34,12 +46,22 @@ export function renderBlock(
   config: LinkbioConfig,
   tema: TemaResolvido,
   chave: string | null = null,
-  opcoes?: { captura?: boolean; abertoEm?: number; ia?: boolean; teste?: boolean; agendamento?: boolean },
+  opcoes?: { captura?: boolean; abertoEm?: number; ia?: boolean; teste?: boolean; agendamento?: boolean; avatar?: string },
 ) {
   const key = `${block.type}-${index}`;
   switch (block.type) {
     case "profile":
-      return <ProfileBlock key={key} {...varianteDoPerfil(block, tema)} cover={block.cover} profile={config.profile} chave={chave} />;
+      return (
+        <ProfileBlock
+          key={key}
+          {...varianteDoPerfil(block, tema)}
+          cover={block.cover}
+          profile={config.profile}
+          chave={chave}
+          avatar={opcoes?.avatar}
+          compartilhar={block.compartilhar ? dadosDoCompartilhar(config.site.url) : null}
+        />
+      );
     case "social":
       return <SocialBlock key={key} items={block.items} chave={chave} />;
     case "cta":
@@ -152,6 +174,8 @@ export function renderBlock(
           chave={chave}
         />
       );
+    case "numeros":
+      return <NumerosBlock key={block.id ?? key} title={block.title} items={block.items} />;
     case "contagem":
       return (
         <ContagemBlock

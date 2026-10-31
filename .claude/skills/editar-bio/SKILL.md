@@ -20,6 +20,8 @@ Siga "Arquivo ou painel" do `AGENTS.md`.
 |---|---|---|
 | Nome, bio, temas, redes do topo | `profile` | Perfil (setas nos temas mudam a ordem) |
 | Foto | arquivo em `public/` + `profile.avatar` | Perfil > Foto |
+| Foto que troca numa data (campanha, data especial) | `profile.avatarPorData` (`avatar` + `visivel.de`/`ate`; até 5; datas que se cruzam: vale a primeira). A capa ao compartilhar e o Google ficam com a foto principal | Perfil > Foto por data |
+| Botão Compartilhar com QR Code (palestra, evento) | `compartilhar: true` no bloco `profile` (padrão: desligado); o QR leva `?src=qr` | Blocos > Perfil |
 | WhatsApp, endereço do site | `contact.whatsapp`, `site.url` | Contato e site |
 | Capa do link no WhatsApp | `site.share` (`image` 1200 x 630, `title`, `description`); vazio = capa automática com foto, nome e bio | Contato e site > Capa ao compartilhar |
 | Botão principal | bloco `cta` | Blocos |
@@ -29,6 +31,7 @@ Siga "Arquivo ou painel" do `AGENTS.md`.
 | Produto da vitrine | `catalog[]` + bloco `products` | Vitrine (ordem: Blocos > Vitrine, setas) |
 | Cupom, aviso em destaque | bloco `coupon`, `banner` | Blocos |
 | Contagem regressiva (lançamento, abertura de turma, live) | bloco `contagem` (com `visivel.ate` para sumir depois) | Blocos |
+| Números em destaque (alunos, anos, projetos) | bloco `numeros`, 2 a 4 itens com `valor`, `legenda` e `fonte` (obrigatória: de onde veio o número). Só número real: pergunte a fonte, não invente | Blocos |
 | Vídeo, fotos, depoimentos, perguntas frequentes | bloco `youtube`, `gallery`, `testimonials`, `faq` | Blocos > Adicionar bloco (entra no fim; ver "Mudar a ordem") |
 | Texto livre, rodapé, linha divisória | bloco `text`, `divider` | Blocos > Adicionar bloco (entra no fim; ver "Mudar a ordem") |
 | Concierge (perguntas e para onde leva) | bloco `concierge` | Blocos > Concierge |
@@ -46,7 +49,7 @@ Siga "Arquivo ou painel" do `AGENTS.md`.
 | Modelo, cor, fonte, fundo, botões, cantos | `theme` | Aparência (fonte diferente nos títulos e no texto: Fonte > Títulos e texto separados) |
 | Jeito de um bloco aparecer (carrossel, lista, capa) | campo do bloco | Blocos (clique em qualquer ponto da linha do bloco) |
 
-Todos os 21 tipos de bloco já existem. Pedido que cabe num deles NÃO é `novo-bloco`.
+Todos os 22 tipos de bloco já existem. Pedido que cabe num deles NÃO é `novo-bloco`.
 
 ## 3. Referências (leia só quando o pedido tocar nelas)
 

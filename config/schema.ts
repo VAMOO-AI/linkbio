@@ -247,6 +247,25 @@ export const ProfileSchema = z.object({
     .default("pessoa"),
   /** Redes mostradas no cabeçalho (bloco profile). Estilo em blocks[].socials ou no modelo. */
   socials: z.array(ItemSocialSchema).max(8, "profile.socials aceita no máximo 8 redes.").optional(),
+  /**
+   * Foto que troca sozinha numa data (campanha, data comemorativa). Fora de toda janela vale `avatar`;
+   * janelas sobrepostas: vale a primeira da lista. A capa ao compartilhar e o Google ficam com `avatar`.
+   */
+  avatarPorData: z
+    .array(
+      z
+        .object({
+          avatar: caminhoLocal("profile.avatarPorData[].avatar"),
+          visivel: campoVisivel("profile.avatarPorData[]"),
+        })
+        .strict()
+        .refine((f) => Boolean(f.visivel?.de || f.visivel?.ate), {
+          message: "profile.avatarPorData: cada foto precisa de visivel.de ou visivel.ate (sem data, ela valeria sempre: troque a foto principal).",
+          path: ["visivel"],
+        }),
+    )
+    .max(5, "profile.avatarPorData aceita no máximo 5 fotos.")
+    .optional(),
 });
 
 export const ContactSchema = z.object({
@@ -421,6 +440,8 @@ const ProfileBlockSchema = z.object({
   socials: opcao("bloco profile: socials", OPCOES.socials).optional(),
   /** Imagem da capa (só no header "capa"). Sem imagem, a capa é gerada com as cores do modelo. */
   cover: caminhoLocal("bloco profile: cover").optional(),
+  /** Botão "Compartilhar" no topo, com QR Code da bio (aponta para site.url com ?src=qr). Padrão: desligado. */
+  compartilhar: z.boolean({ message: "bloco profile: compartilhar deve ser true ou false." }).optional(),
 }).strict();
 
 const SocialBlockSchema = z.object({
@@ -677,6 +698,37 @@ const ContagemBlockSchema = z
   .strict()
   .refine((b) => !b.cta || b.action, { message: "bloco contagem: cta exige action (para onde o botão leva)." })
   .refine((b) => !b.action || b.cta, { message: "bloco contagem: action exige cta (o texto do botão)." });
+
+/** Números em destaque (alunos, anos, projetos). Cada número mostra de onde veio (`fonte`). */
+const NumerosBlockSchema = z
+  .object({
+    type: z.literal("numeros"),
+    /** false = bloco desligado: sai da página, mas o conteúdo fica guardado na config. */
+    enabled: z.boolean({ message: "enabled deve ser true ou false." }).optional(),
+    visivel: campoVisivel("bloco numeros"),
+    origem: campoOrigem("bloco numeros"),
+    id: slug("bloco numeros: id").optional(),
+    title: z.string().min(1, "bloco numeros: title não pode ser vazio.").max(60, "bloco numeros: title deve ter no máximo 60 caracteres.").optional(),
+    items: z
+      .array(
+        z
+          .object({
+            /** Curto, como aparece: "+300", "12", "1,2 mil". */
+            valor: textoObrigatorio("bloco numeros: items[].valor", 12),
+            /** O que o número conta: "alunos formados". */
+            legenda: textoObrigatorio("bloco numeros: items[].legenda", 40),
+            /** De onde veio o número, visível embaixo dele: "plataforma, out/2026". */
+            fonte: z
+              .string({ message: "bloco numeros: items[].fonte é obrigatório: diga de onde veio o número (ex.: \"plataforma, out/2026\")." })
+              .min(1, "bloco numeros: items[].fonte é obrigatório: diga de onde veio o número.")
+              .max(80, "bloco numeros: items[].fonte deve ter no máximo 80 caracteres."),
+          })
+          .strict(),
+      )
+      .min(2, "bloco numeros: items precisa de 2 a 4 números.")
+      .max(4, "bloco numeros: items precisa de 2 a 4 números."),
+  })
+  .strict();
 
 /** Texto da caixinha LGPD quando a pessoa não escreve o dela. */
 export const CONSENTIMENTO_PADRAO =
@@ -1007,12 +1059,13 @@ export const BlockSchema = z.discriminatedUnion(
     ProductsBlockSchema,
     CouponBlockSchema,
     ContagemBlockSchema,
+    NumerosBlockSchema,
     LeadBlockSchema,
     PixBlockSchema,
     AgendaBlockSchema,
     AgendamentoBlockSchema,
   ],
-  { message: "bloco com type desconhecido. Tipos válidos: profile, social, cta, link, links, cards, text, divider, youtube, gallery, concierge, banner, testimonials, faq, products, coupon, contagem, lead, pix, agenda, agendamento." },
+  { message: "bloco com type desconhecido. Tipos válidos: profile, social, cta, link, links, cards, text, divider, youtube, gallery, concierge, banner, testimonials, faq, products, coupon, contagem, numeros, lead, pix, agenda, agendamento." },
 );
 
 // ---------------------------------------------------------------------------

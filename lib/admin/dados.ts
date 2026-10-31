@@ -6,7 +6,18 @@ import { configDoArquivo, TAG_CONFIG } from "@/lib/config-fonte";
 import { enviarArquivo, rest } from "@/lib/supabase";
 import { ERRO_IMAGEM_GRANDE, TAMANHO_MAX_IMAGEM } from "@/lib/admin/limites";
 import { mensagemParaLeigo } from "@/lib/admin/mensagens";
-import { diaMenos, diaNoFuso, resumirCliques, type LinhaClique, type LinhaVisita, type TotalBotao, type TotalOrigem } from "@/lib/cliques";
+import {
+  diaMenos,
+  diaNoFuso,
+  resumirCliques,
+  resumirSites,
+  type LinhaClique,
+  type LinhaSite,
+  type LinhaVisita,
+  type TotalBotao,
+  type TotalOrigem,
+  type TotalSite,
+} from "@/lib/cliques";
 import { nomesDosBotoes } from "@/lib/cliques-destino";
 
 export type Versao = { id: number; created_at: string; created_by: string | null; nota: string | null };
@@ -121,21 +132,26 @@ export async function restaurarArquivo(email: string): Promise<ResultadoSalvar> 
 
 const TIPOS: Record<string, string> = { "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp", "image/gif": "gif" };
 
-export type ResumoCliques = { erro: boolean; botoes: TotalBotao[]; origens: TotalOrigem[] };
+export type ResumoCliques = { erro: boolean; botoes: TotalBotao[]; origens: TotalOrigem[]; sites: TotalSite[] };
 
 /** Totais dos últimos 30 dias. A data é a da bio, não a do servidor. */
 export async function lerCliques(config: LinkbioConfig): Promise<ResumoCliques> {
   const hoje = diaNoFuso(config.site.tz);
   const desde = diaMenos(hoje, 29);
-  const [linhas, visitas] = await Promise.all([
+  const [linhas, visitas, sites] = await Promise.all([
     rest<LinhaClique[]>(`cliques?select=dia,alvo,origem,total&dia=gte.${desde}`, { cache: "no-store" }),
     // Banco sem a migration 0010: os cliques continuam aparecendo, só sem visitas.
     rest<LinhaVisita[]>(`visitas?select=dia,origem,total&dia=gte.${desde}`, { cache: "no-store" }).catch((erro: unknown) => {
       console.error("[linkbio admin] sem a tabela visitas (rode supabase/migrations/0010_origem.sql)", erro);
       return [] as LinhaVisita[];
     }),
+    // Banco sem a migration 0011: o resto aparece, só sem a lista de sites.
+    rest<LinhaSite[]>(`visitas_sites?select=dia,site,total&dia=gte.${desde}`, { cache: "no-store" }).catch((erro: unknown) => {
+      console.error("[linkbio admin] sem a tabela visitas_sites (rode supabase/migrations/0011_sites.sql)", erro);
+      return [] as LinhaSite[];
+    }),
   ]);
-  return { erro: false, ...resumirCliques(linhas ?? [], nomesDosBotoes(config), hoje, visitas ?? []) };
+  return { erro: false, ...resumirCliques(linhas ?? [], nomesDosBotoes(config), hoje, visitas ?? []), sites: resumirSites(sites ?? [], hoje) };
 }
 
 export async function guardarImagem(arquivo: File): Promise<{ ok: true; url: string } | { ok: false; erro: string }> {

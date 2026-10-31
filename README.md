@@ -109,6 +109,7 @@ duas datas), ver abaixo.
 | `products` | Vitrine de produtos de `catalog`, com filtro | `items`, `layout`, `filter`, `title` |
 | `coupon` | Cupom de desconto (toque seleciona o código) | `code`, `label`, `expires`, `action`, `copy` |
 | `contagem` | Contagem regressiva até uma data, no fuso do site; zerada, mostra `aoZerar` | `quando`, `title`, `text`, `aoZerar`, `cta`, `action` |
+| `numeros` | 2 a 4 números em destaque, cada um com a fonte visível embaixo | `title`, `items[]` (`valor`, `legenda`, `fonte`) |
 | `link` | Um link (vira card com `image` ou `subtitle`) | `title`, `url`, `subtitle`, `image`, `icon` |
 | `links` | Grupo de até 12 links | `items`, `layout`, `title` |
 | `social` | Redes sociais em linha | `items` |
@@ -140,6 +141,8 @@ ele some da página e o conteúdo fica guardado na config para religar depois.
 | Primeira pergunta frequente aberta | `openFirst: true` no bloco `faq` |
 | Filtro por categoria na vitrine | `filter: true` no bloco `products` |
 | Botão "Copiar" no cupom | `copy: true` no bloco `coupon` (padrão: desligado) |
+| Botão "Compartilhar" com QR Code da bio | `compartilhar: true` no bloco `profile` (padrão: desligado). O QR leva `?src=qr` |
+| Foto que troca numa data | `profile.avatarPorData: [{ avatar, visivel: { de, ate } }]` (até 5; a capa ao compartilhar e o Google ficam com `profile.avatar`) |
 | Foto nas capas das ofertas | `cover.image` na oferta (sem foto, a capa é gerada com `headline` e `tag`) |
 | Redes no cabeçalho | `socials: "oculto"` no bloco `profile` |
 | Claro, escuro ou automático | `theme.mode` |
@@ -368,7 +371,7 @@ perfil, modelo e cores, blocos (ordem, liga e desliga, datas, adicionar,
 duplicar, apagar), ofertas, vitrine, cupom, concierge, contato, Pix, agenda e
 os envios do formulário, com envio de imagem. Cada publicação vira uma versão,
 e dá para voltar a qualquer uma. Com a contagem ligada, a aba Resultados mostra
-os toques.
+os toques, as visitas por origem e os sites que trouxeram visitas (migration `0011_sites.sql`).
 
 Sem o painel ligado, tudo continua funcionando pelo `linkbio.config.ts`.
 

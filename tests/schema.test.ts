@@ -840,3 +840,53 @@ describe("bloco contagem", () => {
     expect(ConfigSchema.safeParse(extra).success).toBe(false);
   });
 });
+
+describe("foto do perfil por data", () => {
+  test("aceita fotos com janela e recusa foto sem de nem ate", () => {
+    const ok = baseBruta();
+    ok.profile.avatarPorData = [
+      { avatar: "/black.jpg", visivel: { de: "2026-11-11", ate: "2026-11-12" } },
+      { avatar: "/natal.jpg", visivel: { ate: "2026-12-25" } },
+    ];
+    expect(ConfigSchema.safeParse(ok).success).toBe(true);
+
+    const semJanela = baseBruta();
+    semJanela.profile.avatarPorData = [{ avatar: "/black.jpg", visivel: {} }];
+    expect(mensagens(semJanela).join("\n")).toContain("profile.avatarPorData: cada foto precisa de visivel.de ou visivel.ate");
+  });
+});
+
+describe("bloco profile: compartilhar", () => {
+  test("aceita true ou false e recusa outro valor", () => {
+    const cfg = baseBruta();
+    cfg.blocks[0] = { type: "profile", compartilhar: true };
+    expect(ConfigSchema.safeParse(cfg).success).toBe(true);
+    cfg.blocks[0] = { type: "profile", compartilhar: "sim" };
+    expect(ConfigSchema.safeParse(cfg).success).toBe(false);
+  });
+});
+
+describe("bloco numeros", () => {
+  test("aceita de 2 a 4 números, cada um com fonte", () => {
+    const cfg = baseBruta();
+    cfg.blocks.push({
+      type: "numeros",
+      title: "Em números",
+      items: [
+        { valor: "+300", legenda: "alunos formados", fonte: "plataforma, out/2026" },
+        { valor: "12", legenda: "turmas", fonte: "histórico de turmas" },
+      ],
+    });
+    expect(ConfigSchema.safeParse(cfg).success).toBe(true);
+  });
+
+  test("recusa número sem fonte e lista com 1 item, com mensagem em português", () => {
+    const semFonte = baseBruta();
+    semFonte.blocks.push({ type: "numeros", items: [{ valor: "+300", legenda: "alunos" }, { valor: "12", legenda: "turmas", fonte: "x" }] });
+    expect(mensagens(semFonte).join("\n")).toContain("bloco numeros: items[].fonte");
+
+    const um = baseBruta();
+    um.blocks.push({ type: "numeros", items: [{ valor: "1", legenda: "a", fonte: "b" }] });
+    expect(mensagens(um).join("\n")).toContain("bloco numeros: items precisa de 2 a 4 números");
+  });
+});
