@@ -61,6 +61,9 @@ Descubra qual caso é:
 2. Com painel ligado e migration nova no CHANGELOG: quem ligou pelo SQL Editor roda lá só os
    arquivos novos de `supabase/migrations/`, em ordem; quem usou a CLI roda `npx supabase db push`.
 3. Bloco próprio da pessoa (passo 1.4): reaplique as mudanças dela no motor novo.
+   Da v0.13.0 em diante a página tem lista fechada de sites (`lib/seguranca.ts`): bloco próprio com
+   `<iframe`, `<script src` ou `fetch("https://` de outro site para de carregar até o site entrar lá
+   (skill `novo-bloco`, passo "Outro site"). Procure em `blocks/` antes de mostrar.
 4. `npm run check`. Erro de config por mudança da versão: corrija o `linkbio.config.ts` como o
    CHANGELOG indica.
 5. Mostre ("Validar e mostrar" do `AGENTS.md`) e ofereça enviar para o site (skill `publicar`).

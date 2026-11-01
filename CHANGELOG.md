@@ -3,7 +3,20 @@
 ## Não lançado
 
 ### Para quem usa
-- Nada novo desde a v0.12.0.
+- Nada novo desde a v0.13.0.
+
+## v0.13.0 (2026-10-31)
+
+### Para quem usa
+- A bio e o painel ganham uma lista fechada de sites que podem rodar código na página: um código malicioso não consegue carregar script de fora nem levar dados para outro site. Nada muda no que você vê.
+- Pixel da Meta, Google Analytics, Clarity e vídeo do YouTube continuam funcionando sem você mexer em nada.
+
+### Na bio e no painel
+- `Content-Security-Policy` aplicada em toda rota (`lib/seguranca.ts`, `cabecalhosDeSeguranca` no `next.config.ts`): `default-src 'self'`, `script-src 'self' 'unsafe-inline'` + os sites do pixel, `connect-src 'self'` + coleta dos pixels, `frame-src 'self' youtube-nocookie.com`, `img-src 'self' data: blob: https:`, `object-src 'none'`, `base-uri 'self'`, `form-action 'self'`, `frame-ancestors 'self'`. Em `npm run dev`, `'unsafe-eval'` e `ws:`.
+- Por que `'unsafe-inline'` e não nonce ou hash: a bio é estática (ISR até o /admin publicar); nonce exige render a cada visita e o Next injeta ~25 scripts inline (`self.__next_f`) que mudam a cada publicação. Por que aplicada e não Report-Only: sem endpoint de relatório ninguém veria o aviso, e o que podia quebrar (imagem, estilo, pixels, YouTube) está liberado e coberto no e2e.
+- Pixels (`pixelsNaPolitica`): com o painel ligado entram Meta, GA4 e Clarity sempre, porque o cabeçalho sai no build e o painel liga pixel sem build; sem painel, só o que tem ID no arquivo ou no ambiente. Hosts das docs oficiais (Google tag CSP, Clarity CSP, Meta Pixel). Bloco novo com iframe ou script de fora entra em `lib/seguranca.ts` (skill `novo-bloco`).
+- `lib/zod.ts`: o `z` do projeto vem daqui, com `z.config({ jitless: true })`. Sem isso o zod testa `new Function("")` no navegador (painel e concierge com IA) e a CSP, sem `'unsafe-eval'`, registra violação. `tests/seguranca.test.ts` barra import direto de `"zod"`.
+- `e2e/seguranca.spec.ts` escuta `securitypolicyviolation` nos três navegadores: bio, YouTube, concierge, concierge com IA, pixels antes e depois do aceite, agendamento, compartilhar, origem, números, painel e prévia.
 
 ## v0.12.0 (2026-10-31)
 

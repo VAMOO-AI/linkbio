@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "../lib/zod";
 import { janelaCoerente } from "../lib/janela";
 import { MSG_CLARITY, MSG_GA4, MSG_META, RE_CLARITY, RE_GA4, RE_META } from "../lib/pixel";
 import {

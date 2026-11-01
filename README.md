@@ -446,6 +446,26 @@ volta ao conteúdo do `linkbio.config.ts`. Para evitar isso:
 Opcional: defina `CRON_SECRET` nas variáveis da Vercel (`openssl rand -base64 32`)
 para a rota aceitar só a chamada da própria cron. Sem ela também funciona.
 
+## Segurança da página
+
+Toda rota sai com cabeçalhos de segurança (`lib/seguranca.ts`, ligados no
+`next.config.ts`). O principal é a Content-Security-Policy: a lista fechada de
+sites de onde a página pode carregar script, conectar ou abrir iframe. Um código
+injetado não consegue puxar script de outro site nem mandar dado para fora dela.
+
+- Entram o próprio site, o vídeo do YouTube (`youtube-nocookie.com`) e os sites
+  oficiais do Pixel da Meta, do Google Analytics 4 e do Microsoft Clarity.
+- Com o painel ligado, os três pixels ficam sempre liberados, porque o painel liga
+  um pixel sem novo build. Sem painel, só entra o pixel com ID no arquivo ou nas
+  variáveis da Vercel.
+- Imagem aceita qualquer endereço https (foto, galeria e fundo aceitam URL).
+- Supabase, Google Agenda, Resend e Vercel Blob falam só com o servidor: não entram.
+- A bio e o painel só abrem em iframe do próprio site (a prévia do `/admin`).
+
+Bloco novo que carrega algo de outro site (iframe, script) precisa do site em
+`lib/seguranca.ts` (skill `novo-bloco`). Sinal de que faltou: o navegador mostra
+"Content Security Policy" no console e o conteúdo não aparece.
+
 ## Como validar
 
 Antes de publicar, rode:

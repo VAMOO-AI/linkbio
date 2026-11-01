@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 import { lerOrigemDoEnvio } from "./origem";
-import { z } from "zod";
+import { z } from "./zod";
 
 /** Quanto tempo o formulário precisa ficar aberto antes do envio (corta robô que dispara na hora). */
 export const ESPERA_MINIMA_MS = 2_000;

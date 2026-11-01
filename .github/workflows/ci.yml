@@ -4,11 +4,22 @@ on:
   push:
     branches: [main]
     tags: ['v*']
+  # PR em rascunho não roda CI (o job pula pelo `if`); ao marcar "Ready for
+  # review" ele roda, e daí em diante cada push roda. Sem paths-ignore de doc:
+  # o gate do zip reprova marca em .md fora do README da raiz.
   pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+# Commit novo no mesmo PR cancela o run anterior, que já não vale. Push em main e tag nunca cancelam.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   check:
-    runs-on: ubuntu-latest
+    if: github.event_name != 'pull_request' || !github.event.pull_request.draft
+    # CI_RUNS_ON (variável do repo) escolhe o runner; sem ela, ubuntu-latest hospedado
+    runs-on: ${{ fromJSON(vars.CI_RUNS_ON || '"ubuntu-latest"') }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4

@@ -1,4 +1,4 @@
 {
-  "versao": "0.12.0",
-  "notas": "Foto que troca por data, botão Compartilhar com QR Code, bloco de números com fonte e sites que trouxeram visitas em Resultados (rode o 0011_sites.sql)."
+  "versao": "0.13.0",
+  "notas": "Lista fechada de sites que podem rodar código na bio e no painel (Content-Security-Policy). Nada muda no que você vê; pixels e vídeo seguem funcionando."
 }

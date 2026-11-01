@@ -1,22 +1,18 @@
 import type { NextConfig } from "next";
 import { lerSupabase } from "./lib/supabase-chave";
+import { cabecalhosDeSeguranca, origemDoSupabase, pixelsNaPolitica } from "./lib/seguranca";
+import arquivo from "./linkbio.config";
 
 /** Imagens enviadas pelo /admin ficam no Storage do Supabase: libera só esse host no next/image. */
 const supabaseUrl = lerSupabase(process.env)?.url;
 const supabase = supabaseUrl ? new URL(supabaseUrl) : null;
 
-/**
- * Cabeçalhos de segurança em toda rota. `frame-ancestors 'self'`: só o próprio site abre a página
- * num iframe (a prévia do /admin), outro site não (clickjacking). CSP completa fica de fora: teria
- * de listar Meta, GA4, Clarity, Supabase e Google, e um esquecimento derruba a medição.
- */
-const CABECALHOS_SEGURANCA = [
-  { key: "X-Frame-Options", value: "SAMEORIGIN" },
-  { key: "Content-Security-Policy", value: "frame-ancestors 'self'" },
-  { key: "X-Content-Type-Options", value: "nosniff" },
-  { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
-  { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(), usb=(), interest-cohort=()" },
-];
+/** CSP e demais cabeçalhos de segurança: lib/seguranca.ts explica cada decisão. */
+const CABECALHOS_SEGURANCA = cabecalhosDeSeguranca({
+  pixels: pixelsNaPolitica(arquivo.features.pixel, process.env),
+  dev: process.env.NODE_ENV === "development",
+  supabase: origemDoSupabase(process.env),
+});
 
 const nextConfig: NextConfig = {
   async headers() {

@@ -39,7 +39,11 @@ Tudo o que o bloco aceitar é opção da config com valor padrão: o template é
    `config/presets/tipos.ts`), depois `npm run readme`.
 7. **Testes**: em `tests/schema.test.ts`, um caso válido e um inválido com a mensagem; em `e2e/`,
    um spec que renderiza o bloco e confere que nada estoura a largura em 375 px.
-8. **Documentação**: linha na tabela "Blocos" do README e entrada no `CHANGELOG.md`.
+8. **Outro site** (iframe, script, `fetch` do navegador para fora): o site entra em
+   `lib/seguranca.ts` (`frame-src`, `script-src` ou `connect-src`), com o link da doc oficial, e um
+   caso em `tests/seguranca.test.ts`. Sem isso a CSP bloqueia o bloco. Imagem https já passa.
+   No `e2e/seguranca.spec.ts`, abra o bloco e confira que não há violação.
+9. **Documentação**: linha na tabela "Blocos" do README e entrada no `CHANGELOG.md`.
 
 ## Validar
 

@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { z } from "zod";
+import { z } from "@/lib/zod";
 import { ConfigSchema } from "@/config/schema";
 import { OPCOES } from "@/config/opcoes";
 import { PRESETS } from "@/config/presets";

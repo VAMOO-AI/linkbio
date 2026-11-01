@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { z } from "zod";
+import { z } from "./zod";
 
 /**
  * Concierge em modo IA, sem rede e sem chave: o servidor (lib/concierge-ia-servidor.ts) é quem chama

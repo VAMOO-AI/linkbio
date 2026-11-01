@@ -65,6 +65,12 @@ Todos os 22 tipos de bloco já existem. Pedido que cabe num deles NÃO é `novo-
 Siga "Validar e mostrar" do `AGENTS.md`. Mudança de visual com modo automático: mostre no claro e
 no escuro. Depois, ofereça colocar no ar (skill `publicar`).
 
+Se um pixel, o vídeo ou outro conteúdo de fora "não carrega" e o console do navegador fala em
+"Content Security Policy": a lista de sites liberados (`lib/seguranca.ts`) é motor e sai no build.
+Pixel ligado pelo painel já está liberado. Pixel só no arquivo ou na Vercel, sem painel: precisa de
+novo deploy (skill `publicar`); no `npm run dev`, pare e suba de novo. Site que não está na lista só entra pela skill `novo-bloco`; não
+afrouxe a lista para "fazer funcionar".
+
 Se a pessoa diz que "mudou e o site não mudou":
 - No painel: ela clicou em Publicar? As 3 variáveis do painel estão na Vercel, com Redeploy depois
   delas (skill `publicar`, passo 4)? Sem elas, o site no ar lê o arquivo. Recarregue a página.
