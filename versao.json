@@ -1,4 +1,4 @@
 {
-  "versao": "0.15.0",
-  "notas": "Mapa de calor em Resultados: a prévia do painel pinta cada parte da bio pela % de visitas que chegam lá, com os cliques e os toques fora de link. Sem SQL novo."
+  "versao": "0.15.1",
+  "notas": "Correção: rolagem, mapa de calor e saída rápida contam só a partir do dia em que a rolagem passou a ser medida (antes tudo aparecia baixo). Sem SQL novo."
 }

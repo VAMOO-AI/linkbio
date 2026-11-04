@@ -3,7 +3,15 @@
 ## Não lançado
 
 ### Para quem usa
-- Nada novo desde a v0.15.0.
+- Nada novo desde a v0.15.1.
+
+## v0.15.1 (2026-11-04)
+
+### Para quem usa
+- Correção: na bio que já contava cliques antes da v0.14.0, "Até onde as pessoas rolam", o mapa de calor e a saída rápida dividiam pelas visitas do mês inteiro, inclusive as de antes da rolagem existir, e tudo aparecia baixo (o perfil, que todo mundo vê, em 13%). Agora contam só a partir do primeiro dia com rolagem medida. Os sinais de "O que pede atenção" esperam 30 visitas medidas.
+
+### Na bio e no painel
+- `resumirEngajamento`: `visitas30` (e as visitas por origem da saída rápida) só somam do primeiro dia com linha de `engajamento` na janela em diante; sem linha nenhuma, 0.
 
 ## v0.15.0 (2026-11-04)
 

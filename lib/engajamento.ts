@@ -82,10 +82,15 @@ export function resumirEngajamento(
   const desde = diaMenos(hoje, 29);
   const dentro = (dia: string) => dia >= desde && dia <= hoje;
 
+  // Visita de antes da rolagem existir (bio que já contava e acabou de atualizar) não tinha como virar
+  // seção vista: dividir por ela derruba todo %. Conta só do primeiro dia com rolagem medida em diante.
+  // atalho: o primeiro dia inclui as visitas de antes do deploy naquele dia; some sozinho no dia seguinte.
+  const inicio = linhas.reduce<string | null>((m, l) => (dentro(l.dia) && (m === null || l.dia < m) ? l.dia : m), null);
+
   let visitas30 = 0;
   const visitasPorOrigem = new Map<string, number>();
   for (const v of visitas) {
-    if (!dentro(v.dia)) continue;
+    if (!dentro(v.dia) || inicio === null || v.dia < inicio) continue;
     visitas30 += v.total;
     visitasPorOrigem.set(v.origem, (visitasPorOrigem.get(v.origem) ?? 0) + v.total);
   }

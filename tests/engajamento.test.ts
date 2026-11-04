@@ -87,6 +87,27 @@ describe("resumirEngajamento", () => {
     expect(r.secoes[1]!.pct).toBeNull();
   });
 
+  it("só divide pelas visitas desde o primeiro dia com rolagem medida (antes não havia como contar)", () => {
+    // Bio com contagem há semanas, rolagem medida só a partir de ontem.
+    const r = resumirEngajamento(
+      [linha("secao", "profile-0", 10, "bio", "2026-11-03"), linha("secao", "profile-0", 10), linha("saida_rapida", "", 5, "bio")],
+      [visita("bio", 300, "2026-10-15"), visita("bio", 10, "2026-11-03"), visita("bio", 10)],
+      SECOES,
+      [],
+      HOJE,
+    );
+    expect(r.visitas30).toBe(20);
+    expect(r.secoes[0]!.pct).toBe(100);
+    expect(r.saidas[0]!.pct).toBe(25);
+    expect(r.poucasVisitas).toBe(true);
+  });
+
+  it("sem nenhuma rolagem medida ainda, não há visita para dividir", () => {
+    const r = resumirEngajamento([], [visita("bio", 80)], SECOES, [], HOJE);
+    expect(r.visitas30).toBe(0);
+    expect(r.secoes[0]!.pct).toBeNull();
+  });
+
   it("saída rápida por origem: saídas ÷ visitas daquela origem", () => {
     const r = resumirEngajamento(
       [linha("saida_rapida", "", 30, "stories"), linha("saida_rapida", "", 5, "bio")],
@@ -112,7 +133,13 @@ describe("alertas", () => {
   });
 
   it("botão mais tocado aparece como sinal bom", () => {
-    const r = resumirEngajamento([], visitas, SECOES, [{ nome: "Ativar cupom", dias7: 10, dias30: 40 }, { nome: "Loja", dias7: 1, dias30: 10 }], HOJE);
+    const r = resumirEngajamento(
+      [linha("secao", "profile-0", 120)],
+      visitas,
+      SECOES,
+      [{ nome: "Ativar cupom", dias7: 10, dias30: 40 }, { nome: "Loja", dias7: 1, dias30: 10 }],
+      HOJE,
+    );
     const a = r.alertas.find((x) => x.tipo === "campeao");
     expect(a?.nivel).toBe("bom");
     expect(a?.titulo).toContain("Ativar cupom");

@@ -713,7 +713,7 @@ function PedeAtencao({ engajamento }: { engajamento: ResumoEngajamento }) {
       <h2 className="a-subtitulo">O que pede atenção</h2>
       {engajamento.poucasVisitas ? (
         <p className="r-nota">
-          Ainda são poucas visitas ({engajamento.visitas30} em 30 dias) para apontar alguma coisa. A partir de 30, os sinais aparecem aqui.
+          Ainda são poucas visitas medidas ({engajamento.visitas30}) para apontar alguma coisa. A partir de 30, os sinais aparecem aqui.
         </p>
       ) : engajamento.alertas.length === 0 ? (
         <p className="r-nota">Nada fora do normal nos últimos 30 dias.</p>
@@ -742,8 +742,8 @@ function Rolagem({ engajamento, onMapa }: { engajamento: ResumoEngajamento; onMa
     <>
       <h2 className="a-subtitulo">Até onde as pessoas rolam</h2>
       <p className="c-dica">
-        De cada 100 visitas dos últimos 30 dias, quantas chegaram em cada parte da bio. Bloco que só aparece para uma origem fica mais
-        baixo de propósito.
+        De cada 100 visitas dos últimos 30 dias, quantas chegaram em cada parte da bio. Só conta a partir do dia em que a rolagem
+        passou a ser medida. Bloco que só aparece para uma origem fica mais baixo de propósito.
       </p>
       {onMapa && (
         <button type="button" className="b b-sec b-pequeno r-ver-mapa" onClick={onMapa}>
