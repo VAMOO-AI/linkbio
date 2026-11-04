@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { Icone } from "./icones";
 import type { Obj } from "./campos";
 import type { TemaForcado } from "@/lib/resolver";
-import type { RecadoDaPrevia } from "@/lib/previa";
+import type { CalorDaPrevia, RecadoDaPrevia } from "@/lib/previa";
 import type { FocoDaPrevia } from "./previa-foco";
 
 const APARELHOS = {
@@ -19,7 +19,24 @@ type Aparelho = keyof typeof APARELHOS;
  * O quadro carrega uma vez e daí em diante recebe cada alteração por postMessage: nada de recarregar
  * o iframe nem de esperar o servidor a cada tecla.
  */
-export function Previa({ config, estado, foco, aberta }: { config: Obj; estado: string; foco: FocoDaPrevia | null; aberta: boolean }) {
+export function Previa({
+  config,
+  estado,
+  foco,
+  aberta,
+  calor = null,
+  mapa = false,
+  onMapa,
+}: {
+  config: Obj;
+  estado: string;
+  foco: FocoDaPrevia | null;
+  aberta: boolean;
+  /** Mapa de calor pronto (aba Resultados com dados); sem ele, o botão do mapa nem aparece. */
+  calor?: CalorDaPrevia[] | null;
+  mapa?: boolean;
+  onMapa?: (ligado: boolean) => void;
+}) {
   const [aparelho, setAparelho] = useState<Aparelho>("celular");
   const [tema, setTema] = useState<TemaForcado>("");
   const [pronta, setPronta] = useState(false);
@@ -42,6 +59,13 @@ export function Previa({ config, estado, foco, aberta }: { config: Obj; estado: 
     const recado: RecadoDaPrevia = { tipo: "config", config, tema };
     quadro.current?.contentWindow?.postMessage(recado, window.location.origin);
   }, [pronta, config, tema]);
+
+  const pintar = mapa && calor ? calor : null;
+  useEffect(() => {
+    if (!pronta) return;
+    const recado: RecadoDaPrevia = { tipo: "calor", secoes: pintar };
+    quadro.current?.contentWindow?.postMessage(recado, window.location.origin);
+  }, [pronta, pintar]);
 
   // A prévia segue a edição. Só com o quadro na tela: no celular, com a prévia fechada, o pedido fica
   // guardado e vale ao abrir (`aberta` refaz o envio). O foco continua no campo: o quadro só rola.
@@ -82,9 +106,23 @@ export function Previa({ config, estado, foco, aberta }: { config: Obj; estado: 
           ))}
         </div>
       </div>
+      {calor && onMapa && (
+        <div className="p-calor">
+          <button type="button" className="b b-sec b-pequeno" aria-pressed={mapa} onClick={() => onMapa(!mapa)}>
+            <Icone nome="resultados" tamanho={14} /> {mapa ? "Esconder mapa de calor" : "Mapa de calor"}
+          </button>
+          {mapa && (
+            <span className="p-calor-legenda">
+              <span data-nivel="quente">60%+ chegam</span>
+              <span data-nivel="morno">30 a 59%</span>
+              <span data-nivel="frio">menos de 30%</span>
+            </span>
+          )}
+        </div>
+      )}
       <p className="p-estado">
         <span className="p-ponto" aria-hidden="true" />
-        {estado}
+        {mapa && calor ? "Últimos 30 dias, por cima do que você está editando" : estado}
       </p>
       <div ref={caixa} className="p-caixa" style={{ height: h * escala }}>
         <div className={`p-moldura p-${aparelho}`} style={{ width: w, height: h, transform: `scale(${escala})` }}>

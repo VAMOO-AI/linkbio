@@ -16,7 +16,30 @@ export type RecadoDaPrevia =
    * O que está sendo editado: a prévia rola até ele e realça por um instante. `abriu`: veio de abrir
    * (bloco, oferta, produto), e não de pôr o cursor num campo; aí realça mesmo se já estiver na tela.
    */
-  | { tipo: "foco"; alvo: AlvoDaPrevia; abriu: boolean };
+  | { tipo: "foco"; alvo: AlvoDaPrevia; abriu: boolean }
+  /** Mapa de calor por cima dos blocos (aba Resultados). `null` apaga. */
+  | { tipo: "calor"; secoes: CalorDaPrevia[] | null };
+
+/**
+ * Uma seção no mapa de calor: `indice` em `config.blocks` (contando os desligados, como `bloco`),
+ * % das visitas de 30 dias que chegaram nela, cliques nos botões dela e toques fora de link.
+ */
+export type CalorDaPrevia = { indice: number; pct: number; cliques: number; toques: number; nivel: "quente" | "morno" | "frio" };
+
+const inteiro = (x: unknown) => Number.isInteger(x) && (x as number) >= 0;
+
+/** Confere a lista do mapa vinda de postMessage. `null` (apagar o mapa) vale. */
+export function calorValido(x: unknown): x is CalorDaPrevia[] | null {
+  if (x === null) return true;
+  if (!Array.isArray(x) || x.length > 200) return false;
+  return x.every((s) => {
+    if (typeof s !== "object" || s === null) return false;
+    const c = s as Record<string, unknown>;
+    return (
+      inteiro(c.indice) && inteiro(c.pct) && (c.pct as number) <= 100 && inteiro(c.cliques) && inteiro(c.toques) && ["quente", "morno", "frio"].includes(c.nivel as string)
+    );
+  });
+}
 
 /**
  * Onde a prévia deve ir. `bloco` é o índice em `config.blocks` (contando os desligados); com

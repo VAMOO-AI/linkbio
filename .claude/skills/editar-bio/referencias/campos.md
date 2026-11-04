@@ -130,6 +130,10 @@ Nunca mostre estes nomes à pessoa: use para acertar a config.
   para de rolar, origem de onde saem em menos de 3 segundos). Os sinais só aparecem a partir de 30
   visitas no mês. Precisa da migration `0012_engajamento.sql`; sem ela essas duas partes não aparecem
   e o resto continua.
+- "Mapa de calor" é o mesmo número desenhado na prévia: em Resultados, "Ver mapa de calor na prévia"
+  (ou o botão Mapa de calor em cima da prévia) pinta cada bloco de vermelho (60%+ chegam), laranja
+  (30 a 59%) ou azul (menos de 30%), com os cliques e os toques fora de link. Pedido como "quero ver
+  o mapa de calor" ou "onde as pessoas clicam" é isso; não precisa mexer em arquivo.
 - Sem `?src=` nem `utm_source`, quem vem de rede conhecida (Instagram, Facebook, YouTube, TikTok,
   LinkedIn, X, Google) conta com o nome da rede; o QR do botão Compartilhar conta como `qr`.
 - A origem é o `?src=` do link, ou o `utm_source` quando não há `src` (link de anúncio).

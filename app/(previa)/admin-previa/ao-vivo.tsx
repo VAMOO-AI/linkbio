@@ -6,7 +6,8 @@ import { renderBlock } from "@/blocks/registry";
 import { seloDaJanela } from "@/lib/janela";
 import { modoExibido, resolverTema, type TemaForcado } from "@/lib/resolver";
 import { themeParaCss } from "@/lib/theme";
-import { alvoValido, type AlvoDaPrevia, type RecadoDaPrevia } from "@/lib/previa";
+import { alvoValido, calorValido, type AlvoDaPrevia, type CalorDaPrevia, type RecadoDaPrevia } from "@/lib/previa";
+import { pintarCalor } from "./calor";
 import { seguirAlvo } from "./seguir";
 
 /**
@@ -25,6 +26,7 @@ export function PreviaAoVivo({ inicial }: { inicial: LinkbioConfig }) {
   const resolvido = useMemo(() => resolverTema(config.theme), [config]);
   // O que o painel está editando: rola até lá depois de desenhar (o alvo pode ter vindo junto de uma config nova).
   const [foco, setFoco] = useState<{ alvo: AlvoDaPrevia; abriu: boolean; vez: number } | null>(null);
+  const [calor, setCalor] = useState<CalorDaPrevia[] | null>(null);
   const configAtual = useRef(config);
   useEffect(() => {
     configAtual.current = config;
@@ -36,6 +38,10 @@ export function PreviaAoVivo({ inicial }: { inicial: LinkbioConfig }) {
       const recado = e.data;
       if (recado?.tipo === "foco") {
         if (alvoValido(recado.alvo)) setFoco((f) => ({ alvo: recado.alvo, abriu: recado.abriu === true, vez: (f?.vez ?? 0) + 1 }));
+        return;
+      }
+      if (recado?.tipo === "calor") {
+        if (calorValido(recado.secoes)) setCalor(recado.secoes);
         return;
       }
       if (recado?.tipo !== "config") return;
@@ -69,6 +75,25 @@ export function PreviaAoVivo({ inicial }: { inicial: LinkbioConfig }) {
     const quadro = requestAnimationFrame(() => seguirAlvo(foco.alvo, configAtual.current, foco.abriu));
     return () => cancelAnimationFrame(quadro);
   }, [foco]);
+
+  // Mapa de calor: redesenha depois de cada config (o bloco muda de lugar) e quando a página muda de
+  // tamanho (aparelho, imagem que terminou de carregar). Sem mapa, nada observa.
+  useEffect(() => {
+    if (!calor) {
+      pintarCalor(null);
+      return;
+    }
+    let quadro = requestAnimationFrame(() => pintarCalor(calor));
+    const obs = new ResizeObserver(() => {
+      cancelAnimationFrame(quadro);
+      quadro = requestAnimationFrame(() => pintarCalor(calor));
+    });
+    obs.observe(document.body);
+    return () => {
+      cancelAnimationFrame(quadro);
+      obs.disconnect();
+    };
+  }, [calor, config, tema]);
 
   // Cada bloco num invólucro `display: contents` com o índice dele em `config.blocks` (contando os
   // desligados, como o painel conta): é por ele que a prévia acha o que está sendo editado. Existe só

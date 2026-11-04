@@ -556,6 +556,7 @@ export function SecaoResultados({
   engajamento,
   links,
   onLigar,
+  onMapa,
 }: {
   ligado: boolean;
   noAr: boolean;
@@ -566,6 +567,8 @@ export function SecaoResultados({
   engajamento?: ResumoEngajamento;
   links: { rotulo: string; url: string }[];
   onLigar: (v: boolean) => void;
+  /** Liga o mapa de calor na prévia (e abre a prévia no celular). Sem dado de rolagem, não vem. */
+  onMapa?: () => void;
 }) {
   const [copiado, setCopiado] = useState<string | null>(null);
   return (
@@ -612,7 +615,7 @@ export function SecaoResultados({
           </div>
         </>
       )}
-      {noAr && !erro && engajamento && engajamento.secoes.some((x) => x.vistas30 > 0) && <Rolagem engajamento={engajamento} />}
+      {noAr && !erro && engajamento && engajamento.secoes.some((x) => x.vistas30 > 0) && <Rolagem engajamento={engajamento} onMapa={onMapa} />}
       {noAr && !erro && origens.length > 0 && (
         <>
           <h2 className="a-subtitulo">De onde vieram</h2>
@@ -734,7 +737,7 @@ function PedeAtencao({ engajamento }: { engajamento: ResumoEngajamento }) {
 }
 
 /** Até onde as pessoas rolam: % das visitas que chegaram em cada seção, na ordem da bio. */
-function Rolagem({ engajamento }: { engajamento: ResumoEngajamento }) {
+function Rolagem({ engajamento, onMapa }: { engajamento: ResumoEngajamento; onMapa?: () => void }) {
   return (
     <>
       <h2 className="a-subtitulo">Até onde as pessoas rolam</h2>
@@ -742,6 +745,11 @@ function Rolagem({ engajamento }: { engajamento: ResumoEngajamento }) {
         De cada 100 visitas dos últimos 30 dias, quantas chegaram em cada parte da bio. Bloco que só aparece para uma origem fica mais
         baixo de propósito.
       </p>
+      {onMapa && (
+        <button type="button" className="b b-sec b-pequeno r-ver-mapa" onClick={onMapa}>
+          <Icone nome="olho" tamanho={14} /> Ver mapa de calor na prévia
+        </button>
+      )}
       <ul className="r-rolagem">
         {engajamento.secoes.map((x) => (
           <li key={x.chave}>
@@ -752,9 +760,14 @@ function Rolagem({ engajamento }: { engajamento: ResumoEngajamento }) {
             <div className="r-barra" aria-hidden="true">
               <span style={{ width: `${x.pct ?? 0}%` }} />
             </div>
-            {x.toques30 > 0 && (
+            {(x.cliques30 > 0 || x.toques30 > 0) && (
               <small>
-                {x.toques30} {x.toques30 === 1 ? "visita tocou" : "visitas tocaram"} fora de um link
+                {[
+                  x.cliques30 > 0 && `${x.cliques30} ${x.cliques30 === 1 ? "clique" : "cliques"} nos botões`,
+                  x.toques30 > 0 && `${x.toques30} ${x.toques30 === 1 ? "visita tocou" : "visitas tocaram"} fora de um link`,
+                ]
+                  .filter(Boolean)
+                  .join(" · ")}
               </small>
             )}
           </li>

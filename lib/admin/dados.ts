@@ -19,7 +19,7 @@ import {
   type TotalSite,
 } from "@/lib/cliques";
 import { nomesDosBotoes } from "@/lib/cliques-destino";
-import { nomesDasSecoes, resumirEngajamento, type LinhaEngajamento, type ResumoEngajamento } from "@/lib/engajamento";
+import { cliquesPorSecao, nomesDasSecoes, resumirEngajamento, type LinhaEngajamento, type ResumoEngajamento } from "@/lib/engajamento";
 
 export type Versao = { id: number; created_at: string; created_by: string | null; nota: string | null };
 export type Problema = { caminho: string; mensagem: string };
@@ -166,7 +166,9 @@ export async function lerCliques(config: LinkbioConfig): Promise<ResumoCliques> 
     ),
   ]);
   const resumo = resumirCliques(linhas ?? [], nomesDosBotoes(config), hoje, visitas ?? []);
-  const engajamento = engaj ? resumirEngajamento(engaj, visitas ?? [], nomesDasSecoes(config), resumo.botoes, hoje) : undefined;
+  const engajamento = engaj
+    ? resumirEngajamento(engaj, visitas ?? [], nomesDasSecoes(config), resumo.botoes, hoje, cliquesPorSecao(linhas ?? [], config.blocks, hoje))
+    : undefined;
   return { erro: false, ...resumo, sites: resumirSites(sites ?? [], hoje), engajamento };
 }
 

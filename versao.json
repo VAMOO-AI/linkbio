@@ -1,4 +1,4 @@
 {
-  "versao": "0.14.0",
-  "notas": "Resultados mostra até onde as pessoas rolam e o que pede atenção: botão mais tocado, toque onde não tem link, onde a rolagem para e saída rápida por origem (rode o 0012_engajamento.sql)."
+  "versao": "0.15.0",
+  "notas": "Mapa de calor em Resultados: a prévia do painel pinta cada parte da bio pela % de visitas que chegam lá, com os cliques e os toques fora de link. Sem SQL novo."
 }

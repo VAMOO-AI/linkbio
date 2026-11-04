@@ -53,6 +53,40 @@
   }
 }
 
+/*
+ * Mapa de calor (aba Resultados, ver calor.ts): cor por cima de cada bloco, pela % das visitas que
+ * chegaram nele. Fica fora do bloco e não recebe clique; o selo diz o número, a cor não é a única pista.
+ */
+.previa .previa-calor {
+  --calor: 37 99 235;
+  position: absolute;
+  z-index: 40;
+  pointer-events: none;
+  box-sizing: border-box;
+  border: 2px solid rgb(var(--calor) / 0.85);
+  border-radius: 14px;
+  background: rgb(var(--calor) / 0.22);
+}
+.previa .previa-calor[data-nivel="quente"] {
+  --calor: 220 38 38;
+}
+.previa .previa-calor[data-nivel="morno"] {
+  --calor: 234 140 0;
+}
+.previa .previa-calor-selo {
+  /* Em cima da borda, não dentro: num bloco baixo (um botão) o selo não cobre o texto. */
+  position: absolute;
+  top: -11px;
+  right: 10px;
+  max-width: calc(100% - 12px);
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: rgb(var(--calor));
+  color: #fff;
+  font: 700 12px/1.3 system-ui, sans-serif;
+  box-shadow: 0 1px 4px rgb(0 0 0 / 0.25);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .previa .previa-realce {
     opacity: 1;

@@ -411,6 +411,14 @@
 .p-painel { display: grid; gap: 12px; padding: 16px; background: var(--painel); border: 1px solid var(--borda); border-radius: var(--raio-g); box-shadow: var(--sombra); }
 .p-barra { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
 .p-estado { display: flex; align-items: center; gap: 8px; margin: 0; color: var(--suave); font-size: 12.5px; }
+/* Mapa de calor: as cores são as do quadro da prévia (admin-previa/previa.css). */
+.p-calor { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.p-calor-legenda { display: flex; gap: 10px; flex-wrap: wrap; color: var(--suave); font-size: 12px; }
+.p-calor-legenda span { display: inline-flex; align-items: center; gap: 5px; }
+.p-calor-legenda span::before { content: ""; width: 10px; height: 10px; border-radius: 3px; background: rgb(37 99 235); }
+.p-calor-legenda [data-nivel="quente"]::before { background: rgb(220 38 38); }
+.p-calor-legenda [data-nivel="morno"]::before { background: rgb(234 140 0); }
+.r-ver-mapa { margin: 0 0 12px; }
 .p-ponto { width: 8px; height: 8px; border-radius: 50%; background: var(--verde); box-shadow: 0 0 0 3px var(--verde-claro); }
 .p-caixa { position: relative; overflow: hidden; border-radius: 12px; }
 .p-moldura { position: absolute; top: 0; left: 0; transform-origin: top left; border-radius: 28px; overflow: hidden; background: var(--previa-fundo); box-shadow: 0 0 0 1px var(--borda-forte), var(--sombra-g); }

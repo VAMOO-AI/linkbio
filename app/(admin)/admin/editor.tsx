@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, useTransition } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { acaoDescartar, acaoRascunho, acaoRestaurar, acaoRestaurarArquivo, acaoSair, acaoSalvar } from "./acoes";
 import { Icone } from "./icones";
 import { FALTA_PREENCHER, Objeto, Valor, chaveDe, ehObj, rotulo, type Caminho, type Ctx, type Esquema, type Obj, type Opcoes } from "./campos";
@@ -12,7 +12,7 @@ import { BLOCOS } from "@/lib/admin/rotulos";
 import { AJUDA_SECAO } from "@/lib/admin/ajuda";
 import { acompanharCantos, acompanharModelo, acompanharReferencias } from "@/lib/admin/referencias";
 import { linksDeOrigem, type TotalBotao, type TotalOrigem, type TotalSite } from "@/lib/cliques";
-import type { ResumoEngajamento } from "@/lib/engajamento";
+import { mapaDeCalor, type ResumoEngajamento } from "@/lib/engajamento";
 
 type Problema = { caminho: string; mensagem: string };
 type Estado = "igual" | "salvando" | "rascunho" | "invalido" | "erro";
@@ -398,6 +398,23 @@ export function Editor({
   const conteudo = useRef<HTMLElement>(null);
   const foco = usePreviaFoco(conteudo, cfg);
 
+  // Mapa de calor na prévia: os números de Resultados por cima dos blocos do rascunho. Só existe
+  // com alguma seção já vista; ligar é do dono (botão na prévia ou em "Até onde as pessoas rolam").
+  const [mapa, setMapa] = useState(false);
+  const engajamento = cliques.engajamento;
+  const blocosDoRascunho = cfg.blocks;
+  const calor = useMemo(() => {
+    if (!engajamento?.secoes.some((s) => s.vistas30 > 0) || !Array.isArray(blocosDoRascunho)) return null;
+    // map, não filter: o índice tem de bater com o de config.blocks, que a prévia usa.
+    const blocos = blocosDoRascunho.map((b) => (ehObj(b) ? b : { type: "" })) as unknown as Parameters<typeof mapaDeCalor>[0];
+    return mapaDeCalor(blocos, engajamento.secoes);
+  }, [engajamento, blocosDoRascunho]);
+  const verMapa = () => {
+    setMapa(true);
+    // No celular a prévia é uma tela por cima, fechada: abre junto (o breakpoint é o do admin.css).
+    if (matchMedia("(max-width: 899px)").matches && !previaAberta) abrirPrevia();
+  };
+
   const atual = SECOES.find((s) => s.id === secao)!;
   const props = schema.properties ?? {};
 
@@ -567,6 +584,7 @@ export function Editor({
                 origens={cliques.origens}
                 sites={cliques.sites}
                 engajamento={cliques.engajamento}
+                onMapa={calor ? verMapa : undefined}
                 links={linksDeOrigem(ehObj(cfg.site) && typeof cfg.site.url === "string" ? cfg.site.url : "")}
                 onLigar={(v) => ctx.set(["features", "analytics"], v)}
               />
@@ -580,7 +598,15 @@ export function Editor({
           <button type="button" className="b b-sec a-fechar-previa" onClick={fecharPrevia}>
             <Icone nome="fechar" tamanho={16} /> Fechar prévia
           </button>
-          <Previa config={cfg} foco={foco} aberta={previaAberta} estado={diferente ? "Com as suas alterações, ainda não publicadas" : "Igual ao que está no ar"} />
+          <Previa
+            config={cfg}
+            foco={foco}
+            aberta={previaAberta}
+            estado={diferente ? "Com as suas alterações, ainda não publicadas" : "Igual ao que está no ar"}
+            calor={calor}
+            mapa={mapa}
+            onMapa={setMapa}
+          />
         </aside>
       </div>
 

@@ -3,7 +3,16 @@
 ## Não lançado
 
 ### Para quem usa
-- Nada novo desde a v0.14.0.
+- Nada novo desde a v0.15.0.
+
+## v0.15.0 (2026-11-04)
+
+### Para quem usa
+- Mapa de calor da bio: em Resultados, "Ver mapa de calor na prévia" pinta cada parte da bio na prévia do painel. Vermelho onde 60% ou mais das visitas chegam, laranja de 30 a 59%, azul abaixo disso, com o número, os cliques nos botões daquela parte e os toques fora de link. No celular a prévia abre junto. Usa os mesmos números de "Até onde as pessoas rolam": nada novo é gravado.
+
+### Na bio e no painel
+- `mapaDeCalor` (`lib/engajamento.ts`) liga cada seção ao índice do bloco no rascunho; a prévia recebe por postMessage (`{ tipo: "calor" }`, validado por `calorValido`) e desenha retângulos por cima dos blocos (`app/(previa)/admin-previa/calor.ts`), sem mexer no layout nem receber clique. Redesenha a cada edição e mudança de tamanho.
+- Cliques por seção (`secaoDoClique`, `cliquesPorSecao`): o alvo de cada botão aponta a seção dele; oferta e produto caem no primeiro bloco que mostra o card, rede do perfil no perfil. "Até onde as pessoas rolam" passa a mostrar os cliques de cada parte.
 
 ## v0.14.0 (2026-11-04)
 

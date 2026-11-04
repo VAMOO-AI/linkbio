@@ -219,6 +219,54 @@ test("rolagem e toque sem link: cada seção conta uma vez por sessão, e Result
   await expect(painel.locator(".r-rolagem")).toContainText("1 visita tocou fora de um link");
 });
 
+test("mapa de calor: Resultados pinta a prévia com a % de cada seção e os cliques do botão", async ({ page, request }) => {
+  await entrar(page);
+  await page.getByRole("navigation", { name: "Seções" }).getByRole("button", { name: "Resultados" }).click();
+  const sw = page.getByRole("switch", { name: "Contar cliques" });
+  if ((await sw.getAttribute("aria-checked")) !== "true") await sw.click();
+  await page.getByRole("button", { name: "Publicar" }).click();
+  await expect(page.locator(".a-estado")).toHaveText("Tudo publicado");
+
+  // Duas visitas: as duas viram o perfil, só uma chegou no botão do WhatsApp (e tocou nele).
+  const corpo = (secoes: string[]) => ({ data: { origem: "bio", secoes, toques: [], rapida: false }, headers: { "user-agent": NAVEGADOR } });
+  for (let i = 0; i < 2; i++) expect((await request.post("/api/visita", { data: { origem: "bio" }, headers: { "user-agent": NAVEGADOR } })).status()).toBe(204);
+  expect((await request.post("/api/engajamento", corpo(["profile-0", "falar-whatsapp"]))).status()).toBe(204);
+  expect((await request.post("/api/engajamento", corpo(["profile-0"]))).status()).toBe(204);
+  const clique = await request.get("/r/cta.falar-whatsapp", { maxRedirects: 0, headers: { referer: `${URL_APP}/?src=bio`, "user-agent": NAVEGADOR } });
+  expect(clique.status()).toBe(302);
+
+  await page.reload();
+  await page.getByRole("navigation", { name: "Seções" }).getByRole("button", { name: "Resultados" }).click();
+  await expect(page.locator(".r-rolagem")).toContainText("1 clique nos botões");
+  // Celular (o viewport padrão do e2e): o botão de Resultados abre a prévia já com o mapa.
+  await expect(page.locator(".a-previa")).not.toHaveClass(/a-previa-aberta/);
+  await page.getByRole("button", { name: "Ver mapa de calor na prévia" }).click();
+  await expect(page.locator(".a-previa")).toHaveClass(/a-previa-aberta/);
+
+  const quadro = page.frameLocator('iframe[src="/admin-previa"]');
+  const manchas = quadro.locator(".previa-calor");
+  const quente = quadro.locator('.previa-calor[data-nivel="quente"]');
+  await expect(quente).toHaveCount(1);
+  await expect(quente).toContainText("100% chegam");
+  await expect(quadro.locator('.previa-calor[data-nivel="morno"]')).toHaveText("50% chegam · 1 clique");
+  // Onde ninguém chegou também ganha cor: é a parte que quase ninguém vê.
+  await expect(quadro.locator('.previa-calor[data-nivel="frio"]').first()).toHaveText("0% chegam");
+  const n = await manchas.count();
+  expect(n).toBeGreaterThan(3);
+  // A mancha fica por cima do bloco, sem receber o toque.
+  expect(await quente.evaluate((e) => getComputedStyle(e).pointerEvents)).toBe("none");
+
+  await page.getByRole("button", { name: "Esconder mapa de calor" }).click();
+  await expect(manchas).toHaveCount(0);
+
+  // Computador: a prévia já está ao lado; o botão só liga o mapa, sem abrir tela por cima.
+  await page.getByRole("button", { name: "Fechar prévia" }).click();
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await page.getByRole("button", { name: "Ver mapa de calor na prévia" }).click();
+  await expect(page.locator(".a-previa")).not.toHaveClass(/a-previa-aberta/);
+  await expect(manchas).toHaveCount(n);
+  await expect(page.getByRole("button", { name: "Esconder mapa de calor" })).toHaveAttribute("aria-pressed", "true");});
+
 test("saída rápida pelo script, animação preservada e cartões de alerta com amostra suficiente", async ({ page, request, browser }) => {
   await entrar(page);
   await page.getByRole("navigation", { name: "Seções" }).getByRole("button", { name: "Resultados" }).click();

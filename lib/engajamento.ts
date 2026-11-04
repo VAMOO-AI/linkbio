@@ -1,7 +1,8 @@
 import type { LinkbioConfig } from "@/config/schema";
 import { BLOCOS, resumoDoBloco } from "./admin/rotulos";
 import { blocosAtivos } from "./blocos";
-import { chavesDosBlocos, diaMenos, normalizarOrigem, rotuloOrigem, type LinhaVisita, type TotalBotao } from "./cliques";
+import { chavesDosBlocos, diaMenos, normalizarOrigem, rotuloOrigem, type LinhaClique, type LinhaVisita, type TotalBotao } from "./cliques";
+import type { CalorDaPrevia } from "./previa";
 
 /**
  * Até onde as pessoas rolam, onde tocam sem ter link e quem sai em menos de 3 segundos.
@@ -47,7 +48,7 @@ export function nomesDasSecoes(config: LinkbioConfig, agora: Date = new Date()):
 }
 
 export type LinhaEngajamento = { dia: string; tipo: TipoEngajamento; chave: string; origem: string; total: number };
-export type SecaoRolagem = { chave: string; nome: string; vistas30: number; pct: number | null; toques30: number };
+export type SecaoRolagem = { chave: string; nome: string; vistas30: number; pct: number | null; toques30: number; cliques30: number };
 export type SaidaOrigem = { origem: string; rotulo: string; saidas30: number; visitas30: number; pct: number | null };
 export type Alerta = {
   tipo: "campeao" | "toque_sem_link" | "queda" | "saida_rapida";
@@ -76,6 +77,7 @@ export function resumirEngajamento(
   secoesAtuais: readonly { chave: string; nome: string }[],
   botoes: readonly TotalBotao[],
   hoje: string,
+  cliquesPorChave: ReadonlyMap<string, number> = new Map(),
 ): ResumoEngajamento {
   const desde = diaMenos(hoje, 29);
   const dentro = (dia: string) => dia >= desde && dia <= hoje;
@@ -100,7 +102,14 @@ export function resumirEngajamento(
 
   const secoes: SecaoRolagem[] = secoesAtuais.map((s) => {
     const v = vistas.get(s.chave) ?? 0;
-    return { chave: s.chave, nome: s.nome, vistas30: v, pct: pctDe(v, visitas30), toques30: toques.get(s.chave) ?? 0 };
+    return {
+      chave: s.chave,
+      nome: s.nome,
+      vistas30: v,
+      pct: pctDe(v, visitas30),
+      toques30: toques.get(s.chave) ?? 0,
+      cliques30: cliquesPorChave.get(s.chave) ?? 0,
+    };
   });
 
   const saidas: SaidaOrigem[] = [...saidasPorOrigem.entries()]
@@ -181,4 +190,60 @@ function alertasDe({
   }
 
   return alertas;
+}
+
+type BlocoDoMapa = { type: string; id?: string; items?: readonly unknown[] };
+
+// Botões que levam a chave do bloco logo depois do tipo (lib/cliques.ts: alvoCta, alvoItemLinks...).
+const COM_CHAVE = new Set(["cta", "banner", "link", "links", "cupom", "contagem", "rede", "concierge"]);
+
+/**
+ * De qual seção da bio veio um clique. Oferta e produto não carregam o bloco: caem no primeiro que
+ * mostra aquele card (a mesma conta do CardsBlock e do ProductsBlock); rede do perfil cai no perfil.
+ */
+export function secaoDoClique(alvo: string, blocks: readonly BlocoDoMapa[]): string | null {
+  const chaves = chavesDosBlocos(blocks);
+  const [tipo, segundo] = alvo.split(".");
+  if (!tipo || !segundo) return null;
+  if (COM_CHAVE.has(tipo)) return chaves.includes(segundo) ? segundo : null;
+  const achar = (ok: (b: BlocoDoMapa) => boolean) => {
+    const i = blocks.findIndex(ok);
+    return i < 0 ? null : chaves[i]!;
+  };
+  if (tipo === "oferta") return achar((b) => b.type === "cards" && !!b.items?.includes(segundo));
+  if (tipo === "produto") return achar((b) => b.type === "products" && (!b.items || b.items.includes(segundo)));
+  if (tipo === "perfil") return achar((b) => b.type === "profile");
+  return null;
+}
+
+/** Cliques dos últimos 30 dias somados por seção. Alvo que não cai em nenhum bloco fica de fora. */
+export function cliquesPorSecao(linhas: readonly LinhaClique[], blocks: readonly BlocoDoMapa[], hoje: string): Map<string, number> {
+  const desde = diaMenos(hoje, 29);
+  const soma = new Map<string, number>();
+  for (const l of linhas) {
+    if (l.dia < desde || l.dia > hoje) continue;
+    const chave = secaoDoClique(l.alvo, blocks);
+    if (chave) soma.set(chave, (soma.get(chave) ?? 0) + l.total);
+  }
+  return soma;
+}
+
+/** A partir de quanto % das visitas chegando a seção fica quente ou morna no mapa. */
+export const CALOR_QUENTE = 60;
+export const CALOR_MORNO = 30;
+
+/**
+ * Mapa de calor da prévia: cada seção com dado, ligada ao índice do bloco em `blocks` (o rascunho
+ * que a prévia desenha, contando os desligados). Bloco novo, ainda sem visita, fica sem cor.
+ */
+export function mapaDeCalor(blocks: readonly BlocoDoMapa[], secoes: readonly SecaoRolagem[]): CalorDaPrevia[] {
+  const chaves = chavesDosBlocos(blocks);
+  const mapa: CalorDaPrevia[] = [];
+  for (const s of secoes) {
+    const indice = chaves.indexOf(s.chave);
+    if (indice < 0 || s.pct === null) continue;
+    const nivel = s.pct >= CALOR_QUENTE ? "quente" : s.pct >= CALOR_MORNO ? "morno" : "frio";
+    mapa.push({ indice, pct: s.pct, cliques: s.cliques30, toques: s.toques30, nivel });
+  }
+  return mapa.sort((a, b) => a.indice - b.indice);
 }
