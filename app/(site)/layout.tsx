@@ -50,7 +50,8 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
   const pixels = idsEfetivos(config.features.pixel, process.env);
   // Sem ID, isto é null: o HTML não ganha script nem o texto do aviso.
   const scriptCookies = scriptDeCookies(pixels, { claritySemCookies: config.features.pixel.claritySemCookies });
-  const scriptOrigem = scriptDaOrigem({ contarVisita: config.features.analytics === true && supabaseConfigurado() });
+  const contagem = config.features.analytics === true && supabaseConfigurado();
+  const scriptOrigem = scriptDaOrigem({ contarVisita: contagem, engajamento: contagem });
 
   return (
     <html

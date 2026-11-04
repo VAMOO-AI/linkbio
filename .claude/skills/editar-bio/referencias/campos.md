@@ -125,6 +125,11 @@ Nunca mostre estes nomes à pessoa: use para acertar a config.
 - Resultados também lista os sites que trouxeram visitas (só o domínio, 7 e 30 dias, até 10). Precisa
   da migration `0011_sites.sql`; sem ela a lista não aparece e o resto continua. App do Instagram,
   WhatsApp e link digitado não mandam site: essas visitas não entram na lista.
+- Resultados também mostra "Até onde as pessoas rolam" (de cada 100 visitas, quantas chegaram em cada
+  bloco) e "O que pede atenção" (botão mais tocado, bloco onde tocam sem ter link, onde muita gente
+  para de rolar, origem de onde saem em menos de 3 segundos). Os sinais só aparecem a partir de 30
+  visitas no mês. Precisa da migration `0012_engajamento.sql`; sem ela essas duas partes não aparecem
+  e o resto continua.
 - Sem `?src=` nem `utm_source`, quem vem de rede conhecida (Instagram, Facebook, YouTube, TikTok,
   LinkedIn, X, Google) conta com o nome da rede; o QR do botão Compartilhar conta como `qr`.
 - A origem é o `?src=` do link, ou o `utm_source` quando não há `src` (link de anúncio).

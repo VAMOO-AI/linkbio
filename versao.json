@@ -1,4 +1,4 @@
 {
-  "versao": "0.13.0",
-  "notas": "Lista fechada de sites que podem rodar código na bio e no painel (Content-Security-Policy). Nada muda no que você vê; pixels e vídeo seguem funcionando."
+  "versao": "0.14.0",
+  "notas": "Resultados mostra até onde as pessoas rolam e o que pede atenção: botão mais tocado, toque onde não tem link, onde a rolagem para e saída rápida por origem (rode o 0012_engajamento.sql)."
 }

@@ -69,6 +69,14 @@ describe("script da origem", () => {
       expect(js.includes("/api/visita")).toBe(contarVisita);
     }
   });
+
+  test("engajamento só entra quando ligado, e continua JavaScript válido", () => {
+    expect(scriptDaOrigem({ contarVisita: true })).not.toContain("/api/engajamento");
+    const js = scriptDaOrigem({ contarVisita: true, engajamento: true });
+    expect(() => new Function(js)).not.toThrow();
+    expect(js).toContain("/api/engajamento");
+    expect(js).toContain("IntersectionObserver");
+  });
 });
 
 describe("origem pelo site de onde a pessoa veio", () => {

@@ -595,6 +595,26 @@
 .r-link { display: flex; align-items: center; gap: 8px; min-width: 0; }
 .r-link > span { display: grid; gap: 2px; min-width: 0; flex: 1; }
 .r-link code { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; }
+.r-alertas { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.r-alerta { display: flex; align-items: flex-start; gap: 10px; padding: 12px; border: 1px solid var(--borda); border-radius: var(--raio); background: var(--painel); }
+.r-alerta > div { flex: 1; min-width: 0; }
+.r-alerta strong { display: block; font-size: 14px; }
+.r-alerta p { margin: 2px 0 0; color: var(--suave); font-size: 13px; }
+.r-alerta-ponto { flex: none; width: 10px; height: 10px; margin-top: 5px; border-radius: 999px; background: var(--ambar); }
+.r-alerta[data-nivel="bom"] .r-alerta-ponto { background: var(--verde); }
+.r-alerta[data-nivel="ruim"] .r-alerta-ponto { background: var(--vermelho); }
+.r-alerta-nivel { display: block; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--ambar); }
+.r-alerta[data-nivel="bom"] .r-alerta-nivel { color: var(--verde); }
+.r-alerta[data-nivel="ruim"] .r-alerta-nivel { color: var(--vermelho); }
+.r-alerta-num { flex: none; font-weight: 600; font-variant-numeric: tabular-nums; color: var(--suave); }
+.r-rolagem { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.r-rolagem li { display: grid; gap: 4px; }
+.r-rolagem-topo { display: flex; justify-content: space-between; gap: 8px; font-size: 14px; }
+.r-rolagem-topo span { min-width: 0; overflow-wrap: anywhere; }
+.r-rolagem-topo strong { font-variant-numeric: tabular-nums; }
+.r-rolagem small { color: var(--ambar); font-size: 12px; }
+.r-barra { height: 6px; border-radius: 999px; background: var(--borda); overflow: hidden; }
+.r-barra > span { display: block; height: 100%; border-radius: inherit; background: var(--azul); }
 
 /* Contatos do bloco lead. */
 .a-baixar { display: inline-flex; align-items: center; min-height: 44px; text-decoration: none; }

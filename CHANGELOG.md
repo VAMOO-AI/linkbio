@@ -3,7 +3,18 @@
 ## Não lançado
 
 ### Para quem usa
-- Nada novo desde a v0.13.0.
+- Nada novo desde a v0.14.0.
+
+## v0.14.0 (2026-11-04)
+
+### Para quem usa
+- Resultados ganha "O que pede atenção" e "Até onde as pessoas rolam". O painel aponta o botão mais tocado, a seção onde a pessoa toca esperando abrir algo e não abre, onde muita gente para de rolar e de qual origem as pessoas saem em menos de 3 segundos. Liga junto com Contar cliques. Para valer, rode o SQL novo (`0012_engajamento.sql`).
+
+### Na bio e no painel
+- Com a contagem no ar, cada bloco da bio sai dentro de `<div class="secao" data-secao="<chave>">` (`display: contents`, sem mudar o layout; a animação de entrada passa para o filho). A chave é a mesma dos cliques (`chavesDosBlocos`). Com a contagem desligada o HTML não muda.
+- O script da origem (`scriptDaOrigem({ engajamento })`) observa o primeiro descendente com caixa de cada seção: conta quando a parte visível passa da metade do bloco ou da metade da tela, uma vez por seção por sessão (`sessionStorage`). Toque fora de controle (`a`, `button`, campos, `label`, `summary`, papéis de controle; `role="img"` e `tabindex="-1"` não contam como controle) e sem `cursor: pointer` vira "toque sem link", uma vez por seção por sessão. Saída rápida: a aba some antes de 3 s sem toque em link nem envio de formulário (estimativa: navegador dentro do app pode não avisar). O lote sai por `sendBeacon` a cada 2 s e quando a aba some.
+- `POST /api/engajamento`: mesma trava da `/api/visita` (contagem ligada, banco, robô), aceita só chave que existe na bio e grava por `registrar_engajamento`. Migration `0012_engajamento.sql`: tabela `engajamento` (dia, tipo, chave, origem, total), RLS sem policy, função só para o service role. Banco sem a 0012 continua com o resto de Resultados.
+- Alertas (`lib/engajamento.ts`) só a partir de 30 visitas em 30 dias, com limiares fixos: botão campeão com 10+ toques, toque sem link em 5+ visitas e 3%+ das visitas, queda de 25+ pontos entre seções seguidas, saída rápida de 30%+ numa origem com 20+ visitas.
 
 ## v0.13.0 (2026-10-31)
 

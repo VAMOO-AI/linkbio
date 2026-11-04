@@ -94,12 +94,55 @@ export function cssDeOrigem(blocks: readonly { type: string; origem?: RegraOrige
   return regras.join("\n");
 }
 
+/** Saída rápida: a aba some antes disto. O painel fala em "menos de 3 segundos". */
+export const SAIDA_RAPIDA_MS = 3000;
+
+/** Toque nestes elementos é ação de verdade, não "toque sem link". */
+// Só papéis de controle: `role="img"`, `group` e `status` e o `tabindex="-1"` do foco programático
+// cobrem área que não abre nada, e o `closest` sobe por eles.
+const INTERATIVOS =
+  'a,button,input,select,textarea,label,summary,video,iframe,[contenteditable],[tabindex]:not([tabindex="-1"]),' +
+  "[role=button],[role=link],[role=tab],[role=switch],[role=checkbox],[role=radio],[role=menuitem],[role=option]";
+
 /**
- * Script do <head>. `contarVisita`: só com features.analytics e o banco ligados.
+ * Engajamento (lib/engajamento.ts), dentro do script da origem para usar `o` e `ss`. Roda depois que
+ * o <body> existe. Cada seção é um `[data-secao]` com `display: contents` (sem caixa): o observador
+ * olha o primeiro descendente que tem caixa. "Chegou na seção" = a parte visível passa da metade do
+ * bloco ou da metade da tela (bloco alto nunca mostra metade de si). Uma vez por seção por sessão.
+ * Saída rápida: a aba some antes de 3 s sem nenhum toque em link ou envio de formulário.
+ * O lote sai a cada 2 s e quando a aba some (sendBeacon), porque no iOS o pagehide sozinho se perde.
+ */
+function scriptDoEngajamento(): string {
+  return `if(location.pathname==="/"){var fila={s:[],t:[]},rapida=false,agiu=false,saiu=false,tm=null;
+function nova(k){try{if(ss.getItem(k))return false;ss.setItem(k,"1");}catch(e){}return true;}
+function envia(){if(tm){clearTimeout(tm);tm=null;}if(!fila.s.length&&!fila.t.length&&!rapida)return;
+var corpo=JSON.stringify({origem:o||"direto",secoes:fila.s,toques:fila.t,rapida:rapida});fila={s:[],t:[]};rapida=false;
+if(!(navigator.sendBeacon&&navigator.sendBeacon("/api/engajamento",new Blob([corpo],{type:"application/json"}))))fetch("/api/engajamento",{method:"POST",headers:{"content-type":"application/json"},body:corpo,keepalive:true}).catch(function(){});}
+function depois(){if(!tm)tm=setTimeout(envia,2000);}
+function caixa(el){while(el&&getComputedStyle(el).display==="contents")el=el.firstElementChild;return el;}
+function inicia(){if(!("IntersectionObserver" in window))return;var lim=[];for(var i=0;i<=20;i++)lim.push(i/20);
+var io=new IntersectionObserver(function(es){es.forEach(function(e){if(!e.isIntersecting)return;
+if(e.intersectionRect.height<Math.min(e.boundingClientRect.height,innerHeight)*0.5)return;
+var k=e.target.getAttribute("data-secao-alvo");io.unobserve(e.target);if(k&&nova("linkbio-secao-"+k)){fila.s.push(k);depois();}});},{threshold:lim});
+document.querySelectorAll("[data-secao]").forEach(function(s){var c=caixa(s.firstElementChild);if(!c)return;c.setAttribute("data-secao-alvo",s.getAttribute("data-secao"));io.observe(c);});}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",inicia);else inicia();
+document.addEventListener("click",function(e){var t=e.target;if(!t||!t.closest)return;if(t.closest(${JSON.stringify(INTERATIVOS)})){agiu=true;return;}
+var s=t.closest("[data-secao]");if(!s)return;try{if(String(getSelection())!=="")return;if(getComputedStyle(t).cursor==="pointer")return;}catch(x){}
+var k=s.getAttribute("data-secao");if(k&&nova("linkbio-toque-"+k)){fila.t.push(k);depois();}},true);
+document.addEventListener("submit",function(){agiu=true;},true);
+function some(){if(!saiu){saiu=true;if(!agiu&&performance.now()<${SAIDA_RAPIDA_MS}&&nova("linkbio-saida-rapida"))rapida=true;}envia();}
+document.addEventListener("visibilitychange",function(){if(document.visibilityState==="hidden")some();});
+addEventListener("pagehide",some);}
+`;
+}
+
+/**
+ * Script do <head>. `contarVisita`: só com features.analytics e o banco ligados. `engajamento`: a
+ * mesma condição; liga a rolagem por seção, o toque sem link e a saída rápida.
  * Origem que não está na URL (guardada na sessão ou vinda do referrer) vai no toque do atalho
  * `/r/` como `?src=`: o servidor só enxerga a URL e o Referer, e o clique contaria como "direto".
  */
-export function scriptDaOrigem({ contarVisita }: { contarVisita: boolean }): string {
+export function scriptDaOrigem({ contarVisita, engajamento = false }: { contarVisita: boolean; engajamento?: boolean }): string {
   const visita = contarVisita
     ? `if(location.pathname==="/"){var kv="linkbio-visita-"+(o||"direto"),ja=null;try{ja=ss.getItem(kv);ss.setItem(kv,"1");}catch(e){}
 if(!ja){var cv={origem:o||"direto"};try{var sh=document.referrer?new URL(document.referrer).hostname.toLowerCase():"";if(sh&&sh.replace(/^www[.]/,"")!==location.hostname.toLowerCase().replace(/^www[.]/,""))cv.site=sh;}catch(e){}
@@ -122,7 +165,7 @@ var u={},novo=false;try{u=JSON.parse(ss.getItem(${JSON.stringify(CHAVE_UTM)})||"
 ${JSON.stringify(CHAVES_CAMPANHA)}.forEach(function(k){var v=q.get(k);if(v){u[k]=v.slice(0,200);novo=true;}});
 if(novo)try{ss.setItem(${JSON.stringify(CHAVE_UTM)},JSON.stringify(u));}catch(e){}
 document.addEventListener("submit",function(e){var f=e.target;if(!f||!f.querySelector)return;var c=JSON.stringify(u),a=f.querySelector('input[name="origem"]'),b=f.querySelector('input[name="utm"]');if(a)a.value=o||"";if(b)b.value=c==="{}"?"":c;},true);
-${visita}}catch(e){}})();`;
+${visita}${engajamento ? scriptDoEngajamento() : ""}}catch(e){}})();`;
 }
 
 /** Origem e campanha que chegam com o lead ou a reserva. Sem campo, vale o `?src=` do Referer. */

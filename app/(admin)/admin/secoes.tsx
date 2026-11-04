@@ -9,6 +9,7 @@ import { idLivre } from "@/lib/admin/normalizar";
 import { AJUDA_BLOCO } from "@/lib/admin/ajuda";
 import { resumoDaJanela, type Janela } from "@/lib/janela";
 import { taxaDeToques } from "@/lib/cliques";
+import type { ResumoEngajamento } from "@/lib/engajamento";
 
 export type ModeloResumo = { id: string; nome: string; descricao: string; bg: string; surface: string; text: string; dim: string; ctaBg: string; ctaText: string; accent: string; line: string };
 export type Versao = { id: number; created_at: string; created_by: string | null; nota: string | null };
@@ -552,6 +553,7 @@ export function SecaoResultados({
   botoes,
   origens,
   sites = [],
+  engajamento,
   links,
   onLigar,
 }: {
@@ -561,6 +563,7 @@ export function SecaoResultados({
   botoes: { nome: string; dias7: number; dias30: number }[];
   origens: { rotulo: string; dias7: number; dias30: number; visitas7: number; visitas30: number }[];
   sites?: { site: string; dias7: number; dias30: number }[];
+  engajamento?: ResumoEngajamento;
   links: { rotulo: string; url: string }[];
   onLigar: (v: boolean) => void;
 }) {
@@ -572,7 +575,10 @@ export function SecaoResultados({
         <span>Contar cliques</span>
       </div>
       {!ligado && !noAr && (
-        <p className="r-nota">A contagem está desligada. Ligue Contar cliques e toque em Publicar para ver quais botões as pessoas tocam.</p>
+        <p className="r-nota">
+          A contagem está desligada. Ligue Contar cliques e toque em Publicar para ver quais botões as pessoas tocam, até onde
+          elas rolam a página e quem sai sem tocar em nada.
+        </p>
       )}
       {ligado && !noAr && <p className="r-nota">A contagem está ligada aqui, mas ainda não foi publicada. Toque em Publicar para valer na bio.</p>}
       {noAr && !ligado && <p className="r-nota">A contagem ainda está no ar. Toque em Publicar para desligar.</p>}
@@ -580,6 +586,7 @@ export function SecaoResultados({
       {noAr && !erro && botoes.length === 0 && (
         <p className="r-nota">Ainda não há cliques. Use um dos links abaixo no Instagram e espere a primeira visita.</p>
       )}
+      {noAr && !erro && engajamento && <PedeAtencao engajamento={engajamento} />}
       {noAr && !erro && botoes.length > 0 && (
         <>
           <h2 className="a-subtitulo">Por botão</h2>
@@ -605,6 +612,7 @@ export function SecaoResultados({
           </div>
         </>
       )}
+      {noAr && !erro && engajamento && engajamento.secoes.some((x) => x.vistas30 > 0) && <Rolagem engajamento={engajamento} />}
       {noAr && !erro && origens.length > 0 && (
         <>
           <h2 className="a-subtitulo">De onde vieram</h2>
@@ -690,6 +698,69 @@ export function SecaoResultados({
         ))}
       </ul>
     </div>
+  );
+}
+
+const NIVEL = { bom: "Bom sinal", atencao: "Pede atenção", ruim: "Problema" } as const;
+
+/** Cartões do que os números dos últimos 30 dias apontam (lib/engajamento.ts, alertasDe). */
+function PedeAtencao({ engajamento }: { engajamento: ResumoEngajamento }) {
+  return (
+    <>
+      <h2 className="a-subtitulo">O que pede atenção</h2>
+      {engajamento.poucasVisitas ? (
+        <p className="r-nota">
+          Ainda são poucas visitas ({engajamento.visitas30} em 30 dias) para apontar alguma coisa. A partir de 30, os sinais aparecem aqui.
+        </p>
+      ) : engajamento.alertas.length === 0 ? (
+        <p className="r-nota">Nada fora do normal nos últimos 30 dias.</p>
+      ) : (
+        <ul className="r-alertas">
+          {engajamento.alertas.map((a) => (
+            <li key={a.tipo} className="r-alerta" data-nivel={a.nivel}>
+              <span className="r-alerta-ponto" aria-hidden="true" />
+              <div>
+                <span className="r-alerta-nivel">{NIVEL[a.nivel]}</span>
+                <strong>{a.titulo}</strong>
+                <p>{a.texto}</p>
+              </div>
+              {a.numero !== undefined && <span className="r-alerta-num">{a.numero}</span>}
+            </li>
+          ))}
+        </ul>
+      )}
+    </>
+  );
+}
+
+/** Até onde as pessoas rolam: % das visitas que chegaram em cada seção, na ordem da bio. */
+function Rolagem({ engajamento }: { engajamento: ResumoEngajamento }) {
+  return (
+    <>
+      <h2 className="a-subtitulo">Até onde as pessoas rolam</h2>
+      <p className="c-dica">
+        De cada 100 visitas dos últimos 30 dias, quantas chegaram em cada parte da bio. Bloco que só aparece para uma origem fica mais
+        baixo de propósito.
+      </p>
+      <ul className="r-rolagem">
+        {engajamento.secoes.map((x) => (
+          <li key={x.chave}>
+            <div className="r-rolagem-topo">
+              <span>{x.nome}</span>
+              <strong>{x.pct === null ? "—" : `${x.pct}%`}</strong>
+            </div>
+            <div className="r-barra" aria-hidden="true">
+              <span style={{ width: `${x.pct ?? 0}%` }} />
+            </div>
+            {x.toques30 > 0 && (
+              <small>
+                {x.toques30} {x.toques30 === 1 ? "visita tocou" : "visitas tocaram"} fora de um link
+              </small>
+            )}
+          </li>
+        ))}
+      </ul>
+    </>
   );
 }
 

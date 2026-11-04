@@ -19,6 +19,7 @@ import {
   type TotalSite,
 } from "@/lib/cliques";
 import { nomesDosBotoes } from "@/lib/cliques-destino";
+import { nomesDasSecoes, resumirEngajamento, type LinhaEngajamento, type ResumoEngajamento } from "@/lib/engajamento";
 
 export type Versao = { id: number; created_at: string; created_by: string | null; nota: string | null };
 export type Problema = { caminho: string; mensagem: string };
@@ -132,13 +133,19 @@ export async function restaurarArquivo(email: string): Promise<ResultadoSalvar> 
 
 const TIPOS: Record<string, string> = { "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp", "image/gif": "gif" };
 
-export type ResumoCliques = { erro: boolean; botoes: TotalBotao[]; origens: TotalOrigem[]; sites: TotalSite[] };
+export type ResumoCliques = {
+  erro: boolean;
+  botoes: TotalBotao[];
+  origens: TotalOrigem[];
+  sites: TotalSite[];
+  engajamento?: ResumoEngajamento;
+};
 
 /** Totais dos últimos 30 dias. A data é a da bio, não a do servidor. */
 export async function lerCliques(config: LinkbioConfig): Promise<ResumoCliques> {
   const hoje = diaNoFuso(config.site.tz);
   const desde = diaMenos(hoje, 29);
-  const [linhas, visitas, sites] = await Promise.all([
+  const [linhas, visitas, sites, engaj] = await Promise.all([
     rest<LinhaClique[]>(`cliques?select=dia,alvo,origem,total&dia=gte.${desde}`, { cache: "no-store" }),
     // Banco sem a migration 0010: os cliques continuam aparecendo, só sem visitas.
     rest<LinhaVisita[]>(`visitas?select=dia,origem,total&dia=gte.${desde}`, { cache: "no-store" }).catch((erro: unknown) => {
@@ -150,8 +157,17 @@ export async function lerCliques(config: LinkbioConfig): Promise<ResumoCliques> 
       console.error("[linkbio admin] sem a tabela visitas_sites (rode supabase/migrations/0011_sites.sql)", erro);
       return [] as LinhaSite[];
     }),
+    // Banco sem a migration 0012: o resto aparece, só sem rolagem e alertas.
+    rest<LinhaEngajamento[]>(`engajamento?select=dia,tipo,chave,origem,total&dia=gte.${desde}`, { cache: "no-store" }).catch(
+      (erro: unknown) => {
+        console.error("[linkbio admin] sem a tabela engajamento (rode supabase/migrations/0012_engajamento.sql)", erro);
+        return null;
+      },
+    ),
   ]);
-  return { erro: false, ...resumirCliques(linhas ?? [], nomesDosBotoes(config), hoje, visitas ?? []), sites: resumirSites(sites ?? [], hoje) };
+  const resumo = resumirCliques(linhas ?? [], nomesDosBotoes(config), hoje, visitas ?? []);
+  const engajamento = engaj ? resumirEngajamento(engaj, visitas ?? [], nomesDasSecoes(config), resumo.botoes, hoje) : undefined;
+  return { erro: false, ...resumo, sites: resumirSites(sites ?? [], hoje), engajamento };
 }
 
 export async function guardarImagem(arquivo: File): Promise<{ ok: true; url: string } | { ok: false; erro: string }> {

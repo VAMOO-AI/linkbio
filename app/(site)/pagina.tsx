@@ -1,3 +1,4 @@
+import { Fragment } from "react";
 import { renderBlock } from "@/blocks/registry";
 import { blocosAtivos } from "@/lib/blocos";
 import { chavesDosBlocos } from "@/lib/cliques";
@@ -38,10 +39,18 @@ export async function PaginaPublica({ testeIa = false }: { testeIa?: boolean }) 
           agendamento,
           avatar,
         });
-        return (
-          <PorOrigem key={`bloco-${pos}`} origem={block.origem} pos={pos}>
+        const conteudo = (
+          <PorOrigem origem={block.origem} pos={pos}>
             {el}
           </PorOrigem>
+        );
+        // Com a contagem ligada, cada bloco vira uma seção (sem caixa) para a rolagem e o toque sem link.
+        return chaves ? (
+          <div key={`bloco-${pos}`} className="secao" data-secao={chaves[pos]}>
+            {conteudo}
+          </div>
+        ) : (
+          <Fragment key={`bloco-${pos}`}>{conteudo}</Fragment>
         );
       })}
     </>

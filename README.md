@@ -371,7 +371,8 @@ perfil, modelo e cores, blocos (ordem, liga e desliga, datas, adicionar,
 duplicar, apagar), ofertas, vitrine, cupom, concierge, contato, Pix, agenda e
 os envios do formulário, com envio de imagem. Cada publicação vira uma versão,
 e dá para voltar a qualquer uma. Com a contagem ligada, a aba Resultados mostra
-os toques, as visitas por origem e os sites que trouxeram visitas (migration `0011_sites.sql`).
+os toques, as visitas por origem e os sites que trouxeram visitas (migration `0011_sites.sql`),
+até onde as pessoas rolam e o que pede atenção (migration `0012_engajamento.sql`).
 
 Sem o painel ligado, tudo continua funcionando pelo `linkbio.config.ts`.
 
