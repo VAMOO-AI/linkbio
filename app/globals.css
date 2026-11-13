@@ -2594,6 +2594,41 @@ a.agenda-local,
   outline: none;
 }
 
+/* Tela do Pix da agenda paga. O QR fica em fundo branco em qualquer tema: leitor de banco precisa de contraste. */
+.ag-pix {
+  align-items: center;
+  text-align: center;
+}
+
+.ag-pix .ag-resumo {
+  align-self: stretch;
+  text-align: left;
+}
+
+.ag-pix-valor {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+  font-size: 1.6rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.ag-pix-valor small {
+  font-size: 0.85rem;
+  font-weight: 400;
+  color: var(--dim);
+}
+
+.ag-pix-qr {
+  width: min(220px, 100%);
+  height: auto;
+  padding: 10px;
+  border-radius: var(--radius);
+  background: #fff;
+}
+
 .bloco-agendamento button.bloco-cta {
   width: 100%;
   border-style: solid;

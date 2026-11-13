@@ -251,6 +251,7 @@ export function renderBlock(
           intro={block.intro}
           servicos={block.servicos}
           pedirEmail={block.pedirEmail}
+          modoPagamento={block.pagamento?.modo}
           ativo={opcoes?.agendamento !== false}
           whatsapp={config.contact.whatsapp}
           tz={config.site.tz}

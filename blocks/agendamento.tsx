@@ -5,10 +5,72 @@ import { dispararEvento } from "@/lib/eventos";
 import { origemGuardada } from "@/lib/origem-navegador";
 import { linkWhatsApp } from "@/lib/whatsapp";
 
-type Servico = { id: string; title: string; duracao: number; subtitle?: string };
+type Servico = { id: string; title: string; duracao: number; subtitle?: string; price_cents?: number };
 type Horario = { inicio: string; dia: string; hora: string };
 type Confirmacao = { servico: string; inicio: string; fim: string; meetUrl: string | null; local: string | null };
-type Etapa = "servico" | "dia" | "hora" | "dados" | "feito" | "fora";
+type Etapa = "servico" | "dia" | "hora" | "dados" | "pagar" | "pago-sem-horario" | "feito" | "fora";
+type ModoPagamento = "mercadopago" | "email";
+/** Pix pendente: o token consulta o estado; o resto é o que a tela mostra (e volta se a página recarregar). */
+type Pendente = {
+  token: string;
+  modo: ModoPagamento;
+  valorCentavos: number;
+  copiaECola: string;
+  qr: string;
+  expiraEm: string;
+  servico: string;
+  inicio: string;
+  fim: string;
+  local: string | null;
+};
+
+const CONSULTA_MS = 10_000;
+
+function reais(centavos: number): string {
+  return `R$ ${(centavos / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+}
+
+function guardado(chave: string): Pendente | null {
+  try {
+    const p = JSON.parse(localStorage.getItem(chave) ?? "null") as Pendente | null;
+    // Uma hora depois do prazo não adianta mais olhar: o horário já foi solto.
+    return p && Date.parse(p.expiraEm) + 60 * 60_000 > Date.now() ? p : null;
+  } catch {
+    return null;
+  }
+}
+
+function guardar(chave: string, p: Pendente | null) {
+  try {
+    if (p) localStorage.setItem(chave, JSON.stringify(p));
+    else localStorage.removeItem(chave);
+  } catch {
+    /* modo privado: segue sem guardar */
+  }
+}
+
+const TOKEN = /^[A-Za-z0-9_-]{32,64}$/;
+/** Pix atrasado: o aparelho lembra da reserva por 30 dias, para trocar o horário sem o link. */
+const PAGO_SEM_HORARIO_MS = 30 * 24 * 60 * 60_000;
+
+/** Reserva paga guardada neste aparelho: o token vale até `ate` (fim do horário ou prazo do Pix atrasado). */
+function lerPago(chave: string): string | null {
+  try {
+    const p = JSON.parse(localStorage.getItem(chave) ?? "null") as { token?: string; ate?: string } | null;
+    return p?.token && p.ate && Date.parse(p.ate) > Date.now() ? p.token : null;
+  } catch {
+    return null;
+  }
+}
+
+function guardarPago(chave: string, p: { token: string; ate: string } | null) {
+  try {
+    if (p) localStorage.setItem(chave, JSON.stringify(p));
+    else localStorage.removeItem(chave);
+  } catch {
+    /* modo privado: segue sem guardar */
+  }
+}
 
 const SEMANA = ["D", "S", "T", "Q", "Q", "S", "S"];
 
@@ -64,6 +126,7 @@ export function AgendamentoBlock({
   intro,
   servicos,
   pedirEmail = false,
+  modoPagamento,
   ativo,
   whatsapp,
   tz,
@@ -75,6 +138,7 @@ export function AgendamentoBlock({
   intro?: string;
   servicos: Servico[];
   pedirEmail?: boolean;
+  modoPagamento?: ModoPagamento;
   ativo: boolean;
   whatsapp: string;
   tz: string;
@@ -92,6 +156,15 @@ export function AgendamentoBlock({
   const [aviso, setAviso] = useState("");
   const [enviando, setEnviando] = useState(false);
   const [confirmacao, setConfirmacao] = useState<Confirmacao | null>(null);
+  const [pendente, setPendente] = useState<Pendente | null>(null);
+  const [agora, setAgora] = useState(() => Date.now());
+  const [copiado, setCopiado] = useState(false);
+  /** Token da reserva paga (troca de horário). `trocando`: a escolha do horário remarca em vez de reservar. */
+  const [tokenPago, setTokenPago] = useState<string | null>(null);
+  const [trocando, setTrocando] = useState(false);
+  const chaveGuardada = `linkbio-agenda-pix-${id}`;
+  const chavePaga = `linkbio-agenda-paga-${id}`;
+  const tokenDoLink = useRef(false);
   const pedido = useRef(novoPedido());
   const foco = useRef<HTMLElement | null>(null);
 
@@ -141,6 +214,113 @@ export function AgendamentoBlock({
     foco.current?.focus({ preventScroll: true });
   }, [etapa]);
 
+  // Reserva paga: veio pelo link "Trocar horário" do convite (?agenda=<token>) ou ficou guardada
+  // neste aparelho (Pix atrasado, horário já pago). Mostra a reserva e deixa trocar o horário.
+  useEffect(() => {
+    if (!ativo) return;
+    const url = new URL(window.location.href);
+    const daUrl = url.searchParams.get("agenda");
+    if (daUrl !== null) {
+      tokenDoLink.current = true;
+      // O token troca o horário: some da barra antes que os pixels de medição guardem a URL.
+      url.searchParams.delete("agenda");
+      window.history.replaceState(window.history.state, "", url.pathname + url.search + url.hash);
+    }
+    const token = daUrl ?? (guardado(chaveGuardada) ? null : lerPago(chavePaga));
+    if (!token || !TOKEN.test(token)) return;
+    let vivo = true;
+    void (async () => {
+      try {
+        const r = await fetch(`/api/agendamento?bloco=${encodeURIComponent(id)}&token=${encodeURIComponent(token)}`, { cache: "no-store" });
+        const corpo = (await r.json()) as { ok: boolean; estado?: string; servico?: string; inicio?: string; fim?: string; meetUrl?: string | null };
+        if (!vivo) return;
+        const s = corpo.ok ? servicos.find((x) => x.id === corpo.servico) : undefined;
+        if (!s || (corpo.estado !== "confirmado" && corpo.estado !== "pago_sem_horario")) {
+          if (r.status === 404 || corpo.ok) guardarPago(chavePaga, null);
+          return;
+        }
+        setServico(s);
+        setTokenPago(token);
+        if (corpo.estado === "confirmado" && corpo.inicio && corpo.fim) {
+          guardarPago(chavePaga, { token, ate: corpo.fim });
+          setConfirmacao({ servico: s.title, inicio: corpo.inicio, fim: corpo.fim, meetUrl: corpo.meetUrl ?? null, local: null });
+          setEtapa("feito");
+        } else {
+          guardarPago(chavePaga, { token, ate: new Date(Date.now() + PAGO_SEM_HORARIO_MS).toISOString() });
+          setEtapa("pago-sem-horario");
+        }
+      } catch {
+        /* sem rede: segue o fluxo normal */
+      }
+    })();
+    return () => {
+      vivo = false;
+    };
+    // Só na montagem.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Recarregou a página com um Pix em aberto: volta para a tela do Pix.
+  useEffect(() => {
+    if (!ativo) return;
+    // Ordem dos efeitos: o de cima já tirou o ?agenda da barra; ele vale mais que o Pix guardado.
+    if (tokenDoLink.current) return;
+    const p = guardado(chaveGuardada);
+    if (!p) return;
+    const t = setTimeout(() => {
+      setPendente(p);
+      setEtapa("pagar");
+    }, 0);
+    return () => clearTimeout(t);
+    // Só na montagem.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Tela do Pix: relógio do prazo e consulta do pagamento a cada 10 s.
+  useEffect(() => {
+    if (etapa !== "pagar" || !pendente) return;
+    const p = pendente;
+    let vivo = true;
+    const relogio = setInterval(() => setAgora(Date.now()), 1000);
+    async function consultar() {
+      try {
+        const r = await fetch(`/api/agendamento?bloco=${encodeURIComponent(id)}&token=${encodeURIComponent(p.token)}`, { cache: "no-store" });
+        const corpo = (await r.json()) as { ok: boolean; estado?: string; meetUrl?: string | null; inicio?: string; fim?: string };
+        if (!vivo || !corpo.ok) return;
+        if (corpo.estado === "confirmado") {
+          guardar(chaveGuardada, null);
+          guardarPago(chavePaga, { token: p.token, ate: corpo.fim ?? p.fim });
+          setTokenPago(p.token);
+          setConfirmacao({ servico: p.servico, inicio: corpo.inicio ?? p.inicio, fim: corpo.fim ?? p.fim, meetUrl: corpo.meetUrl ?? null, local: p.local });
+          setEtapa("feito");
+          dispararEvento({ nome: "Lead", id: pedido.current, metodo: "agendamento" });
+        } else if (corpo.estado === "pago_sem_horario") {
+          guardar(chaveGuardada, null);
+          guardarPago(chavePaga, { token: p.token, ate: new Date(Date.now() + PAGO_SEM_HORARIO_MS).toISOString() });
+          setTokenPago(p.token);
+          setEtapa("pago-sem-horario");
+        } else if (corpo.estado === "expirado" || corpo.estado === "cancelado") {
+          guardar(chaveGuardada, null);
+          setPendente(null);
+          pedido.current = novoPedido();
+          setAviso("O prazo do Pix acabou e o horário foi liberado. Se você já pagou, chame no WhatsApp.");
+          setHora(null);
+          setEtapa(servico ? "dia" : "servico");
+          if (servico) void buscar(servico);
+        }
+      } catch {
+        /* sem rede: tenta de novo no próximo ciclo */
+      }
+    }
+    const ciclo = setInterval(() => void consultar(), CONSULTA_MS);
+    return () => {
+      vivo = false;
+      clearInterval(relogio);
+      clearInterval(ciclo);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [etapa, pendente]);
+
   const porDia = useMemo(() => {
     const m = new Map<string, Horario[]>();
     for (const h of horarios ?? []) m.set(h.dia, [...(m.get(h.dia) ?? []), h]);
@@ -157,6 +337,66 @@ export function AgendamentoBlock({
     setHora(null);
     setEtapa("dia");
     void buscar(s);
+  }
+
+  function comecarTroca() {
+    if (!servico) return;
+    setTrocando(true);
+    setAviso("");
+    setDia(null);
+    setHora(null);
+    setEtapa("dia");
+    void buscar(servico);
+  }
+
+  /** Esquece a reserva paga deste aparelho e volta ao começo, para marcar outro atendimento. */
+  function marcarOutro() {
+    guardarPago(chavePaga, null);
+    setTokenPago(null);
+    setTrocando(false);
+    setConfirmacao(null);
+    setAviso("");
+    setDia(null);
+    setHora(null);
+    pedido.current = novoPedido();
+    if (servicos.length > 1) {
+      setServico(null);
+      setEtapa("servico");
+    } else {
+      setEtapa("dia");
+      void buscar(servicos[0]!);
+    }
+  }
+
+  /** Troca de horário: a escolha do horário já remarca (o pagamento continua o mesmo). */
+  async function remarcarPara(h: Horario) {
+    if (!servico || !tokenPago || enviando) return;
+    setEnviando(true);
+    setAviso("");
+    setHora(h);
+    try {
+      const r = await fetch("/api/agendamento", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ acao: "remarcar", bloco: id, token: tokenPago, inicio: h.inicio }),
+      });
+      const corpo = (await r.json()) as Partial<Confirmacao> & { ok: boolean; mensagem?: string };
+      if (corpo.ok && corpo.inicio && corpo.fim) {
+        guardarPago(chavePaga, { token: tokenPago, ate: corpo.fim });
+        setConfirmacao({ servico: corpo.servico ?? servico.title, inicio: corpo.inicio, fim: corpo.fim, meetUrl: corpo.meetUrl ?? null, local: corpo.local ?? null });
+        setTrocando(false);
+        setEtapa("feito");
+        return;
+      }
+      setAviso(corpo.mensagem || "Não deu para trocar agora. Tente de novo.");
+      setHora(null);
+      if (r.status === 409) void buscar(servico);
+    } catch {
+      setAviso("Sem conexão. Tente de novo.");
+      setHora(null);
+    } finally {
+      setEnviando(false);
+    }
   }
 
   async function enviar(ev: React.FormEvent<HTMLFormElement>) {
@@ -182,7 +422,21 @@ export function AgendamentoBlock({
           ...origemGuardada(),
         }),
       });
-      const corpo = (await r.json()) as Partial<Confirmacao> & { ok: boolean; mensagem?: string; motivo?: string };
+      const corpo = (await r.json()) as Partial<Confirmacao> & {
+        ok: boolean;
+        mensagem?: string;
+        motivo?: string;
+        pagar?: boolean;
+        pagamento?: Omit<Pendente, "servico" | "inicio" | "fim" | "local">;
+      };
+      if (corpo.ok && corpo.pagar && corpo.pagamento && corpo.inicio && corpo.fim && corpo.servico) {
+        const p: Pendente = { ...corpo.pagamento, servico: corpo.servico, inicio: corpo.inicio, fim: corpo.fim, local: corpo.local ?? null };
+        guardar(chaveGuardada, p);
+        setPendente(p);
+        setAgora(Date.now());
+        setEtapa("pagar");
+        return;
+      }
       if (corpo.ok && corpo.inicio && corpo.fim && corpo.servico) {
         setConfirmacao({ servico: corpo.servico, inicio: corpo.inicio, fim: corpo.fim, meetUrl: corpo.meetUrl ?? null, local: corpo.local ?? null });
         setEtapa("feito");
@@ -211,7 +465,11 @@ export function AgendamentoBlock({
     { chave: "dia", nome: "Dia" },
     { chave: "hora", nome: "Horário" },
     { chave: "dados", nome: "Dados" },
+    ...(modoPagamento && servicos.some((s) => (s.price_cents ?? 0) > 0) ? [{ chave: "pagar" as const, nome: "Pix" }] : []),
   ];
+  const cobra = Boolean(modoPagamento && (servico?.price_cents ?? 0) > 0);
+  const emailObrigatorio = pedirEmail || (cobra && modoPagamento === "mercadopago");
+  const restante = pendente ? Math.max(0, Date.parse(pendente.expiraEm) - agora) : 0;
   const ordem = passos.findIndex((p) => p.chave === etapa);
 
   return (
@@ -219,7 +477,9 @@ export function AgendamentoBlock({
       <h2 className="ag-titulo">{title}</h2>
       {intro && <p className="ag-intro">{intro}</p>}
 
-      {etapa !== "fora" && etapa !== "feito" && (
+      {trocando && (etapa === "dia" || etapa === "hora") && <p className="ag-intro">Escolha o novo horário. O Pix já pago continua valendo.</p>}
+
+      {!trocando && etapa !== "fora" && etapa !== "feito" && etapa !== "pago-sem-horario" && (
         <ol className="ag-passos" aria-hidden="true">
           {passos.map((p, i) => (
             <li key={p.chave} data-feito={i <= ordem || undefined}>
@@ -239,7 +499,10 @@ export function AgendamentoBlock({
             {servicos.map((s) => (
               <button key={s.id} type="button" className="ag-servico" onClick={() => escolherServico(s)}>
                 <span className="ag-servico-nome">{s.title}</span>
-                <span className="ag-servico-sub">{s.subtitle ?? `${s.duracao} min`}</span>
+                <span className="ag-servico-sub">
+                  {s.subtitle ?? `${s.duracao} min`}
+                  {modoPagamento && (s.price_cents ?? 0) > 0 ? ` · ${reais(s.price_cents!)}` : ""}
+                </span>
               </button>
             ))}
           </div>
@@ -248,11 +511,12 @@ export function AgendamentoBlock({
 
       {etapa === "dia" && (
         <div className="ag-etapa">
-          {servicos.length > 1 && servico && (
+          {servicos.length > 1 && servico && !trocando && (
             <button type="button" className="ag-voltar" onClick={() => setEtapa("servico")}>
               ‹ {servico.title}
             </button>
           )}
+          {aviso && <p className="ag-aviso" role="alert">{aviso}</p>}
           {carregando || !horarios ? (
             <p className="ag-carregando" role="status">Buscando horários livres…</p>
           ) : meses.length === 0 ? (
@@ -307,13 +571,18 @@ export function AgendamentoBlock({
                   type="button"
                   className="ag-hora"
                   aria-pressed={hora?.inicio === h.inicio}
+                  disabled={trocando && enviando}
                   onClick={() => {
+                    if (trocando) {
+                      void remarcarPara(h);
+                      return;
+                    }
                     setHora(h);
                     setAviso("");
                     setEtapa("dados");
                   }}
                 >
-                  {h.hora}
+                  {trocando && enviando && hora?.inicio === h.inicio ? "Trocando…" : h.hora}
                 </button>
               ))}
             </div>
@@ -331,6 +600,7 @@ export function AgendamentoBlock({
             <span>
               {inicial(diaPorExtenso(hora.dia))}, {hora.hora}
             </span>
+            {cobra && <span>{reais(servico.price_cents!)} no Pix</span>}
           </p>
           <div className="lead-isca" aria-hidden="true">
             <label>
@@ -347,14 +617,76 @@ export function AgendamentoBlock({
             <input name="whatsapp" required maxLength={20} inputMode="tel" autoComplete="tel" placeholder="(11) 98765-4321" />
           </label>
           <label className="lead-campo">
-            {pedirEmail ? "E-mail" : "E-mail (opcional, para receber o convite)"}
-            <input name="email" type="email" required={pedirEmail} maxLength={120} autoComplete="email" />
+            {emailObrigatorio ? "E-mail" : "E-mail (opcional, para receber o convite)"}
+            <input name="email" type="email" required={emailObrigatorio} maxLength={120} autoComplete="email" />
           </label>
           {aviso && <p className="ag-aviso" role="alert">{aviso}</p>}
           <button className="bloco-cta" type="submit" disabled={enviando}>
-            {enviando ? "Marcando…" : "Confirmar horário"}
+            {enviando ? "Marcando…" : cobra ? "Ir para o Pix" : "Confirmar horário"}
           </button>
+          {cobra && <p className="ag-intro">O horário fica separado para você enquanto o Pix não cai.</p>}
         </form>
+      )}
+
+      {etapa === "pagar" && pendente && (
+        <div className="ag-etapa ag-pix">
+          <p className="ag-pergunta" tabIndex={-1} ref={(n) => { foco.current = n; }}>
+            Pague o Pix para confirmar
+          </p>
+          <p className="ag-resumo">
+            <strong>{pendente.servico}</strong>
+            <span>{inicial(quando(pendente.inicio, tz))}</span>
+          </p>
+          <p className="ag-pix-valor">
+            {reais(pendente.valorCentavos)}
+            {pendente.modo === "email" && <small>Pague exatamente este valor, com os centavos: é assim que o Pix é reconhecido.</small>}
+          </p>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img className="ag-pix-qr" src={pendente.qr} alt="QR Code do Pix" width={220} height={220} />
+          <button
+            type="button"
+            className="bloco-cta"
+            onClick={() => {
+              void navigator.clipboard?.writeText(pendente.copiaECola).then(
+                () => setCopiado(true),
+                () => setCopiado(false),
+              );
+            }}
+          >
+            {copiado ? "Código copiado" : "Copiar Pix copia e cola"}
+          </button>
+          <p className="ag-carregando" role="status" aria-live="polite">
+            {restante > 0
+              ? `Horário separado por mais ${Math.floor(restante / 60_000)}:${String(Math.floor((restante % 60_000) / 1000)).padStart(2, "0")}. Assim que o Pix cair, a confirmação aparece aqui.`
+              : "Conferindo o pagamento…"}
+          </p>
+          {aviso && <p className="ag-aviso" role="alert">{aviso}</p>}
+        </div>
+      )}
+
+      {etapa === "pago-sem-horario" && (
+        <div className="ag-vazio" role="status">
+          <p className="ag-pergunta" tabIndex={-1} ref={(n) => { foco.current = n; }}>
+            Pix recebido
+          </p>
+          <p>
+            O pagamento chegou depois do prazo e o horário já tinha sido ocupado. Seu pagamento está garantido:
+            {tokenPago ? " escolha outro horário aqui ou chame no WhatsApp." : " chame no WhatsApp para escolher outro horário."}
+          </p>
+          {tokenPago && servico && (
+            <button type="button" className="bloco-cta" onClick={comecarTroca}>
+              Escolher outro horário
+            </button>
+          )}
+          <a
+            className={tokenPago ? "agenda-link" : "bloco-cta"}
+            href={linkWhatsApp(whatsapp, `Oi! Paguei o Pix${pendente ? ` de ${reais(pendente.valorCentavos)} (${pendente.servico})` : ""} mas o horário foi ocupado. Quero escolher outro.`)}
+            target="_blank"
+            rel="noopener"
+          >
+            {tokenPago ? "Chamar no WhatsApp" : "Escolher outro horário no WhatsApp"}
+          </a>
+        </div>
       )}
 
       {etapa === "feito" && confirmacao && (
@@ -368,7 +700,7 @@ export function AgendamentoBlock({
           </p>
           {confirmacao.meetUrl && (
             <a className="agenda-externo" href={confirmacao.meetUrl} target="_blank" rel="noopener">
-              Link da chamada (Google Meet)
+              Link da chamada
             </a>
           )}
           {!confirmacao.meetUrl && confirmacao.local && <p className="ag-intro">Local: {confirmacao.local}</p>}
@@ -384,7 +716,20 @@ export function AgendamentoBlock({
             >
               Avisar no WhatsApp
             </a>
+            {tokenPago && (
+              <button type="button" className="agenda-link" onClick={comecarTroca}>
+                Trocar horário
+              </button>
+            )}
           </div>
+          {tokenPago && (
+            <p className="ag-intro">
+              Para cancelar, chame no WhatsApp.{" "}
+              <button type="button" className="ag-voltar" onClick={marcarOutro}>
+                Marcar outro atendimento
+              </button>
+            </p>
+          )}
         </div>
       )}
 

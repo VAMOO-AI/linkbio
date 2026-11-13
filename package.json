@@ -1,6 +1,6 @@
 {
   "name": "linkbio-template",
-  "version": "0.15.1",
+  "version": "0.16.0",
   "private": true,
   "description": "Template de link-in-bio single-tenant (Next.js + config validada com zod).",
   "scripts": {
@@ -16,11 +16,14 @@
     "chave": "tsx scripts/chave.ts",
     "foto": "tsx scripts/foto.ts",
     "google:conectar": "tsx scripts/google-conectar.ts",
+    "microsoft:conectar": "tsx scripts/microsoft-conectar.ts",
     "eval:setup": "tsx scripts/eval-setup.ts",
     "sql:instalar": "bash scripts/sql-instalar.sh supabase/instalar.sql"
   },
   "dependencies": {
     "@vercel/blob": "^2.3.3",
+    "imapflow": "2.9.1",
+    "mailparser": "3.12.4",
     "next": "16.4.2",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",

@@ -21,7 +21,8 @@ export async function PaginaPublica({ testeIa = false }: { testeIa?: boolean }) 
   const captura = supabaseConfigurado();
   // A chave fica neste módulo de servidor. O registro dos blocos também roda na prévia, no navegador.
   const chaveIa = Boolean(process.env.ANTHROPIC_API_KEY);
-  const agendamento = agendamentoNoAmbiente();
+  // Google ou Microsoft no ambiente; o provedor e a cobrança de cada bloco a rota confere na hora.
+  const agendamento = agendamentoNoAmbiente("google") || agendamentoNoAmbiente("microsoft");
   // Regras de origem viram CSS: o HTML é o mesmo para todo mundo e o <head> marca a origem (lib/origem.ts).
   const css = cssDeOrigem(config.blocks);
   const agora = new Date();

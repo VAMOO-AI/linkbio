@@ -63,7 +63,8 @@ Peça em linguagem normal; o Claude escolhe a skill certa (ficam em `.claude/ski
 | "rode o setup da minha bio" | `setup-linkbio` |
 | "adiciona o link do...", "muda o preço", "troca minha foto", "muda a cor", "deixa escuro" | `editar-bio` |
 | "quero editar pelo celular", "esqueci a senha do painel" | `ligar-painel` |
-| "quero que marquem horário pela bio", "ligar minha agenda" | `ligar-agenda` |
+| "quero que marquem horário pela bio", "ligar minha agenda", "usar o Outlook" | `ligar-agenda` |
+| "cobrar o horário no Pix", "só marcar depois de pagar" | `ligar-pagamento` |
 | "coloca no ar", "usar meu domínio" | `publicar` |
 | "tem versão nova do template" | `atualizar-template` |
 | "preciso de um bloco que não existe" (quando nenhum dos 20 resolve) | `novo-bloco` |
@@ -122,7 +123,7 @@ duas datas), ver abaixo.
 | `lead` | Formulário de contato (material grátis, lista de espera) | `title`, `label`, `pedir`, `sucesso`, `entrega` |
 | `pix` | QR e código Pix para copiar | `chave`, `nome`, `cidade`, `valor_cents`, `copy` |
 | `agenda` | Próximos encontros, Google Agenda e arquivo `.ics` | `title`, `url`, `items` |
-| `agendamento` | Horários livres do seu Google Agenda: a pessoa marca e o evento já cai na agenda, com Meet | `servicos`, `dias`, `inicio`, `fim`, `pausas`, `local` |
+| `agendamento` | Horários livres do seu Google Agenda ou Outlook: a pessoa marca (ou paga o Pix antes) e o evento já cai na agenda | `servicos`, `dias`, `inicio`, `fim`, `pausas`, `local`, `provedor`, `pagamento` |
 
 ### Liga e desliga
 
@@ -183,6 +184,18 @@ ocupado na sua agenda. Precisa do banco e do Google ligados (skill
 `ligar-agenda`); sem eles, o bloco mostra só o botão de WhatsApp. Se o Google
 não responder, a agenda não mostra horário nenhum, para nunca marcar por cima
 de um compromisso.
+
+Com `provedor: "microsoft"`, a agenda é a do Outlook / Microsoft 365 (link do
+Teams quando a conta permite), ligada pela mesma skill.
+
+Agenda paga: com `price_cents` no serviço e `pagamento` no bloco, o horário fica
+separado por `pagamento.prazo` minutos (padrão 15) e só confirma quando o Pix
+cai. O Pix é conferido pelo Mercado Pago (`modo: "mercadopago"`) ou pelo aviso do
+banco numa caixa de e-mail (`modo: "email"`, com `chave`, `nome` e `cidade` do
+Pix; cada reserva ganha centavos próprios). Pix atrasado com o horário já
+ocupado vira "pago sem horário" e a pessoa escolhe outro sem pagar de novo. O
+convite leva o link "Trocar horário"; cancelamento é pelo WhatsApp. Skill
+`ligar-pagamento`; precisa do SQL `0013_agenda_paga.sql`.
 
 ### Contagem de cliques
 
@@ -420,8 +433,10 @@ cp .env.example .env.local
 O `.env.local` nunca vai para o git. Todas as variáveis são opcionais: sem elas,
 a bio funciona estática (links, WhatsApp e concierge em modo roteiro). As do
 painel (`SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `ADMIN_SESSION_SECRET`) estão
-na skill `ligar-painel`; as da agenda (`GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`) na skill
-`ligar-agenda`. `CRON_SECRET` (opcional) protege `/api/keepalive`.
+na skill `ligar-painel`; as da agenda (`GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, ou
+`MS_CLIENT_ID` e `MS_TENANT` para a Microsoft) na skill `ligar-agenda`; as do Pix
+(`MP_ACCESS_TOKEN`, `MP_WEBHOOK_SECRET` ou `IMAP_*`) na skill `ligar-pagamento`.
+`CRON_SECRET` (opcional) protege `/api/keepalive` e `/api/agendamento/varrer`.
 
 ## Capa ao compartilhar
 

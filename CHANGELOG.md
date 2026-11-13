@@ -3,7 +3,23 @@
 ## Não lançado
 
 ### Para quem usa
-- Nada novo desde a v0.15.1.
+- Nada novo desde a v0.16.0.
+
+## v0.16.0 (2026-11-12)
+
+### Para quem usa
+- Agenda paga: cada serviço pode ter preço (ex.: 30 min = R$ 300, 60 min = R$ 500). O horário fica separado por 15 minutos e só vira compromisso quando o Pix cai, conferido pelo Mercado Pago ou pelo aviso do banco no seu e-mail (skill `ligar-pagamento`). Pix atrasado com o horário ocupado: a pessoa escolhe outro sem pagar de novo.
+- O convite leva o link "Trocar horário" (respeita a antecedência do bloco; cancelar é pelo WhatsApp). A agenda pode ser a do Outlook / Microsoft 365 no lugar do Google, com link do Teams quando a conta permite (skill `ligar-agenda`).
+- Para valer, rode o SQL novo (`0013_agenda_paga.sql`). A agenda grátis no Google continua igual.
+
+### Na bio e no painel
+- Migration `0013_agenda_paga.sql` (só soma): estados `aguardando_pagamento` (com `expira_em`), `expirado` e `pago_sem_horario`; a trava anti-sobreposição cobre o horário separado; valor único por reserva no modo e-mail (exclusão em `valor_centavos` + janela `valor_preso_ate`); tabelas `pagamentos_recebidos`, `agenda_conexao` (refresh token da Microsoft) e `agenda_trava`; funções `agendamentos_expirar()` e `agenda_pegar_trava()` só para o service role.
+- Confirmação num caminho só (`confirmarPagamento`, idempotente), chamado pelo webhook do Mercado Pago (`/api/agendamento/mercadopago`, assinatura `x-signature` conferida e pagamento relido na API), pela consulta da tela do Pix (a cada 10 s) e pela varredura (`/api/agendamento/varrer` com `Bearer CRON_SECRET`, mais a cron diária do `vercel.json`).
+- Modo e-mail: leitura por IMAP (senha de app; conta Microsoft não funciona por IMAP) disparada pela própria visita, com trava de 20 s no banco.
+- Microsoft Graph: cliente público com PKCE (sem segredo), `npm run microsoft:conectar`; o refresh token gira e é regravado no banco.
+- Troca de horário: `POST /api/agendamento` com `acao: "remarcar"` e o token da reserva (só o hash fica no banco); move o evento no Google ou na Microsoft e desfaz se a agenda falhar.
+- Bloco que cobra sem o segredo do modo escolhido no ambiente fica desligado (vira WhatsApp): nunca marca de graça. O `npm run check` avisa o que falta.
+- Variáveis novas: `MS_CLIENT_ID`, `MS_TENANT`, `MP_ACCESS_TOKEN`, `MP_WEBHOOK_SECRET`, `IMAP_HOST`, `IMAP_PORT`, `IMAP_USER`, `IMAP_PASS`, `IMAP_REMETENTE`.
 
 ## v0.15.1 (2026-11-04)
 

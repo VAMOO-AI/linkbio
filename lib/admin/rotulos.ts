@@ -154,6 +154,10 @@ export const CAMPOS: Record<string, string> = {
   maxPorDia: "Máximo de horários por dia",
   local: "Local",
   pedirEmail: "Pedir e-mail",
+  provedor: "Agenda usada (Google ou Microsoft)",
+  pagamento: "Cobrança por Pix",
+  modo: "Como o Pix é conferido",
+  prazo: "Minutos para pagar o Pix",
 };
 
 /** Nome e dica dos campos de uma resposta do concierge, onde os nomes genéricos confundem. */
@@ -428,6 +432,10 @@ export const DICAS: Record<string, string> = {
   maxPorDia: "Vazio: sem limite.",
   local: "Endereço ou link da sala. Vazio: cada horário ganha um link do Google Meet.",
   pedirEmail: "Com e-mail, a pessoa recebe o convite do Google Agenda. Sem, pede só nome e WhatsApp.",
+  provedor: "google: Google Agenda. microsoft: Outlook / Microsoft 365. Vazio: google.",
+  pagamento: "Com cobrança, o horário só é confirmado depois que o Pix cai. Serviço sem preço continua grátis.",
+  modo: "mercadopago: o Mercado Pago avisa na hora. email: o site lê o aviso de Pix recebido na sua caixa de e-mail.",
+  prazo: "Quanto tempo o horário fica separado esperando o Pix. Vazio: 15.",
 };
 
 /**

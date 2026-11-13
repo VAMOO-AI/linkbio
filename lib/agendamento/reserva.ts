@@ -6,8 +6,10 @@
  * constraint de sobreposição. Se o Google falhar, a linha sai: reserva sem evento não bloqueia nada.
  */
 import { ESPERA_MINIMA_MS, hashIp } from "@/lib/lead";
+import { gerarBrCode } from "@/lib/pix";
 import { lerOrigemDoEnvio } from "../origem";
 import { calcularHorarios, chaveDoDia, contarPorDia, dentroDaRegra, type Horario, type Ocupado } from "./horarios";
+import { centavosEmbaralhados, hashDoToken, PRAZO_PADRAO_MIN, quando, tokenDoPedido, VALOR_PRESO_MS, type ModoPagamento } from "./pagamento";
 import { regraDoBloco, type BlocoAgendamento } from "./regra";
 
 export const LIMITE_POR_IP_24H = 3;
@@ -42,10 +44,27 @@ export type ReservaNova = {
   ip_hash: string;
   origem: string | null;
   utm: Record<string, string> | null;
+  /** Só na reserva paga: nasce aguardando o Pix, com prazo. */
+  status?: "confirmado" | "aguardando_pagamento";
+  valor_centavos?: number;
+  pagamento_modo?: ModoPagamento;
+  expira_em?: string;
+  valor_preso_ate?: string | null;
+  token_hash?: string;
 };
 
-export type ReservaGravada = { id: string; servico: string; inicio: string; fim: string; meet_url: string | null };
-export type ResultadoInsercao = { ok: true; id: string } | { ok: false; motivo: "ocupado" | "repetido" | "falha" };
+export type ReservaGravada = {
+  id: string;
+  servico: string;
+  inicio: string;
+  fim: string;
+  meet_url: string | null;
+  status?: string;
+  valor_centavos?: number | null;
+  expira_em?: string | null;
+};
+/** "valor": modo e-mail, os centavos sorteados já estão em uso (sorteia de novo). */
+export type ResultadoInsercao = { ok: true; id: string } | { ok: false; motivo: "ocupado" | "repetido" | "valor" | "falha" };
 
 export type AvisoReserva = {
   bloco: string;
@@ -61,8 +80,13 @@ export type AvisoReserva = {
 export type DepsAgenda = {
   /** Ocupado do Google Agenda. Erro sobe: sem Google, nenhum horário (falha fechada). */
   ocupado: (deIso: string, ateIso: string) => Promise<Ocupado[]>;
+  /** Reservas confirmadas e as que esperam o Pix (as duas tiram o horário da lista). */
   reservasEntre: (deIso: string, ateIso: string) => Promise<{ inicio: string; fim: string }[]>;
+  /** Prazo do Pix vencido vira "expirado" e solta o horário. */
+  expirar?: () => Promise<void>;
 };
+
+export type Cobranca = { ref: string | null; copiaECola: string; qrBase64: string | null };
 
 export type DepsReserva = DepsAgenda & {
   porPedido: (requestId: string) => Promise<ReservaGravada | null>;
@@ -81,6 +105,19 @@ export type DepsReserva = DepsAgenda & {
   remover: (id: string) => Promise<void>;
   /** Avisa o dono (webhook, e-mail). Devolve os canais que falharam; nunca derruba a reserva. */
   avisar: (aviso: AvisoReserva) => Promise<string[]>;
+  /** Modo mercadopago: cria (ou devolve, pela chave de idempotência) a cobrança Pix no PSP. */
+  cobrar?: (c: { reservaId: string; valorCentavos: number; descricao: string; expiraEm: string; email: string; nome: string }) => Promise<Cobranca>;
+  anexarCobranca?: (id: string, ref: string) => Promise<void>;
+};
+
+export type PagamentoPendente = {
+  modo: ModoPagamento;
+  /** Vai para a pessoa: consulta o status e remarca. */
+  token: string;
+  valorCentavos: number;
+  copiaECola: string;
+  qrBase64: string | null;
+  expiraEm: string;
 };
 
 export type Confirmacao = {
@@ -93,6 +130,7 @@ export type Confirmacao = {
 
 export type ResultadoReserva =
   | { tipo: "ok"; confirmacao: Confirmacao; repetido?: boolean }
+  | { tipo: "pagar"; pagamento: PagamentoPendente; confirmacao: Confirmacao; repetido?: boolean }
   | { tipo: "isca" }
   | { tipo: "cedo" }
   | { tipo: "limite" }
@@ -118,6 +156,7 @@ export async function horariosLivres(
   const servico = bloco.servicos.find((s) => s.id === servicoId);
   if (!servico) return null;
   const regra = regraDoBloco(bloco, tz);
+  await deps.expirar?.().catch(() => undefined);
   const de = new Date(agora).toISOString();
   const ate = new Date(agora + (regra.janelaDias + 2) * 24 * 60 * 60 * 1000).toISOString();
   const { ocupado, porDia } = await ocupadoTotal(deps, de, ate);
@@ -133,16 +172,6 @@ function telefone(v: string): string | null {
   return d.length >= 10 && d.length <= 15 ? d : null;
 }
 
-function quando(inicioIso: string, tz: string): string {
-  return new Intl.DateTimeFormat("pt-BR", {
-    timeZone: tz,
-    weekday: "long",
-    day: "2-digit",
-    month: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-  }).format(new Date(inicioIso));
-}
 
 /**
  * Decide e grava a reserva. Isca (honeypot) parece sucesso e não grava. Mesmo `request_id`
@@ -174,7 +203,10 @@ export async function reservar(
   const whatsapp = telefone(texto(bruto.whatsapp));
   if (!whatsapp) return { tipo: "invalido", mensagem: MSG.whatsapp };
   const email = texto(bruto.email).slice(0, 120);
-  if (bloco.pedirEmail && !EMAIL.test(email)) return { tipo: "invalido", mensagem: MSG.email };
+  const precoCentavos = bloco.pagamento ? (servico.price_cents ?? 0) : 0;
+  const pago = precoCentavos > 0 && bloco.pagamento ? bloco.pagamento : null;
+  // O Mercado Pago pede o e-mail de quem paga.
+  if ((bloco.pedirEmail || pago?.modo === "mercadopago") && !EMAIL.test(email)) return { tipo: "invalido", mensagem: MSG.email };
   if (email && !EMAIL.test(email)) return { tipo: "invalido", mensagem: MSG.email };
   const requestId = texto(bruto.request_id);
   if (!UUID.test(requestId)) return { tipo: "invalido", mensagem: MSG.recarregar };
@@ -186,14 +218,44 @@ export async function reservar(
   if (delta < ESPERA_MINIMA_MS) return { tipo: "cedo" };
 
   const local = bloco.local?.trim() || null;
+  const jaGravada = async (ja: ReservaGravada): Promise<ResultadoReserva> => {
+    const confirmacao = { servico: servico.title, inicio: ja.inicio, fim: ja.fim, meetUrl: ja.meet_url, local };
+    if (pago && ja.status === "aguardando_pagamento" && ja.valor_centavos && ja.expira_em) {
+      const pendente = await cobranca(ja.id, ja.valor_centavos, ja.expira_em).catch(() => null);
+      if (pendente) return { tipo: "pagar", repetido: true, pagamento: pendente, confirmacao };
+      return { tipo: "falha", mensagem: MSG.falha };
+    }
+    return { tipo: "ok", repetido: true, confirmacao };
+  };
+  const cobranca = async (reservaId: string, valorCentavos: number, expiraEm: string): Promise<PagamentoPendente> => {
+    if (!pago) throw new Error("sem pagamento");
+    const token = tokenDoPedido(requestId, ctx.sal);
+    if (pago.modo === "email") {
+      const copiaECola = gerarBrCode({
+        chave: pago.chave ?? "",
+        nome: pago.nome ?? "",
+        cidade: pago.cidade ?? "",
+        valor_cents: valorCentavos,
+        txid: `AG${requestId.replace(/-/g, "").slice(0, 20)}`,
+      });
+      return { modo: "email", token, valorCentavos, copiaECola, qrBase64: null, expiraEm };
+    }
+    if (!deps.cobrar) throw new Error("cobrança do Mercado Pago não configurada");
+    const c = await deps.cobrar({
+      reservaId,
+      valorCentavos,
+      descricao: `${servico.title} · ${quando(inicioIsoDe(), tz)}`,
+      expiraEm,
+      email,
+      nome,
+    });
+    if (c.ref) await deps.anexarCobranca?.(reservaId, c.ref).catch(() => undefined);
+    return { modo: "mercadopago", token, valorCentavos, copiaECola: c.copiaECola, qrBase64: c.qrBase64, expiraEm };
+  };
+  const inicioIsoDe = () => new Date(inicioMs).toISOString();
+
   const repetida = await deps.porPedido(requestId);
-  if (repetida) {
-    return {
-      tipo: "ok",
-      repetido: true,
-      confirmacao: { servico: servico.title, inicio: repetida.inicio, fim: repetida.fim, meetUrl: repetida.meet_url, local },
-    };
-  }
+  if (repetida) return jaGravada(repetida);
 
   const regra = regraDoBloco(bloco, tz);
   if (!dentroDaRegra({ regra, inicioMs, duracaoMin: servico.duracao, agora })) {
@@ -214,6 +276,7 @@ export async function reservar(
   const diaFim = new Date(fimMs + 24 * 60 * 60 * 1000).toISOString();
   let ocupado: Ocupado[];
   let reservasDoDia: string[];
+  await deps.expirar?.().catch(() => undefined);
   try {
     const total = await ocupadoTotal(deps, diaIni, diaFim);
     ocupado = total.ocupado;
@@ -233,7 +296,7 @@ export async function reservar(
 
   // atalho: a constraint do banco barra só sobreposição; duas reservas simultâneas encostadas (fim de uma = início da outra) ignoram o intervalo; revisitar se o respiro entre consultas da bio for regra dura.
   const deOnde = lerOrigemDoEnvio(bruto, ctx.referer);
-  const inserido = await deps.inserir({
+  const base: ReservaNova = {
     request_id: requestId,
     bloco: ctx.idBloco,
     servico: servico.id,
@@ -244,20 +307,56 @@ export async function reservar(
     email: email || null,
     ip_hash: ipHash,
     ...deOnde,
-  });
+  };
+  const expiraEm = new Date(agora + (pago?.prazo ?? PRAZO_PADRAO_MIN) * 60_000).toISOString();
+  // Modo e-mail: cada valor possível é tentado uma vez, em ordem embaralhada (sortear com
+  // reposição erra o último livre em ~30% das vezes quando sobram poucos).
+  const valores = pago?.modo === "email" ? centavosEmbaralhados(precoCentavos) : [];
+  let proximoValor = 0;
+  const nova = (): ReservaNova =>
+    pago
+      ? {
+          ...base,
+          status: "aguardando_pagamento",
+          pagamento_modo: pago.modo,
+          valor_centavos: pago.modo === "email" ? valores[proximoValor++]! : precoCentavos,
+          expira_em: expiraEm,
+          valor_preso_ate: pago.modo === "email" ? new Date(Date.parse(expiraEm) + VALOR_PRESO_MS).toISOString() : null,
+          token_hash: hashDoToken(tokenDoPedido(requestId, ctx.sal)),
+        }
+      : base;
+
+  // Centavos em uso: passa para o próximo valor da lista (no máximo os 99).
+  // Horário preso por um prazo que acabou de vencer: expira e tenta uma vez mais.
+  let linha = nova();
+  let inserido = await deps.inserir(linha);
+  let expirouUmaVez = false;
+  for (let i = 0; !inserido.ok && i < 120; i++) {
+    if (inserido.motivo === "valor" && proximoValor < valores.length) linha = nova();
+    else if (inserido.motivo === "ocupado" && deps.expirar && !expirouUmaVez) {
+      expirouUmaVez = true;
+      await deps.expirar().catch(() => undefined);
+    } else break;
+    inserido = await deps.inserir(linha);
+  }
   if (!inserido.ok) {
     if (inserido.motivo === "ocupado") return { tipo: "ocupado", mensagem: MSG.ocupado };
     if (inserido.motivo === "repetido") {
       const ja = await deps.porPedido(requestId);
-      if (ja) {
-        return {
-          tipo: "ok",
-          repetido: true,
-          confirmacao: { servico: servico.title, inicio: ja.inicio, fim: ja.fim, meetUrl: ja.meet_url, local },
-        };
-      }
+      if (ja) return jaGravada(ja);
     }
     return { tipo: "falha", mensagem: MSG.falha };
+  }
+
+  if (pago && linha.valor_centavos) {
+    let pendente: PagamentoPendente;
+    try {
+      pendente = await cobranca(inserido.id, linha.valor_centavos, expiraEm);
+    } catch {
+      await deps.remover(inserido.id).catch(() => undefined);
+      return { tipo: "falha", mensagem: MSG.falha };
+    }
+    return { tipo: "pagar", pagamento: pendente, confirmacao: { servico: servico.title, inicio, fim, meetUrl: null, local } };
   }
 
   let evento: { id: string; meetUrl: string | null };

@@ -63,7 +63,7 @@ test("agendamento: serviço, dia, horário e dados até a confirmação, sem est
   await bloco.getByRole("button", { name: "Confirmar horário" }).click();
 
   await expect(bloco.getByRole("status")).toContainText("Horário marcado");
-  await expect(bloco.getByRole("link", { name: /Google Meet/ })).toHaveAttribute("href", "https://meet.google.com/abc-defg-hij");
+  await expect(bloco.getByRole("link", { name: /Link da chamada/ })).toHaveAttribute("href", "https://meet.google.com/abc-defg-hij");
   await expect(bloco.getByRole("link", { name: "Pôr na minha agenda" })).toHaveAttribute("href", /^https:\/\/calendar\.google\.com\//);
   expect(pedidos).toHaveLength(1);
   expect(pedidos[0]).toMatchObject({ bloco: "agenda", servico: "consulta", nome: "Maria Souza", inicio: `${primeiroDia}T12:30:00.000Z` });

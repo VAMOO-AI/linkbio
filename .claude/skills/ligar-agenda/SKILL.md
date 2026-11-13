@@ -1,9 +1,12 @@
 ---
 name: ligar-agenda
-description: Liga o Google Agenda da pessoa ao bloco agendamento, para quem visita a bio marcar um horário livre e a reserva cair direto na agenda dela, com link do Meet. Use quando a pessoa pedir "quero que marquem horário pela bio", "ligar minha agenda", "conectar o Google Agenda", "agenda online", quando o bloco agendamento mostrar só o botão de WhatsApp, ou quando a agenda parar de mostrar horários ("desconectou").
+description: Liga o Google Agenda ou o Outlook/Microsoft 365 da pessoa ao bloco agendamento, para quem visita a bio marcar um horário livre e a reserva cair direto na agenda dela, com link do Meet (Google) ou do Teams (Microsoft de trabalho). Use quando a pessoa pedir "quero que marquem horário pela bio", "ligar minha agenda", "conectar o Google Agenda", "conectar o Outlook", "agenda do Microsoft 365", "agenda online", quando o bloco agendamento mostrar só o botão de WhatsApp, ou quando a agenda parar de mostrar horários ("desconectou"). Cobrar por Pix antes de confirmar é a skill ligar-pagamento.
 ---
 
-# Ligar o Google Agenda
+# Ligar a agenda (Google ou Microsoft)
+
+Primeiro pergunte: "Sua agenda é do Google (Gmail) ou do Outlook/Microsoft 365?". Uma bio usa uma
+agenda só. Google: siga as partes 1 a 5. Microsoft: parte 1 e depois "Microsoft 365 / Outlook" no fim.
 
 O bloco `agendamento` mostra os horários livres da agenda dela e cria o evento quando alguém marca.
 Ele precisa de três coisas: o banco (Supabase), um "app" no Google Cloud dela (o Google exige isso
@@ -21,8 +24,9 @@ primeiro (skill `ligar-painel`, partes 1 a 3; o painel em si é opcional).
 Com o banco ligado, crie as tabelas da agenda: no SQL Editor do Supabase, cole o arquivo
 `supabase/migrations/0009_agendamentos.sql` (Mac: `pbcopy < supabase/migrations/0009_agendamentos.sql`;
 Windows: `clip < supabase/migrations/0009_agendamentos.sql`), peça para ela clicar em Run e esperar
-"Success". Pode rodar de novo sem problema. Banco que nunca recebeu nenhuma migration: rode todas em
-ordem, como no `ligar-painel`.
+"Success". Depois faça o mesmo com `supabase/migrations/0013_agenda_paga.sql` (agenda Microsoft e
+agenda paga). Pode rodar de novo sem problema. Banco que nunca recebeu nenhuma migration: rode todas
+em ordem, como no `ligar-painel`.
 
 ## 2. App no Google Cloud
 
@@ -110,3 +114,33 @@ o token. Se terminar com `NÃO CONECTOU`, leia o motivo e siga "Problemas".
 - **"o Google não devolveu o refresh token"**: em myaccount.google.com/permissions, remova o acesso
   do "Agenda da bio" e conecte de novo.
 - **"a tabela agenda_google não existe"**: rode o SQL do passo 1.
+
+## Microsoft 365 / Outlook
+
+Funciona com conta de trabalho (Microsoft 365) e pessoal (outlook.com, hotmail). Link do Teams só sai
+em conta de trabalho; na pessoal o evento vai sem link (use `local` no bloco, se ela quiser um link
+fixo). Uns 15 minutos no portal da Microsoft. Um passo por mensagem.
+
+1. **Banco**: parte 1 acima (as duas migrations).
+2. **App no Entra**: em entra.microsoft.com (ou portal.azure.com > "Microsoft Entra ID"), com a conta da
+   agenda. "Registros de aplicativo" > "Novo registro". Nome "Agenda da bio". Tipos de conta: **Contas
+   em qualquer diretório organizacional e contas pessoais da Microsoft**. URI de redirecionamento:
+   plataforma **Cliente público/nativo (celular e desktop)**, valor `http://localhost`. Registrar.
+   Conta pessoal sem acesso ao Entra: ela precisa criar um diretório grátis ou usar a conta de trabalho;
+   peça um print se travar.
+3. **Permissões** ("Permissões de API" > "Adicionar" > Microsoft Graph > Delegadas): `Calendars.ReadWrite`,
+   `offline_access` e `User.Read`. Não precisa de secret nem certificado.
+4. **Chave no computador**: copie o "ID do aplicativo (cliente)" da tela Visão geral. Garanta a linha
+   (`grep -q '^MS_CLIENT_ID=' .env.local || printf '\nMS_CLIENT_ID=\n' >> .env.local`), abra o arquivo no
+   editor como na parte 3 e peça para colar na linha `MS_CLIENT_ID=`. Confira por contagem:
+   `grep -cE '^MS_CLIENT_ID=[0-9a-f-]{36}' .env.local` precisa dar 1.
+5. **Conectar**: com o arquivo fechado, `npm run microsoft:conectar` com timeout de 10 minutos. Ela
+   escolhe a conta, aceita as permissões e a aba diz que ligou. Termina com `OK:`.
+6. **Bloco**: no bloco `agendamento`, `provedor: "microsoft"`. Siga a parte 5 acima, com a chave
+   `MS_CLIENT_ID` na Vercel no lugar das duas do Google.
+
+Problemas Microsoft:
+- **"AADSTS50011" ou redirect inválido**: a plataforma não é "Cliente público/nativo" ou falta
+  `http://localhost`. Corrija em Autenticação.
+- **"AADSTS7000218" (pede client_secret)**: em Autenticação, ligue "Permitir fluxos de cliente público".
+- **Parou depois de meses sem uso**: a conexão vale 90 dias sem uso. Conecte de novo.

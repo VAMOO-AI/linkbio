@@ -8,8 +8,9 @@ node_modules/
 .next/
 # zips gerados pelo package-template.sh
 linkbio-*.zip
-# planejamento interno (nunca entra no zip)
-.context/
+# planejamento interno: só .context/docs vai pro git; o .gitattributes tira do zip (export-ignore)
+.context/*
+!.context/docs/
 mockups/
 # artefatos de teste e tsc incremental
 test-results/

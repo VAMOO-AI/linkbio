@@ -1,4 +1,4 @@
 {
-  "versao": "0.15.1",
-  "notas": "Correção: rolagem, mapa de calor e saída rápida contam só a partir do dia em que a rolagem passou a ser medida (antes tudo aparecia baixo). Sem SQL novo."
+  "versao": "0.16.0",
+  "notas": "Agenda paga e Microsoft: o horário só confirma depois do Pix (Mercado Pago ou aviso do banco no e-mail), preço por serviço, troca de horário pelo link do convite e agenda do Outlook / Microsoft 365. Tem SQL novo (0013_agenda_paga.sql)."
 }

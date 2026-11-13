@@ -247,6 +247,9 @@ let conciergeIa = false;
 let temAgenda = false;
 let temLead = false;
 let temAgendamento = false;
+let agendaGoogle = false;
+let agendaMicrosoft = false;
+const modosPix = new Set<string>();
 function visitar(no: any, onde: string) {
   if (Array.isArray(no)) {
     no.forEach((v, i) => visitar(v, `${onde}[${i}]`));
@@ -313,7 +316,13 @@ blocks.forEach((b, i) => {
   }
   if (b?.type === "agenda") temAgenda = true;
   if (b?.type === "lead" && b?.enabled !== false) temLead = true;
-  if (b?.type === "agendamento" && b?.enabled !== false) temAgendamento = true;
+  if (b?.type === "agendamento" && b?.enabled !== false) {
+    temAgendamento = true;
+    if (b.provedor === "microsoft") agendaMicrosoft = true;
+    else agendaGoogle = true;
+    const cobra = Array.isArray(b.servicos) && b.servicos.some((s: { price_cents?: number }) => (s?.price_cents ?? 0) > 0);
+    if (cobra && b.pagamento?.modo) modosPix.add(b.pagamento.modo);
+  }
   if (b?.type === "agenda" && Array.isArray(b.items) && b.items.length > 0) {
     const tz = typeof config?.site?.tz === "string" ? config.site.tz : "America/Sao_Paulo";
     try {
@@ -433,10 +442,28 @@ if (temAgendamento && (!supabaseUrlOk || !supabaseChaveOk)) {
     "bloco agendamento ligado sem Supabase (SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY): a agenda online não abre e o bloco mostra só o botão de WhatsApp",
   );
 }
-if (temAgendamento && (!has("GOOGLE_CLIENT_ID") || !has("GOOGLE_CLIENT_SECRET"))) {
+if (agendaGoogle && (!has("GOOGLE_CLIENT_ID") || !has("GOOGLE_CLIENT_SECRET"))) {
   aviso(
     "bloco agendamento ligado sem GOOGLE_CLIENT_ID e GOOGLE_CLIENT_SECRET: a agenda online não abre até ligar o Google Agenda (skill ligar-agenda); até lá o bloco mostra só o botão de WhatsApp",
   );
+}
+if (agendaMicrosoft && !has("MS_CLIENT_ID")) {
+  aviso(
+    "bloco agendamento com provedor microsoft sem MS_CLIENT_ID: a agenda online não abre até ligar o Outlook (skill ligar-agenda); até lá o bloco mostra só o botão de WhatsApp",
+  );
+}
+// Cobrança sem o segredo do modo escolhido: o bloco desliga (nunca marca de graça).
+if (modosPix.has("mercadopago") && !has("MP_ACCESS_TOKEN")) {
+  aviso("agendamento cobra pelo Mercado Pago sem MP_ACCESS_TOKEN: a agenda online fica desligada até ligar o pagamento (skill ligar-pagamento)");
+}
+if (modosPix.has("mercadopago") && has("MP_ACCESS_TOKEN") && !has("MP_WEBHOOK_SECRET")) {
+  aviso("agendamento cobra pelo Mercado Pago sem MP_WEBHOOK_SECRET: o aviso do Mercado Pago é recusado e a confirmação depende da tela aberta ou da varredura");
+}
+if (modosPix.has("email") && (!has("IMAP_HOST") || !has("IMAP_USER") || !has("IMAP_PASS"))) {
+  aviso("agendamento cobra com Pix conferido por e-mail sem IMAP_HOST, IMAP_USER e IMAP_PASS: a agenda online fica desligada até ligar a caixa (skill ligar-pagamento)");
+}
+if (modosPix.size > 0 && !has("CRON_SECRET")) {
+  aviso("agendamento cobra Pix sem CRON_SECRET: Pix pago com a página fechada só é conferido na próxima visita ou na varredura diária da Vercel (skill ligar-pagamento)");
 }
 if (temAgendamento && !has("LEAD_WEBHOOK_URL") && !has("RESEND_API_KEY")) {
   aviso("bloco agendamento ligado sem LEAD_WEBHOOK_URL nem RESEND_API_KEY — o aviso de horário marcado chega só pelo Google Agenda");

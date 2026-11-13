@@ -171,6 +171,18 @@ export async function criarEventoGoogle(
   return { id: criado.id, meetUrl };
 }
 
+/** Remarcar: troca o horário do evento (o link do Meet continua o mesmo) e avisa o convidado. */
+export async function moverEventoGoogle(
+  cred: CredenciaisGoogle,
+  ev: { id: string; inicio: string; fim: string; tz: string },
+  busca: Busca,
+): Promise<void> {
+  await chamar(cred, busca, `/calendars/primary/events/${encodeURIComponent(ev.id)}?sendUpdates=all`, {
+    method: "PATCH",
+    body: JSON.stringify({ start: { dateTime: ev.inicio, timeZone: ev.tz }, end: { dateTime: ev.fim, timeZone: ev.tz } }),
+  });
+}
+
 /** E-mail da conta conectada (o id da agenda principal). Usado só para mostrar "conectado como". */
 export async function contaGoogle(cred: CredenciaisGoogle, busca: Busca): Promise<string> {
   const r = await chamar<{ id: string }>(cred, busca, "/calendars/primary");

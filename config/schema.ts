@@ -881,8 +881,61 @@ const ServicoAgendamentoSchema = z
       message: "bloco agendamento: servicos[].duracao deve ser de 5 em 5 minutos (ex.: 30, 45, 60).",
     }),
     subtitle: z.string().max(80, "bloco agendamento: servicos[].subtitle deve ter no máximo 80 caracteres.").optional(),
+    /** Centavos, como os outros preços. Vazio ou 0: grátis (marca sem pagar). Com valor: precisa de `pagamento`. */
+    price_cents: z
+      .number()
+      .int("bloco agendamento: servicos[].price_cents deve ser um número inteiro (centavos).")
+      .min(0, "bloco agendamento: servicos[].price_cents não pode ser negativo.")
+      .max(10_000_000, "bloco agendamento: servicos[].price_cents passa de R$ 100.000.")
+      .optional(),
   })
   .strict();
+
+/** Mensagem da chave Pix com o caminho do campo do agendamento. */
+function mensagemDaChaveAgenda(v: string): string | null {
+  const msg = mensagemDaChave(v);
+  return msg ? msg.replace("bloco pix: chave", "bloco agendamento: pagamento.chave") : null;
+}
+
+/**
+ * Cobrança antes de confirmar. "mercadopago": QR do Mercado Pago, confirmação pelo aviso do
+ * Mercado Pago (MP_ACCESS_TOKEN no ambiente). "email": Pix direto na chave do dono, com centavos
+ * próprios por reserva, confirmação lendo o aviso do banco na caixa de e-mail (IMAP_* no ambiente).
+ * Os segredos ficam só no ambiente, nunca aqui.
+ */
+const PagamentoAgendamentoSchema = z
+  .object({
+    modo: z.enum(["mercadopago", "email"], { message: 'bloco agendamento: pagamento.modo aceita "mercadopago" ou "email".' }),
+    /** Minutos que o horário fica preso esperando o Pix. Padrão: 15. */
+    prazo: inteiroEntre("bloco agendamento: pagamento.prazo", 5, 60).optional(),
+    /** Só no modo email: chave Pix, nome e cidade do recebedor (os mesmos do bloco pix). */
+    chave: z
+      .string()
+      .superRefine((v, ctx) => {
+        const msg = mensagemDaChaveAgenda(v);
+        if (msg) ctx.addIssue({ code: "custom", message: msg });
+      })
+      .optional(),
+    nome: z
+      .string()
+      .max(25, "bloco agendamento: pagamento.nome deve ter no máximo 25 caracteres.")
+      .refine((v) => semAcento(v).length >= 1, { message: "bloco agendamento: pagamento.nome precisa ter ao menos uma letra ou número." })
+      .optional(),
+    cidade: z
+      .string()
+      .max(15, "bloco agendamento: pagamento.cidade deve ter no máximo 15 caracteres.")
+      .refine((v) => semAcento(v).length >= 1, { message: "bloco agendamento: pagamento.cidade precisa ter ao menos uma letra ou número." })
+      .optional(),
+  })
+  .strict()
+  .superRefine((p, ctx) => {
+    if (p.modo !== "email") return;
+    for (const campo of ["chave", "nome", "cidade"] as const) {
+      if (!p[campo]?.trim()) {
+        ctx.addIssue({ code: "custom", path: [campo], message: `bloco agendamento: no modo email, pagamento.${campo} é obrigatório.` });
+      }
+    }
+  });
 
 const PausaSchema = z
   .object({ inicio: horaDoDia("bloco agendamento: pausas[].inicio"), fim: horaDoDia("bloco agendamento: pausas[].fim") })
@@ -937,10 +990,17 @@ const AgendamentoBlockSchema = z
     local: z.string().max(200, "bloco agendamento: local deve ter no máximo 200 caracteres.").optional(),
     /** true = pede e-mail (a pessoa recebe o convite do Google Agenda). Padrão: só nome e WhatsApp. */
     pedirEmail: z.boolean().optional(),
+    /** Agenda do dono. Padrão: google (link do Meet). microsoft: Outlook/Microsoft 365 (link do Teams quando a conta é de trabalho). */
+    provedor: z.enum(["google", "microsoft"], { message: 'bloco agendamento: provedor aceita "google" ou "microsoft".' }).optional(),
+    /** Cobrança por Pix antes de confirmar. Sem isto, todo serviço é grátis. */
+    pagamento: PagamentoAgendamentoSchema.optional(),
   })
   .strict()
   .refine((b) => minutosDaHora(b.fim ?? "18:00") > minutosDaHora(b.inicio ?? "09:00"), {
     message: "bloco agendamento: fim precisa ser depois do início.",
+  })
+  .refine((b) => b.pagamento || b.servicos.every((s) => !s.price_cents), {
+    message: "bloco agendamento: há serviço com preço e nenhum pagamento configurado. Preencha pagamento (mercadopago ou email) ou zere os preços.",
   });
 
 /** Depoimentos reais de clientes. Não use texto inventado na página publicada. */
