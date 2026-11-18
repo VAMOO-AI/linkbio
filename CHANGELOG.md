@@ -3,7 +3,15 @@
 ## Não lançado
 
 ### Para quem usa
-- Nada novo desde a v0.17.1.
+- Nada novo desde a v0.17.2.
+
+## v0.17.2 (2026-11-18)
+
+### Para quem usa
+- No iPhone com tela estreita, o botão Inscrever-se dos últimos vídeos saía da tela quando o @ do canal era longo, e a página rolava de lado. Corrigido.
+
+### Na bio e no painel
+- `.videos-cabeca` com `min-width: 0` (igual ao `.insta-cabeca`); o e2e de vídeos passa a medir em 320px. Sem SQL novo.
 
 ## v0.17.1 (2026-11-18)
 

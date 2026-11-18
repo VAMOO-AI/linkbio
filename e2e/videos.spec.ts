@@ -18,9 +18,10 @@ test("mostra os vídeos do videos.json, cada um levando ao vídeo no YouTube", a
   }
 });
 
-test("em 375px os vídeos não estouram a página e o Inscrever-se tem alvo de toque >= 44px", async ({ page }) => {
+test("em 320px os vídeos não estouram a página e o Inscrever-se tem alvo de toque >= 44px", async ({ page }) => {
   test.skip(esperados.length === 0, "sem bloco videos ou sem vídeos coletados");
-  await page.setViewportSize({ width: 375, height: 812 });
+  // 320px com @canal longo: no WebKit o cabeçalho sem min-width: 0 empurrava o Inscrever-se para fora.
+  await page.setViewportSize({ width: 320, height: 700 });
   await page.goto("/");
   const [sw, cw] = await page.evaluate(() => [document.documentElement.scrollWidth, document.documentElement.clientWidth]);
   expect(sw).toBeLessThanOrEqual(cw);

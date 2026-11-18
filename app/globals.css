@@ -783,7 +783,8 @@ body::before {
   gap: 12px;
   margin-bottom: 12px;
 }
-.insta-cabeca {
+.insta-cabeca,
+.videos-cabeca {
   min-width: 0;
 }
 .insta-eyebrow,

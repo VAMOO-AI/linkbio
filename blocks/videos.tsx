@@ -14,7 +14,7 @@ export function VideosBlock({ title, canal, limit, shorts }: Props) {
   return (
     <section className="bloco-videos" aria-label={title ?? `YouTube @${nome}`}>
       <div className="videos-topo">
-        <div>
+        <div className="videos-cabeca">
           <p className="videos-eyebrow">
             <IconeSocial icone="youtube" />
             @{nome}
