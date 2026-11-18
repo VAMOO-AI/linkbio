@@ -10,6 +10,8 @@ import { TextBlock } from "./text";
 import { DividerBlock } from "./divider";
 import { YoutubeBlock } from "./youtube";
 import { GalleryBlock } from "./gallery";
+import { InstagramBlock } from "./instagram";
+import { VideosBlock } from "./videos";
 import { ConciergeModo } from "./concierge-modo";
 import { BannerBlock } from "./banner";
 import { TestimonialsBlock } from "./testimonials";
@@ -119,6 +121,25 @@ export function renderBlock(
       return <YoutubeBlock key={block.id ?? key} title={block.title} videoId={block.videoId} poster={block.poster} />;
     case "gallery":
       return <GalleryBlock key={block.id ?? key} title={block.title} images={block.images} />;
+    case "instagram":
+      return (
+        <InstagramBlock
+          key={block.id ?? key}
+          title={block.title}
+          handle={block.handle ?? config.profile.handle}
+          limit={block.limit ?? 6}
+        />
+      );
+    case "videos":
+      return (
+        <VideosBlock
+          key={block.id ?? key}
+          title={block.title}
+          canal={block.canal}
+          limit={block.limit ?? 6}
+          shorts={block.shorts ?? false}
+        />
+      );
     case "concierge": {
       // Sem `ia` explícito (a prévia), o modo do bloco decide. A página publicada manda false sem a chave.
       const ia = opcoes?.ia ?? block.mode === "ia";

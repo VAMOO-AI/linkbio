@@ -116,6 +116,8 @@ duas datas), ver abaixo.
 | `social` | Redes sociais em linha | `items` |
 | `youtube` | Vídeo (carrega só ao tocar) | `videoId`, `title`, `poster` |
 | `gallery` | Fotos | `images`, `title` |
+| `instagram` | Últimos posts do Instagram em grade (vêm de `public/instagram/posts.json`, gravado por `npm run instagram`) | `title`, `handle`, `limit` |
+| `videos` | Últimos vídeos de um canal do YouTube, com capa e data (vêm de `public/youtube/videos.json`, gravado por `npm run youtube -- @canal`) | `canal`, `title`, `limit`, `shorts` |
 | `testimonials` | Depoimentos reais de clientes | `items`, `title` |
 | `faq` | Perguntas frequentes (abre e fecha sem JS) | `items`, `openFirst`, `title` |
 | `text` | Texto livre ou rodapé | `title`, `body`, `variant` |

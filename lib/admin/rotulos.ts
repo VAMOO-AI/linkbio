@@ -45,6 +45,9 @@ export const CAMPOS: Record<string, string> = {
   profile: "Perfil",
   name: "Nome",
   handle: "@ do perfil",
+  limit: "Quantos itens mostrar",
+  canal: "@ do canal no YouTube",
+  shorts: "Incluir Shorts",
   avatar: "Foto",
   bio: "Bio",
   tags: "Etiquetas",
@@ -280,6 +283,16 @@ export const BLOCOS: Record<string, { nome: string; descricao: string; novo: Nov
   },
   youtube: { nome: "Vídeo", descricao: "Vídeo do YouTube", novo: () => ({ type: "youtube", title: "Vídeo", videoId: "" }) },
   gallery: { nome: "Galeria", descricao: "Fotos", novo: () => ({ type: "gallery", title: "Galeria", images: [] }) },
+  instagram: {
+    nome: "Instagram",
+    descricao: "Últimos posts do seu perfil",
+    novo: () => ({ type: "instagram", title: "Últimos posts" }),
+  },
+  videos: {
+    nome: "Últimos vídeos",
+    descricao: "Vídeos recentes do seu canal no YouTube",
+    novo: () => ({ type: "videos", title: "Últimos vídeos", canal: "@canal" }),
+  },
   testimonials: {
     nome: "Depoimentos",
     descricao: "Só depoimentos reais",

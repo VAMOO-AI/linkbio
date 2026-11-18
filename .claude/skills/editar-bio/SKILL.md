@@ -33,6 +33,8 @@ Siga "Arquivo ou painel" do `AGENTS.md`.
 | Contagem regressiva (lançamento, abertura de turma, live) | bloco `contagem` (com `visivel.ate` para sumir depois) | Blocos |
 | Números em destaque (alunos, anos, projetos) | bloco `numeros`, 2 a 4 itens com `valor`, `legenda` e `fonte` (obrigatória: de onde veio o número). Só número real: pergunte a fonte, não invente | Blocos |
 | Vídeo, fotos, depoimentos, perguntas frequentes | bloco `youtube`, `gallery`, `testimonials`, `faq` | Blocos > Adicionar bloco (entra no fim; ver "Mudar a ordem") |
+| Últimos posts do Instagram (grade 3x2) | bloco `instagram` (`handle`, `limit`); os posts vêm de `npm run instagram -- @perfil` (com `APIFY_TOKEN`) ou `npm run instagram -- @perfil reel/CODIGO p/CODIGO ...`. Para atualizar: rode de novo e publique | Blocos > Adicionar bloco > Instagram (os posts continuam pelo comando) |
+| Últimos vídeos do YouTube (capa, título e data) | bloco `videos` (`canal` obrigatório, `limit`, `shorts`); os vídeos vêm de `npm run youtube -- @canal` (feed público, sem chave; `--sem ID` deixa um vídeo de fora). Para atualizar: rode de novo e publique | Blocos > Adicionar bloco > Últimos vídeos (os vídeos continuam pelo comando) |
 | Texto livre, rodapé, linha divisória | bloco `text`, `divider` | Blocos > Adicionar bloco (entra no fim; ver "Mudar a ordem") |
 | Concierge (perguntas e para onde leva) | bloco `concierge` | Blocos > Concierge |
 | Apagar oferta | tirar de `offers` e das referências (cards, concierge) | Ofertas > lixeira > Apagar (sai sozinha dos cards; se a 1ª pergunta do concierge levava a ela, escolha outra em "Leva para") |
@@ -49,7 +51,7 @@ Siga "Arquivo ou painel" do `AGENTS.md`.
 | Modelo, cor, fonte, fundo, botões, cantos | `theme` | Aparência (fonte diferente nos títulos e no texto: Fonte > Títulos e texto separados) |
 | Jeito de um bloco aparecer (carrossel, lista, capa) | campo do bloco | Blocos (clique em qualquer ponto da linha do bloco) |
 
-Todos os 22 tipos de bloco já existem. Pedido que cabe num deles NÃO é `novo-bloco`.
+Todos os 24 tipos de bloco já existem. Pedido que cabe num deles NÃO é `novo-bloco`.
 
 ## 3. Referências (leia só quando o pedido tocar nelas)
 

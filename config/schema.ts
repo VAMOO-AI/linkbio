@@ -592,6 +592,58 @@ const GalleryBlockSchema = z.object({
 }).strict();
 
 /**
+ * Últimos posts do Instagram. Os posts não ficam na config: vêm de public/instagram/posts.json,
+ * que `npm run instagram` grava junto com as imagens (o Instagram não deixa a página buscar ao vivo).
+ * Sem posts do @ do bloco no arquivo, o bloco some.
+ */
+const InstagramBlockSchema = z.object({
+  type: z.literal("instagram"),
+  /** false = bloco desligado: sai da página, mas o conteúdo fica guardado na config. */
+  enabled: z.boolean({ message: "enabled deve ser true ou false." }).optional(),
+  visivel: campoVisivel("bloco instagram"),
+  origem: campoOrigem("bloco instagram"),
+  id: slug("bloco instagram: id").optional(),
+  title: z.string().max(80, "bloco instagram: title deve ter no máximo 80 caracteres.").optional(),
+  /** Sem handle, vale o @ do perfil. */
+  handle: z
+    .string()
+    .regex(/^@?[A-Za-z0-9._]{1,30}$/, 'bloco instagram: handle deve ser um @ do Instagram (ex.: "@perfil").')
+    .optional(),
+  limit: z
+    .number({ message: "bloco instagram: limit deve ser um número." })
+    .int("bloco instagram: limit deve ser um número inteiro.")
+    .min(3, "bloco instagram: limit deve ser no mínimo 3.")
+    .max(12, "bloco instagram: limit deve ser no máximo 12.")
+    .optional(),
+}).strict();
+
+/**
+ * Últimos vídeos de um canal do YouTube. Os vídeos não ficam na config: vêm de
+ * public/youtube/videos.json, que `npm run youtube -- @canal` grava junto com as capas (feed público
+ * do canal, sem chave). Sem vídeos do canal do bloco no arquivo, o bloco some.
+ */
+const VideosBlockSchema = z.object({
+  type: z.literal("videos"),
+  /** false = bloco desligado: sai da página, mas o conteúdo fica guardado na config. */
+  enabled: z.boolean({ message: "enabled deve ser true ou false." }).optional(),
+  visivel: campoVisivel("bloco videos"),
+  origem: campoOrigem("bloco videos"),
+  id: slug("bloco videos: id").optional(),
+  title: z.string().max(80, "bloco videos: title deve ter no máximo 80 caracteres.").optional(),
+  canal: z
+    .string({ message: 'bloco videos: canal é obrigatório (o @ do canal no YouTube, ex.: "@canal").' })
+    .regex(/^@[A-Za-z0-9._-]{3,30}$/, 'bloco videos: canal deve ser o @ do canal no YouTube (ex.: "@canal").'),
+  limit: z
+    .number({ message: "bloco videos: limit deve ser um número." })
+    .int("bloco videos: limit deve ser um número inteiro.")
+    .min(1, "bloco videos: limit deve ser no mínimo 1.")
+    .max(12, "bloco videos: limit deve ser no máximo 12.")
+    .optional(),
+  /** true = inclui os Shorts; padrão: só vídeos. */
+  shorts: z.boolean({ message: "bloco videos: shorts deve ser true ou false." }).optional(),
+}).strict();
+
+/**
  * Resposta do concierge. Com `offer`, a recomendação mostra a oferta. Sem `offer` (ex.: "Ainda não sei"),
  * o final vira um convite para conversar: `title`, `cta` e `wa` personalizam esse final (todos opcionais).
  * Quem decide o final é o `decide` do bloco: a resposta do PRIMEIRO passo ("primeira", padrão) ou a
@@ -1112,6 +1164,8 @@ export const BlockSchema = z.discriminatedUnion(
     DividerBlockSchema,
     YoutubeBlockSchema,
     GalleryBlockSchema,
+    InstagramBlockSchema,
+    VideosBlockSchema,
     ConciergeBlockSchema,
     BannerBlockSchema,
     TestimonialsBlockSchema,
@@ -1125,7 +1179,7 @@ export const BlockSchema = z.discriminatedUnion(
     AgendaBlockSchema,
     AgendamentoBlockSchema,
   ],
-  { message: "bloco com type desconhecido. Tipos válidos: profile, social, cta, link, links, cards, text, divider, youtube, gallery, concierge, banner, testimonials, faq, products, coupon, contagem, numeros, lead, pix, agenda, agendamento." },
+  { message: "bloco com type desconhecido. Tipos válidos: profile, social, cta, link, links, cards, text, divider, youtube, gallery, instagram, videos, concierge, banner, testimonials, faq, products, coupon, contagem, numeros, lead, pix, agenda, agendamento." },
 );
 
 // ---------------------------------------------------------------------------

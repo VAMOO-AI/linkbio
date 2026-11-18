@@ -3,7 +3,25 @@
 ## Não lançado
 
 ### Para quem usa
-- Nada novo desde a v0.16.0.
+- Nada novo desde a v0.17.1.
+
+## v0.17.1 (2026-11-18)
+
+### Para quem usa
+- Nada muda na sua bio: é só um ajuste interno dos testes. Pode atualizar quando quiser.
+
+### Na bio e no painel
+- Os testes dos blocos `instagram` e `videos` usam nomes de exemplo no lugar de perfis reais (a v0.17.0 não passou na checagem da distribuição). Nada muda na página. Sem SQL novo.
+
+## v0.17.0 (2026-11-18)
+
+### Para quem usa
+- Bloco novo `instagram`: os últimos posts do Instagram em grade 3x2, com botão Seguir. Os posts ficam em `public/instagram/posts.json`, gravado por `npm run instagram -- @perfil` (com o token da Apify) ou `npm run instagram -- @perfil reel/CODIGO p/CODIGO ...` (sem token). Para atualizar, rode de novo e publique.
+- Bloco novo `videos`: os últimos vídeos de um canal do YouTube, com capa, título, data e botão Inscrever-se. Os vídeos ficam em `public/youtube/videos.json`, gravado por `npm run youtube -- @canal` (feed público do canal, sem chave; `--sem ID` deixa um vídeo de fora). Shorts só com `shorts: true`.
+- Sem posts ou vídeos coletados, os dois blocos não aparecem na página.
+
+### Na bio e no painel
+- Next.js 16.4.2 → 16.4.6: a 16.4.2 passou a recusar o build (`SecurityFatalError`). Sem SQL novo.
 
 ## v0.16.0 (2026-11-12)
 

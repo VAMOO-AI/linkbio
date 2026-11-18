@@ -1,4 +1,4 @@
 {
-  "versao": "0.16.0",
-  "notas": "Agenda paga e Microsoft: o horário só confirma depois do Pix (Mercado Pago ou aviso do banco no e-mail), preço por serviço, troca de horário pelo link do convite e agenda do Outlook / Microsoft 365. Tem SQL novo (0013_agenda_paga.sql)."
+  "versao": "0.17.1",
+  "notas": "Correção da distribuição: os testes dos blocos instagram e videos não citam mais nomes reais. Nada muda na bio. Sem SQL novo."
 }

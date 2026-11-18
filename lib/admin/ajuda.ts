@@ -35,6 +35,10 @@ export const AJUDA_BLOCO: Record<string, string> = {
   social: "Uma fileira de ícones das suas redes, no ponto da bio onde o bloco estiver.",
   youtube: "Um vídeo do YouTube que toca dentro da bio.",
   gallery: "Fotos lado a lado.",
+  instagram:
+    "Os últimos posts do seu Instagram em grade. Os posts vêm do arquivo que o comando npm run instagram grava: para atualizar, rode de novo e publique o site.",
+  videos:
+    "Os últimos vídeos do seu canal no YouTube, com capa e data. Vêm do arquivo que o comando npm run youtube grava: para atualizar, rode de novo e publique o site.",
   testimonials: "Depoimentos de clientes. Use só depoimentos reais.",
   faq: "Perguntas e respostas que abrem e fecham ao tocar.",
   text: "Um texto livre. Com o estilo Rodapé, fica centralizado e discreto, bom para o fim da bio.",

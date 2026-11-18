@@ -890,3 +890,43 @@ describe("bloco numeros", () => {
     expect(mensagens(um).join("\n")).toContain("bloco numeros: items precisa de 2 a 4 números");
   });
 });
+
+describe("bloco instagram", () => {
+  test("aceita só o type e aceita título, @ e quantidade", () => {
+    const cfg = baseBruta();
+    cfg.blocks.push({ type: "instagram" }, { type: "instagram", title: "Últimos posts", handle: "@perfil", limit: 9 });
+    expect(ConfigSchema.safeParse(cfg).success).toBe(true);
+  });
+
+  test("recusa quantidade fora de 3 a 12, @ inválido e posts na config, com mensagem em PT-BR", () => {
+    const cfg = baseBruta();
+    cfg.blocks.push({ type: "instagram", limit: 20 }, { type: "instagram", handle: "perfil com espaço" });
+    const erros = mensagens(cfg).join("\n");
+    expect(erros).toContain("bloco instagram: limit deve ser no máximo 12.");
+    expect(erros).toContain('bloco instagram: handle deve ser um @ do Instagram (ex.: "@perfil").');
+
+    const comPosts = baseBruta();
+    comPosts.blocks.push({ type: "instagram", posts: [] });
+    expect(mensagens(comPosts).join("\n")).toMatch(/posts/);
+  });
+});
+
+describe("bloco videos", () => {
+  test("aceita canal com título, quantidade e Shorts", () => {
+    const cfg = baseBruta();
+    cfg.blocks.push(
+      { type: "videos", canal: "@canal" },
+      { type: "videos", canal: "@canal.exemplo", title: "Últimos vídeos", limit: 3, shorts: true },
+    );
+    expect(ConfigSchema.safeParse(cfg).success).toBe(true);
+  });
+
+  test("recusa sem canal, canal sem @ e quantidade fora de 1 a 12, com mensagem em PT-BR", () => {
+    const cfg = baseBruta();
+    cfg.blocks.push({ type: "videos" }, { type: "videos", canal: "canal" }, { type: "videos", canal: "@canal", limit: 0 });
+    const erros = mensagens(cfg).join("\n");
+    expect(erros).toContain("bloco videos: canal é obrigatório");
+    expect(erros).toContain('bloco videos: canal deve ser o @ do canal no YouTube (ex.: "@canal").');
+    expect(erros).toContain("bloco videos: limit deve ser no mínimo 1.");
+  });
+});
